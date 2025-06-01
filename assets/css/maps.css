@@ -1,0 +1,433 @@
+/* Definición de Variables CSS Globales */
+:root {
+    --primary-color: #0073aa;
+    --primary-color-hover: #005177;
+    --secondary-button-bg: #e5e5e5;
+    --secondary-button-hover-bg: #d5d5d5;
+    --text-color-dark: #333;
+    --text-color-medium: #555;
+    --border-color-standard: #ccc;
+    --border-radius-standard: 4px;
+    --padding-standard: 10px;
+    --focus-shadow-color: rgba(0, 115, 170, 0.3);
+}
+
+/* Estilos Generales del Contenedor de Reserva y Mapa */
+.cachilupi-booking-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 30px;
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: var(--border-radius-standard, 8px); /* Usa variable con fallback */
+}
+
+/* Panel de Reserva (Formulario) */
+.cachilupi-booking-panel {
+    font-family: 'Arial', sans-serif; /* Use a common font */
+    flex: 1 1 450px; /* Flex properties para el formulario */
+}
+
+/* Título del Panel de Reserva */
+
+.panel-title {
+    text-align: center;
+    color: #333;
+    margin-bottom: 30px; /* Considerar var(--spacing-large) si se define */
+    font-size: 2em;
+}
+
+/* Sección dentro del formulario */
+.form-section {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: var(--border-radius-standard, 6px); /* Usa variable con fallback */
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+/* Grupo de Formulario */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: var(--text-color-medium, #555);
+}
+
+/* Control de Formulario (Inputs, Selects, Textareas) */
+.form-control {
+    width: 100%;
+    padding: var(--padding-standard, 10px);
+    border: 1px solid var(--border-color-standard, #ccc);
+    border-radius: var(--border-radius-standard, 4px);
+    box-sizing: border-box; /* Include padding and border in element's total width */
+    font-size: 1em;
+}
+
+.form-control:focus {
+    border-color: var(--primary-color, #0073aa); /* Highlight on focus */
+    box-shadow: 0 0 5px var(--focus-shadow-color, rgba(0, 115, 170, 0.3));
+    outline: none; /* Remove default outline */
+}
+
+/* Contenedor del Geocoder */
+.geocoder-container {
+    margin-bottom: var(--padding-standard, 10px); /* Space below the geocoder */
+}
+
+/* Botones Generales del Formulario */
+.button {
+    display: inline-block; /* Make buttons behave like inline blocks */
+    padding: var(--padding-standard, 10px) 20px;
+    font-size: 1em;
+    cursor: pointer;
+    border: none;
+    border-radius: var(--border-radius-standard, 4px);
+    text-align: center;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+}
+
+/* Botón Primario */
+.button-primary {
+    background-color: var(--primary-color, #0073aa);
+    color: white;
+}
+
+.button-primary:hover {
+    background-color: var(--primary-color-hover, #005177);
+}
+
+/* Botón Secundario */
+.button-secondary {
+    background-color: var(--secondary-button-bg, #e5e5e5);
+    color: var(--text-color-dark, #333);
+    margin-left: 10px; /* Space between primary and secondary buttons */
+}
+
+.button-secondary:hover {
+    background-color: var(--secondary-button-hover-bg, #d5d5d5);
+}
+
+/* Botón de Envío Específico */
+.submit-button {
+    display: block; /* Make the submit button take full width */
+    width: 100%;
+    margin-top: 20px;
+    padding: 12px;
+    font-size: 1.2em;
+}
+
+/* Información de Distancia */
+.distance-info {
+    margin-top: 15px;
+    padding: 10px;
+    background-color: #e9e9e9;
+    border-left: 4px solid var(--primary-color, #0073aa);
+    margin-bottom: 20px;
+}
+
+/* Indicador de campo requerido (si se usa una clase específica para el span) */
+.required-field-indicator { /* Asumiendo que el span tiene esta clase */
+    color: red;
+    margin-left: 5px;
+}
+/* O si se usa ::after en la etiqueta */
+.form-group label.required-field-label::after {
+    content: " *";
+    color: red;
+    font-weight: normal;
+}
+
+/* Estilos del Mapa en la página de reserva */
+#cachilupi-pet-map {
+    flex: 1 1 550px; /* Flex properties para el mapa */
+    width: 100%;
+    height: 500px; /* Altura inicial, puede ajustarse en media query */
+    border-radius: var(--border-radius-standard, 6px); /* Rounded corners for the map */
+    overflow: hidden;
+}
+
+/* Media Queries para el layout responsivo del contenedor de reserva y mapa */
+@media (max-width: 768px) { /* Consistencia con el breakpoint de driver-panel.css */
+    .cachilupi-booking-container {
+        flex-direction: column;
+        gap: 15px; /* Reducido el gap general para móviles */
+        padding: 15px; /* Menos padding en el contenedor principal en móviles */
+    }
+    .cachilupi-booking-panel { /* El formulario */
+        order: 1; /* Formulario primero en móvil */
+        flex-basis: auto; /* Permitir que el contenido determine la altura */
+        margin-bottom: 0; /* Eliminar margen inferior si el gap ya maneja el espacio */
+    }
+    #cachilupi-pet-map {
+        height: 350px; /* Altura ajustada para el mapa en móviles */
+        order: 2; /* Mapa después del formulario en móvil */
+        margin-top: 0; /* El gap del contenedor debería manejar el espacio superior */
+    }
+    .form-section {
+        padding: 15px; /* Adjust padding for smaller screens */
+    }
+}
+
+/* Estilos para Mapbox Geocoder */
+.mapboxgl-ctrl-geocoder {
+    width: 100%;
+    margin-bottom: 10px;
+    max-width: none !important; /* Override Mapbox default max-width */
+}
+
+.mapboxgl-ctrl-geocoder .suggestions { position: absolute; }
+
+.mapboxgl-ctrl-geocoder--results {
+    position: absolute;
+    z-index: 2000; /* Ensure it's on top of other elements */
+    width: 100%; /* Match the width of the input field */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+.mapboxgl-ctrl-geocoder ul {
+    width: 100%;
+}
+
+/* Styling for Mapbox Geocoder input field */
+.mapboxgl-ctrl-geocoder--input {
+    width: 100% !important; /* Asegurar ancho completo */
+    height: auto !important; /* Altura automática */
+    padding: 10px 35px 10px 10px !important; /* Ajustar padding para el ícono */
+    margin-bottom: 0 !important; /* El geocoder-container ya tiene margin-bottom */
+    box-sizing: border-box !important; /* Asegurar que el padding no afecte el ancho total */
+    border: 1px solid var(--border-color-standard, #ccc) !important;
+    border-radius: var(--border-radius-standard, 4px) !important;
+    font-size: 16px;
+    line-height: 1.5;
+    color: var(--text-color-dark, #333);
+    background-color: #fff;
+    background-clip: padding-box;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+/* Styling for Mapbox Geocoder search icon */
+.mapboxgl-ctrl-geocoder--icon {
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    left: auto !important; /* Allow positioning from the right */
+    right: 10px !important; /* Position the icon to the right */
+    color: var(--text-color-medium, #555) !important;
+}
+
+/* Etiquetas para los campos de geocodificador (si se usan fuera del geocoder-container) */
+label[for="cachilupi-pet-pickup-location"],
+label[for="cachilupi-pet-dropoff-location"] {
+    display: block; 
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+/* Estilo para los campos requeridos (si se usa una clase en el input) */
+.required-field {    
+    border: 1px solid #c0c0c0; 
+} 
+
+/* Estilos para mensajes de error */
+.error-message {
+    color: red;
+    font-size: 0.8em;
+    display: block;
+    margin-top: 5px;
+}
+
+/* Estilos básicos para el botón en estado de carga */
+.button.loading-spinner { /* Generalizado para cualquier botón con la clase .button */
+    cursor: progress; /* Muestra un cursor de progreso */
+    background-color: #eee; /* Un color de fondo más tenue para indicar carga */
+    pointer-events: none; /* Evita clics adicionales mientras está cargando */
+}
+
+.button.loading-spinner::after {
+    content: ' ...'; /* Añade puntos suspensivos para dar feedback visual de carga */
+}
+
+/* Estilos para la tabla de solicitudes del cliente dentro del panel de mapas */
+.cachilupi-client-requests-panel {
+    flex-basis: 100%; /* Ocupa todo el ancho disponible en el contenedor flex */
+    margin-top: 30px; /* Espacio sobre la sección de solicitudes */
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: var(--border-radius-standard, 8px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.cachilupi-client-requests-panel h2 {
+    font-size: 1.8em;
+    margin-bottom: 20px;
+    color: var(--text-color-dark, #333);
+    text-align: left; /* Alinear a la izquierda o centro según preferencia */
+}
+
+/* Estilos para la tabla de solicitudes del cliente, si no usas .widefat o necesitas overrides */
+.cachilupi-client-requests-panel table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.cachilupi-client-requests-panel th,
+.cachilupi-client-requests-panel td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #ddd; /* Un borde más sutil que el 2px original */
+}
+
+.cachilupi-client-requests-panel th {
+    background-color: #f0f0f0; /* Un fondo ligero para encabezados */
+    border-bottom-width: 2px;
+}
+
+/* Botón de seguimiento */
+.cachilupi-follow-driver-btn {
+    /* Estilos base de botón, puedes heredar de .button si ya lo tienes */
+    padding: 5px 10px;
+    font-size: 0.9em;
+    cursor: pointer;
+    border: 1px solid #0073aa;
+    background-color: #0085ba;
+    color: white;
+    border-radius: 3px;
+    text-decoration: none;
+}
+.cachilupi-follow-driver-btn:hover {
+    background-color: #0073aa;
+}
+
+/* Modal de seguimiento del conductor para el cliente */
+#cachilupi-follow-modal {
+    display: none; /* Se muestra con JS */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6); /* Fondo semi-transparente */
+    z-index: 10000; /* Asegurar que esté por encima de otros elementos */
+    align-items: center; /* Para centrar el contenido si usas flex */
+    justify-content: center; /* Para centrar el contenido si usas flex */
+    /* Si no usas flex para centrar el modal en sí, estas dos propiedades no son necesarias aquí */
+}
+
+/* Contenido del modal de seguimiento */
+.cachilupi-modal-content { /* Hecho más genérico si se reutiliza, o mantener #cachilupi-follow-modal .cachilupi-modal-content */
+    position: absolute; /* O relative si #cachilupi-follow-modal es flex container */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+    max-width: 700px;
+    /* height: 70%; */ /* Considera usar auto o max-height para contenido dinámico */
+    max-height: 80vh; /* Para que no sea demasiado alto en pantallas pequeñas */
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    display: flex;
+    flex-direction: column;
+}
+
+#cachilupi-follow-modal-title { /* Asumiendo que el ID es único y dentro del modal */
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 1.6em;
+    color: #333;
+}
+
+#cachilupi-client-follow-map { /* Asumiendo que el ID es único y dentro del modal */
+    width: 100%;
+    height: 400px; /* Altura del mapa dentro del modal, ajusta según necesites */
+    margin-bottom: 15px;
+    border: 1px solid #ccc; /* Opcional: un borde para el mapa */
+    border-radius: 4px;
+}
+
+#cachilupi-close-follow-modal { /* Asumiendo que el ID es único y dentro del modal */
+    padding: 10px 15px;
+    background-color: #e0e0e0;
+    color: #333;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    align-self: flex-end; /* Para alinear el botón a la derecha si el contenedor es flex */
+    margin-top: 10px; /* Espacio sobre el botón */
+    transition: background-color 0.2s ease;
+}
+
+#cachilupi-close-follow-modal:hover {
+    background-color: #d0d0d0;
+}
+
+/* Estilos responsivos para la tabla dentro de .cachilupi-client-requests-panel */
+/* Adaptado de driver-panel.css */
+@media (max-width: 768px) {
+    .cachilupi-client-requests-panel table.widefat thead {
+        display: none; /* Oculta el encabezado de la tabla en pantallas pequeñas */
+    }
+
+    .cachilupi-client-requests-panel table.widefat,
+    .cachilupi-client-requests-panel table.widefat tbody,
+    .cachilupi-client-requests-panel table.widefat tr,
+    .cachilupi-client-requests-panel table.widefat td {
+        display: block; /* Hace que los elementos de la tabla se comporten como bloques */
+        width: 100%; /* Asegura que cada bloque ocupe todo el ancho */
+        box-sizing: border-box; /* Para que el padding no afecte el width 100% */
+    }
+
+    .cachilupi-client-requests-panel table.widefat tr {
+        margin-bottom: var(--dp-responsive-row-margin-bottom, 15px); /* Espacio entre cada \"fila\" */
+        border: 1px solid var(--dp-responsive-row-border-color, #e0e0e0); /* Borde alrededor de cada bloque de fila */
+        padding: var(--padding-standard, 10px); /* Padding alrededor del contenido de la fila */
+        box-shadow: 2px 2px 5px var(--dp-responsive-row-shadow-color, rgba(0,0,0,0.1)); /* Sombra ligera */
+        background-color: var(--dp-table-row-odd-bg, #fff); /* Fondo blanco para los bloques */
+    }
+
+    .cachilupi-client-requests-panel table.widefat td {
+        border: none; /* Elimina los bordes de las celdas individuales */
+        border-bottom: 1px solid var(--dp-responsive-cell-separator-color, #eee); /* Separador visual */
+        position: relative; /* Necesario para el pseudo-elemento */
+        padding-left: 50%; /* Espacio a la izquierda para la etiqueta */
+        text-align: right; /* Alinea el contenido a la derecha */
+        padding-top: var(--dp-button-margin-sm, 8px); /* Ajusta el padding superior */
+        padding-bottom: var(--dp-button-margin-sm, 8px); /* Ajusta el padding inferior */
+        min-height: 30px; /* Altura mínima para asegurar que el contenido y la etiqueta sean visibles */
+    }
+
+    .cachilupi-client-requests-panel table.widefat tr td:last-child {
+        border-bottom: 0;
+        padding-bottom: var(--dp-button-margin-sm, 8px); /* Asegurar padding si hay botones */
+    }
+
+    /* Estilos para el botón de seguimiento dentro de la tabla responsiva */
+    .cachilupi-client-requests-panel table.widefat td .cachilupi-follow-driver-btn {
+        display: inline-block; /* O block si quieres que ocupe todo el ancho */
+        width: auto; /* O 100% si es block */
+        margin-top: 5px;
+    }
+
+    .cachilupi-client-requests-panel table.widefat td:before {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        left: var(--dp-responsive-label-left-offset, 10px); /* Posición horizontal de la etiqueta */
+        width: calc(50% - 20px); /* Ancho para la etiqueta, dejando espacio */
+        padding-right: var(--dp-responsive-label-padding-right, 10px);
+        white-space: nowrap; /* Evita que el texto de la etiqueta se rompa */
+        content: attr(data-label); /* Usa el atributo data-label */
+        font-weight: bold;
+        text-align: left; /* Alinea la etiqueta a la izquierda */
+        color: var(--text-color-dark, #333); /* Color para las etiquetas */
+    }
+}

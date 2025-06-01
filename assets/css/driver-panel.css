@@ -1,0 +1,265 @@
+/* Definición de Variables CSS para Driver Panel */
+:root {
+    /* Variables globales (asumidas de maps.css o definidas aquí si es necesario) */
+    --padding-standard: 10px; /* Ejemplo, si no viene de maps.css */
+    --primary-color: #0073aa; /* Ejemplo, si no viene de maps.css */
+    --primary-color-hover: #005177; /* Ejemplo, si no viene de maps.css */
+    --text-color-dark: #333; /* Ejemplo, si no viene de maps.css */
+
+    /* Table Styles */
+    --dp-table-border-color: #e5e5e5;
+    --dp-table-header-bg: #f5f5f5;
+    --dp-table-row-even-bg: #f9f9f9;
+    --dp-table-row-odd-bg: #fff; /* También usado para responsive row background */
+    --dp-table-shadow-color: rgba(0,0,0,.04);
+
+    /* Button Styles (específicos de las tablas del panel de conductor) */
+    --dp-button-padding: 6px 12px;
+    --dp-button-font-size: 13px;
+    --dp-button-border-radius: 3px;
+    --dp-button-margin-sm: 5px; /* Margen pequeño general */
+
+    /* Action Button Colors */
+    --dp-button-accept-bg: #4CAF50;
+    --dp-button-accept-border: #3e8e41;
+    --dp-button-accept-hover-bg: #45a049;
+
+    --dp-button-onway-bg: #0073aa; /* Similar a primary-color */
+    --dp-button-onway-border: #005177;
+    --dp-button-onway-hover-bg: #006699;
+
+    --dp-button-reject-bg: #f44336;
+    --dp-button-reject-border: #d32f2f;
+    --dp-button-reject-hover-bg: #e53935;
+
+    --dp-button-arrival-bg: #ff9800;
+    --dp-button-arrival-border: #f57c00;
+    --dp-button-arrival-hover-bg: #fb8c00;
+
+    --dp-button-complete-bg: #607D8B;
+    --dp-button-complete-border: #455A64;
+    --dp-button-complete-hover-bg: #546E7A;
+
+    /* Responsive Table Styles */
+    --dp-responsive-row-margin-bottom: 15px;
+    --dp-responsive-row-border-color: #e0e0e0;
+    --dp-responsive-row-shadow-color: rgba(0,0,0,0.1);
+    --dp-responsive-cell-separator-color: #eee;
+    --dp-responsive-label-left-offset: 10px;
+    --dp-responsive-label-padding-right: 10px;
+    --dp-responsive-button-padding: 8px 12px;
+}
+
+/* Estilos generales para las tablas .widefat (Panel del Conductor y Solicitudes del Cliente) */
+.wrap table.widefat {
+    width: 100%; /* Asegura que la tabla ocupe todo el ancho disponible */
+    border-collapse: collapse; /* Elimina el espacio entre bordes de celdas */
+    margin-top: 20px;
+    margin-bottom: 20px;
+    clear: both;
+    border: 1px solid var(--dp-table-border-color, #e5e5e5); /* Borde estándar de WordPress */
+    box-shadow: 0 1px 1px var(--dp-table-shadow-color, rgba(0,0,0,.04));
+}
+
+.wrap table.widefat th,
+.wrap table.widefat td {
+    padding: var(--padding-standard, 10px); /* Espacio interior en celdas y encabezados */
+    border-bottom: 1px solid var(--dp-table-border-color, #e5e5e5); /* Borde inferior para celdas */
+    text-align: left; /* Alineación de texto */
+    vertical-align: top; /* Alineación vertical superior */
+    line-height: 1.4em;
+}
+
+.wrap table.widefat th {
+    background-color: var(--dp-table-header-bg, #f5f5f5); /* Fondo para el encabezado, más sutil */
+    font-weight: bold;
+    border-bottom-width: 1px; /* WordPress usa 1px para th también */
+}
+
+/* Zebra striping para las filas del cuerpo de la tabla */
+.wrap table.widefat tbody tr:nth-child(even) {
+    background-color: var(--dp-table-row-even-bg, #f9f9f9);
+}
+.wrap table.widefat tbody tr:nth-child(odd) {
+    background-color: var(--dp-table-row-odd-bg, #fff);
+}
+
+/* Asegura que los botones dentro de las celdas no se vean afectados negativamente */
+.wrap table.widefat td .button {
+    display: inline-block; /* Asegura que los botones estén en línea */
+    margin-right: var(--dp-button-margin-sm, 5px); /* Espacio entre los botones */
+    margin-bottom: var(--dp-button-margin-sm, 5px); /* Espacio debajo de los botones si se apilan */
+    padding: var(--dp-button-padding, 6px 12px);
+    text-decoration: none; /* Elimina el subrayado por defecto en botones */
+    cursor: pointer; /* Indica que es interactivo */
+    border-radius: var(--dp-button-border-radius, 3px);
+    font-size: var(--dp-button-font-size, 13px);
+    line-height: normal;
+    vertical-align: middle;
+    text-shadow: none;
+    box-shadow: none;
+    border: 1px solid transparent; /* Base para los bordes de color */
+}
+/* Estilos específicos para los botones de acción */
+/* Clase PHP: accept-request */
+.wrap table.widefat td .button.accept-request {
+    background-color: var(--dp-button-accept-bg, #4CAF50); /* Verde */
+    color: white;
+    border-color: var(--dp-button-accept-border, #3e8e41);
+}
+.wrap table.widefat td .button.accept-request:hover {
+    background-color: var(--dp-button-accept-hover-bg, #45a049);
+}
+
+/* Clase PHP: reject-request */
+.wrap table.widefat td .button.reject-request {
+    background-color: var(--dp-button-reject-bg, #f44336); /* Rojo */
+    color: white;
+    border-color: var(--dp-button-reject-border, #d32f2f);
+}
+.wrap table.widefat td .button.reject-request:hover {
+    background-color: var(--dp-button-reject-hover-bg, #e53935);
+}
+
+/* Clase PHP: on-the-way-request */
+.wrap table.widefat td .button.on-the-way-request {
+    background-color: var(--dp-button-onway-bg, #0073aa); /* Azul */
+    color: white;
+    border-color: var(--dp-button-onway-border, #005177);
+}
+.wrap table.widefat td .button.on-the-way-request:hover {
+    background-color: var(--dp-button-onway-hover-bg, #006699);
+}
+
+/* Clase PHP: arrive-request */
+.wrap table.widefat td .button.arrive-request {
+    background-color: var(--dp-button-arrival-bg, #ff9800); /* Naranja */
+    color: white;
+    border-color: var(--dp-button-arrival-border, #f57c00);
+}
+.wrap table.widefat td .button.arrive-request:hover {
+    background-color: var(--dp-button-arrival-hover-bg, #fb8c00);
+}
+
+/* Clase PHP: complete-request */
+.wrap table.widefat td .button.complete-request {
+    background-color: var(--dp-button-complete-bg, #607D8B); /* Gris azulado */
+    color: white;
+    border-color: #455A64;
+}
+.wrap table.widefat td .button.completar-solicitud:hover {
+    background-color: #546E7A;
+}
+
+/* Estilos para los enlaces de mapas */
+.wrap table.widefat td .map-link {
+    display: block; /* Cada enlace en su propia línea */
+    margin-top: var(--dp-button-margin-sm, 5px); /* Espacio encima del enlace */
+    color: var(--primary-color, #0073aa); /* Color de enlace típico de WordPress */
+    text-decoration: underline; /* Subrayado para indicar enlace */
+}
+
+.wrap table.widefat td .map-link:hover {
+    color: var(--primary-color-hover, #005177); /* Color más oscuro al pasar el ratón */
+}
+
+/* Media Query para pantallas pequeñas (ej. tablets y móviles) */
+@media (max-width: 768px) {
+
+    .wrap table.widefat thead {
+        display: none; /* Oculta el encabezado de la tabla en pantallas pequeñas */
+    }
+
+    .wrap table.widefat, .wrap table.widefat tbody, .wrap table.widefat tr, .wrap table.widefat td {
+        display: block; /* Hace que los elementos de la tabla se comporten como bloques */
+        width: 100%; /* Asegura que cada bloque ocupe todo el ancho */
+    }
+
+    .wrap table.widefat tr {
+        margin-bottom: var(--dp-responsive-row-margin-bottom, 15px); /* Espacio entre cada \"fila\" (ahora bloque) */
+        border: 1px solid var(--dp-responsive-row-border-color, #e0e0e0); /* Borde alrededor de cada bloque de fila */
+        padding: var(--padding-standard, 10px); /* Añade padding alrededor del contenido de la fila */
+        box-shadow: 2px 2px 5px var(--dp-responsive-row-shadow-color, rgba(0,0,0,0.1)); /* Sombra ligera para destacar los bloques */
+        background-color: var(--dp-table-row-odd-bg, #fff); /* Fondo blanco para los bloques */
+    }
+    .wrap table.widefat td {
+        border: none; /* Elimina los bordes de las celdas individuales dentro del bloque */
+        border-bottom: 1px solid var(--dp-responsive-cell-separator-color, #eee); /* Añade un borde inferior para separar visualmente las \"celdas\" */
+        position: relative; /* Necesario para posicionar el pseudo-elemento */
+        padding-left: 50%; /* Espacio a la izquierda para la etiqueta (ajusta si es necesario) */
+        text-align: right; /* Alinea el contenido a la derecha */
+        padding-top: var(--dp-button-margin-sm, 5px); /* Ajusta el padding superior */
+        padding-bottom: var(--dp-button-margin-sm, 5px); /* Ajusta el padding inferior */
+    }
+
+    /* Asegura que la última celda de cada fila (acciones) no tenga borde inferior */
+    .wrap table.widefat tr td:last-child {
+        border-bottom: 0;
+        padding-bottom: 0; /* Ajusta padding inferior para el último elemento */
+    }
+
+    /* Ajustes para los botones en pantallas pequeñas*/
+    .wrap table.widefat tr td .button {
+        padding: var(--dp-responsive-button-padding, 8px 12px);
+        display: inline-block; /* O block si quieres que ocupen todo el ancho disponible */
+        width: auto; /* O 100% si es block */
+        margin-top: var(--dp-button-margin-sm, 5px);
+        margin-left: 2px; /* Para separar botones si hay varios en la misma línea */
+        margin-right: 2px;
+    }
+    .wrap table.widefat td[data-label="Acciones:"] {
+        text-align: right; /* Mantiene la alineación del contenido a la derecha para la celda de acciones */
+    }
+    .wrap table.widefat td[data-label="Acciones:"] .button {
+        float: none; /* Asegurar que no floten si se usa text-align: right en td */
+    }
+
+    /* Añade la etiqueta del encabezado usando un pseudo-elemento */
+    .wrap table.widefat td:before {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        left: var(--dp-responsive-label-left-offset, 10px); /* Ajusta la posición horizontal de la etiqueta */
+        width: calc(50% - 20px); /* Ancho para la etiqueta, dejando espacio */
+        padding-right: var(--dp-responsive-label-padding-right, 10px);
+        white-space: nowrap; /* Evita que el texto de la etiqueta se rompa */
+        content: attr(data-label); /* Usa el atributo data-label para el texto de la etiqueta */
+        font-weight: bold;
+        text-align: left; /* Alinea la etiqueta a la izquierda */
+        color: var(--text-color-dark, #333); /* Color para las etiquetas */
+    }
+      /* Ajuste para los enlaces de mapas en pantallas pequeñas */
+     .wrap table.widefat td .map-link { /* Aplicar a todos los map-link dentro de td en responsive */
+         display: block; /* Cada enlace en su propia línea */
+         margin-top: var(--dp-button-margin-sm, 5px); /* Espacio encima del enlace */
+         text-align: left; /* Alinea los enlaces de mapas a la izquierda */
+         /* Si el td tiene text-align: right, esto asegura que el enlace mismo se alinee a la izquierda dentro de su bloque */
+     }
+}
+
+/* assets/css/driver-panel.css */
+#driver-panel-feedback.feedback-messages-container {
+    margin-bottom: 15px;
+    /* Puedes añadir más estilos aquí si es necesario para los mensajes */
+}
+.feedback-messages-container .feedback-message {
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    border: 1px solid transparent;
+}
+.feedback-messages-container .feedback-message.success {
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+    color: #155724;
+}
+.feedback-messages-container .feedback-message.error {
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+    color: #721c24;
+}
+.feedback-messages-container .feedback-message.info {
+    background-color: #d1ecf1;
+    border-color: #bee5eb;
+    color: #0c5460;
+}
