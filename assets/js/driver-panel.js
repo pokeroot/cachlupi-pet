@@ -1,226 +1,273 @@
-(function($) { // Añade esta línea al principio
-
-    jQuery(document).ready(function($) {
-        // Check if cachilupi_driver_vars is defined (should be by wp_localize_script)
-        if (typeof cachilupi_driver_vars !== 'undefined') {
-
-            // Function to show feedback messages in the driver panel
-            function showDriverPanelFeedback(message, type = 'success') {
-                var $feedbackContainer = $('#driver-panel-feedback'); // Assumes an element with this ID exists
-                if (!$feedbackContainer.length) {
-                    // Fallback: create a container if it doesn't exist, or prepend to .wrap
-                    $feedbackContainer = $('<div>').attr('id', 'driver-panel-feedback').addClass('feedback-messages-container').css('margin-bottom', '15px');
-                    $('.wrap h1').first().after($feedbackContainer); // Insert after the main title
-                }
-                $feedbackContainer.empty(); // Clear previous messages
-
-                var messageElement = $('<div>').addClass('feedback-message').addClass(type)
-                    .text(message)
-                    .appendTo($feedbackContainer);
-
-                setTimeout(function() {
-                    messageElement.fadeOut('slow', function() {
-                        $(this).remove();
-                    });
-                }, 5000); // 5 seconds
-            }
-
-            // Variables para el seguimiento de ubicación del conductor
-            var locationWatchId = null;
-            var currentTrackingRequestId = null;
-
-            // Add click listeners to all action buttons using the data-action attribute for broader selection
-            // Ensure your buttons in HTML have the `data-action` attribute
-            $(document).on('click', '.button[data-request-id][data-action]', function(e) {
-                e.preventDefault(); // Prevent default button behavior
-
-                var $button = $(this);
-                var requestId = $button.data('request-id');
-                var action = $button.data('action'); // Determine the action using the data-action attribute
-                var $row = $button.closest('tr'); // Get the table row for this request
-
-                if (!action) {
-                    console.error('Button is missing data-action attribute or it is empty.');
-                    return; // Exit if no action is determined
-                }
-
-                console.log('Handling action for Request ID: ' + requestId + ' Action: ' + action);
-
-                // Disable all action buttons in the current row while processing
-                $row.find('.button[data-action]').prop('disabled', true);
-
-                // Perform AJAX request
-                $.ajax({
-                    url: cachilupi_driver_vars.ajaxurl, // WordPress AJAX URL
-                    type: 'POST',
-                    data: {
-                        action: 'cachilupi_pet_driver_action', // The AJAX action defined in PHP
-                        security: cachilupi_driver_vars.driver_action_nonce, // The nonce for verification
-                        request_id: requestId,
-                        driver_action: action // The specific action (accept, reject, arrive, complete)
-                    },
-                    success: function(response) {
-                        console.log('AJAX Success:', response);
-
-                        if (response.success) {
-                            // Update status text with the translated version from PHP
-                            if (response.data && response.data.new_status_display) {
-                                $row.find('.request-status').text(response.data.new_status_display);
-                            }
-
-                            // Hide all action buttons in the row first, then show the appropriate ones
-                            $row.find('.button[data-action]').hide();
-
-                            if (action === 'accept') {
-                                // Status is 'accepted'. Show "Iniciar Viaje" button.
-                                $row.find('.button[data-action="on_the_way"]').show();
-                                showDriverPanelFeedback('Solicitud aceptada.', 'success');
-                            } else if (action === 'reject') {
-                                // Request is rejected, remove the row
-                                $row.fadeOut('slow', function() {
-                                    $(this).remove();
-                                });
-                                showDriverPanelFeedback('Solicitud rechazada.', 'success');
-                            } else if (action === 'on_the_way') {
-                                // Status is 'on_the_way'. Show "He Llegado al Origen" button.
-                                $row.find('.button[data-action="arrive"]').show();
-                                showDriverPanelFeedback('Viaje iniciado.', 'success');
-                                // Iniciar seguimiento de ubicación
-                                startLocationTracking(requestId);
-                            } else if (action === 'arrive') {
-                                // Status is 'arrived'. Show "Completar Viaje" button.
-                                $row.find('.button[data-action="complete"]').show();
-                                showDriverPanelFeedback('Llegada confirmada.', 'success');
-                                // Detener seguimiento de ubicación
-                                stopLocationTracking();
-                            } else if (action === 'complete') {
-                                // All buttons remain hidden, or row could be removed/styled differently
-                                showDriverPanelFeedback('Servicio completado.', 'success');
-                                // Detener seguimiento de ubicación si aún estaba activo
-                                stopLocationTracking();
-                                // Example: Fade out completed row after a delay if desired
-                                // $row.delay(3000).fadeOut('slow', function() { $(this).remove(); });
-                            }
-
-                            // Si la acción fue 'reject' y el viaje estaba siendo rastreado, detenerlo.
-                            // Esto es un caso borde, ya que 'reject' usualmente es para 'pending'.
-                            if (action === 'reject' && currentTrackingRequestId === requestId) {
-                                stopLocationTracking();
-                            }
-
-                            // Ensure any newly shown buttons are enabled
-                            $row.find('.button[data-action]:visible').prop('disabled', false);
-                        } else {
-                            var errorMessage = response.data && response.data.message ? response.data.message : 'Ocurrió un error al procesar la acción.';
-                            showDriverPanelFeedback('Error: ' + errorMessage, 'error');
-                            console.error('AJAX Error Response:', errorMessage);
-                            // Re-enable the clicked button if there was an error
-                            $button.prop('disabled', false);
-                        }
-                    },
-                    error: function(jqXHR, textStatus, errorThrown) {
-                        // Handle AJAX request errors
-                        console.error('AJAX Request Failed:', textStatus, errorThrown, jqXHR.responseText);
-                        showDriverPanelFeedback('Fallo en la comunicación con el servidor: ' + textStatus, 'error');
-                    },
-                    complete: function() {
-                        // Re-enable visible buttons in the row, unless the row was removed (e.g., after reject)
-                        if ($row.closest('body').length) { // Check if row still exists in DOM
-                            $row.find('.button[data-action]:visible').prop('disabled', false);
-                        }
-                    }
-                });
-            });
-
-            function startLocationTracking(requestId) {
-                if (navigator.geolocation) {
-                    // Detener cualquier seguimiento anterior
-                    stopLocationTracking();
-                    currentTrackingRequestId = requestId;
-                    console.log('Iniciando seguimiento de ubicación para Request ID:', currentTrackingRequestId);
-
-                    locationWatchId = navigator.geolocation.watchPosition(
-                        function(position) {
-                            var lat = position.coords.latitude;
-                            var lon = position.coords.longitude;
-                            console.log('Ubicación obtenida:', lat, lon, 'para Request ID:', currentTrackingRequestId);
-                            sendLocationUpdate(currentTrackingRequestId, lat, lon);
-                        },
-                        function(error) {
-                            console.error('Error al obtener ubicación del conductor:', error.message, 'Code:', error.code);
-                            let userMessage = 'Error al obtener ubicación: ';
-                            switch(error.code) {
-                                case error.PERMISSION_DENIED:
-                                    userMessage += 'Permiso denegado. Por favor, habilita los servicios de ubicación en tu navegador/dispositivo.';
-                                    // Detener el seguimiento si el permiso es denegado, ya que no funcionará.
-                                    stopLocationTracking();
-                                    break;
-                                case error.POSITION_UNAVAILABLE:
-                                    userMessage += 'Información de ubicación no disponible en este momento. Verifica tu señal GPS.';
-                                    break;
-                                case error.TIMEOUT:
-                                    userMessage += 'Se agotó el tiempo de espera para obtener la ubicación. Intenta moverte a un lugar con mejor señal.';
-                                    break;
-                                default:
-                                    userMessage += error.message;
-                                    break;
-                            }
-                            showDriverPanelFeedback(userMessage, 'error');
-                        },
-                        {
-                            enableHighAccuracy: true,
-                            timeout: 15000, // Tiempo máximo para obtener una posición (incrementado ligeramente)
-                            maximumAge: 0 // No usar caché de posición
-                        }
-                    );
-                } else {
-                    console.error('Geolocalización no es soportada por este navegador.');
-                    showDriverPanelFeedback('Geolocalización no soportada.', 'error');
-                }
-                showDriverPanelFeedback('Compartiendo ubicación para la solicitud #' + requestId + '.', 'info');
-            }
-
-            function stopLocationTracking() {
-                if (locationWatchId !== null) {
-                    navigator.geolocation.clearWatch(locationWatchId);
-                    locationWatchId = null;
-                    console.log('Seguimiento de ubicación detenido para Request ID:', currentTrackingRequestId);
-                    if (currentTrackingRequestId) {
-                        showDriverPanelFeedback('Se ha detenido el compartir ubicación para la solicitud #' + currentTrackingRequestId + '.', 'info');
-                    }
-                    currentTrackingRequestId = null;
-                }
-            }
-
-            function sendLocationUpdate(requestId, latitude, longitude) {
-                if (!requestId) return;
-                $.ajax({
-                    url: cachilupi_driver_vars.ajaxurl,
-                    type: 'POST',
-                    data: {
-                        action: 'cachilupi_update_driver_location',
-                        security: cachilupi_driver_vars.update_location_nonce,
-                        request_id: requestId,
-                        latitude: latitude,
-                        longitude: longitude
-                    },
-                    success: function(response) {
-                        if (response.success) {
-                            console.log('Ubicación del conductor actualizada en el servidor.');
-                        } else {
-                            console.warn('Fallo al actualizar ubicación del conductor en el servidor:', response.data ? response.data.message : 'Error desconocido');
-                        }
-                    },
-                    error: function(jqXHR, textStatus, errorThrown) {
-                        console.error('Error AJAX al enviar actualización de ubicación:', textStatus, errorThrown);
-                    }
-                });
-            }
-
-
-        } else {
+(function($) { // IIFE remains for jQuery DOM usage
+    jQuery(document).ready(($) => { // Arrow function for ready callback
+        if (typeof cachilupi_driver_vars === 'undefined') {
             console.error('cachilupi_driver_vars is not defined. wp_localize_script might not be working.');
+            return; // Exit if config is missing
         }
-    });
 
-})(jQuery); // Añade esta línea al final
+        const showDriverPanelFeedback = (message, type = 'success') => {
+            let $feedbackContainer = $('#driver-panel-feedback');
+            if (!$feedbackContainer.length) {
+                // If the specific container doesn't exist, create it or find a suitable fallback.
+                // For now, let's assume it should exist or be created by other means if necessary.
+                // As a simple fallback, create it after the main title if a .wrap h1 exists.
+                const $mainTitle = $('.wrap h1').first();
+                if ($mainTitle.length) {
+                    $feedbackContainer = $('<div>').attr('id', 'driver-panel-feedback');
+                    $mainTitle.after($feedbackContainer);
+                } else {
+                    // If no .wrap h1, prepend to .wrap or body as a last resort (less ideal)
+                    // This part might need theme-specific adjustments if #driver-panel-feedback isn't guaranteed.
+                    // For now, we'll log an error if no good place is found.
+                    console.error("Feedback container #driver-panel-feedback not found and couldn't be created.");
+                    return;
+                }
+            }
+
+            $feedbackContainer.empty(); // Clear previous messages
+
+            const feedbackClass = `cachilupi-feedback cachilupi-feedback--${type}`;
+            const messageElement = $('<div>')
+                .addClass(feedbackClass)
+                .text(message);
+
+            // ARIA roles for accessibility
+            if (type === 'error') {
+                messageElement.attr('role', 'alert');
+                messageElement.attr('aria-live', 'assertive'); // Ensures it's read immediately by screen readers
+            } else {
+                messageElement.attr('role', 'status');
+                messageElement.attr('aria-live', 'polite'); // Read when the user is idle
+            }
+
+            messageElement.appendTo($feedbackContainer);
+
+            setTimeout(() => {
+                messageElement.fadeOut('slow', () => {
+                    messageElement.remove();
+                });
+            }, 5000); // Auto-hide after 5 seconds
+        };
+
+        let locationWatchId = null;
+        let currentTrackingRequestId = null;
+
+        $(document).on('click', '.button[data-request-id][data-action]', async (e) => { // async for await, arrow function
+            e.preventDefault();
+
+            const $button = $(e.currentTarget); // Use e.currentTarget instead of $(this)
+            const requestId = $button.data('request-id');
+            const action = $button.data('action');
+            const $row = $button.closest('tr');
+
+            if (!action) {
+                console.error('Button is missing data-action attribute or it is empty.');
+                return;
+            }
+
+            console.log(`Handling action for Request ID: ${requestId} Action: ${action}`);
+
+            // Disable all buttons in the row to prevent multiple clicks
+            const $actionButtonsInRow = $row.find('.button[data-action]');
+            $actionButtonsInRow.prop('disabled', true);
+
+            // Add loading state to the clicked button
+            const originalButtonText = $button.text();
+            $button.addClass('cachilupi-button--loading').text('Procesando...');
+
+
+            const formData = new FormData();
+            formData.append('action', 'cachilupi_pet_driver_action');
+            formData.append('security', cachilupi_driver_vars.driver_action_nonce);
+            formData.append('request_id', requestId);
+            formData.append('driver_action', action);
+
+            try {
+                const response = await fetch(cachilupi_driver_vars.ajaxurl, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Network response was not ok: ${response.statusText}`);
+                }
+
+                const responseData = await response.json();
+                console.log('Fetch Success:', responseData);
+
+                if (responseData.success) {
+                    if (responseData.data && responseData.data.new_status_display) {
+                        $row.find('.request-status').text(responseData.data.new_status_display);
+                    }
+
+                    $row.find('.button[data-action]').hide();
+
+                    if (action === 'accept') {
+                        $row.find('.button[data-action="on_the_way"]').show();
+                        showDriverPanelFeedback('Solicitud aceptada.', 'success');
+                    } else if (action === 'reject') {
+                        $row.fadeOut('slow', () => {
+                            $row.remove(); // Use $row directly
+                        });
+                        showDriverPanelFeedback('Solicitud rechazada.', 'success');
+                    } else if (action === 'on_the_way') {
+                        $row.find('.button[data-action="arrive"]').show();
+                        showDriverPanelFeedback('Viaje iniciado.', 'success');
+                        startLocationTracking(requestId);
+                    } else if (action === 'arrive') {
+                        $row.find('.button[data-action="complete"]').show();
+                        showDriverPanelFeedback('Llegada confirmada.', 'success');
+                        stopLocationTracking();
+                    } else if (action === 'complete') {
+                        showDriverPanelFeedback('Servicio completado.', 'success');
+                        stopLocationTracking();
+                        // $row.delay(3000).fadeOut('slow', () => { $row.remove(); });
+                    }
+
+                    if (action === 'reject' && currentTrackingRequestId === requestId) {
+                        stopLocationTracking();
+                    }
+
+                    $row.find('.button[data-action]:visible').prop('disabled', false);
+                } else {
+                    const errorMessage = responseData.data && responseData.data.message ? responseData.data.message : 'Ocurrió un error al procesar la acción.';
+                    showDriverPanelFeedback(`Error: ${errorMessage}`, 'error');
+                    console.error('Fetch Error Response:', errorMessage);
+                    // $button.prop('disabled', false); // Handled by finally
+                }
+            } catch (error) {
+                console.error('Fetch Request Failed:', error);
+                showDriverPanelFeedback(`Fallo en la comunicación con el servidor: ${error.message}`, 'error');
+                // $button.prop('disabled', false); // Handled by finally
+            } finally {
+                // Restore the clicked button state (text, loading class)
+                $button.removeClass('cachilupi-button--loading').text(originalButtonText);
+
+                // Re-enable appropriate buttons.
+                // If the row still exists (i.e., action was not 'reject' or a similar row-removing action)
+                if ($row.closest('body').length) {
+                    // If the original button is still meant to be visible (e.g., an error occurred, or it's an action that doesn't hide itself)
+                    if ($button.is(':visible')) {
+                        $button.prop('disabled', false);
+                    }
+                    // Ensure any other buttons that became visible (due to state change) are enabled,
+                    // and those that were hidden remain disabled (or are handled by earlier .hide())
+                    $row.find('.button[data-action]:visible').prop('disabled', false);
+                }
+                // If a 'reject' action was successful, the row is removed, so no buttons in it need specific re-enabling.
+            }
+        });
+
+        // --- startLocationTracking, stopLocationTracking, sendLocationUpdate will be refactored next ---
+        // For now, keeping them as they are to do this step-by-step.
+        const startLocationTracking = (requestId) => {
+            if (navigator.geolocation) {
+                stopLocationTracking(); // Stop any previous tracking
+                currentTrackingRequestId = requestId;
+                console.log(`Iniciando seguimiento de ubicación para Request ID: ${currentTrackingRequestId}`);
+
+                locationWatchId = navigator.geolocation.watchPosition(
+                    (position) => {
+                        const lat = position.coords.latitude;
+                        const lon = position.coords.longitude;
+                        console.log(`Ubicación obtenida: ${lat}, ${lon} para Request ID: ${currentTrackingRequestId}`);
+                        sendLocationUpdate(currentTrackingRequestId, lat, lon);
+                    },
+                    (error) => {
+                        console.error(`Error al obtener ubicación del conductor: ${error.message}, Code: ${error.code}`);
+                        let userMessage = 'Error al obtener ubicación: ';
+                        switch (error.code) {
+                            case error.PERMISSION_DENIED:
+                                userMessage += 'Permiso denegado. Por favor, habilita los servicios de ubicación.';
+                                stopLocationTracking(); // Stop trying if permission is denied
+                                break;
+                            case error.POSITION_UNAVAILABLE:
+                                userMessage += 'Información de ubicación no disponible. Verifica tu señal GPS.';
+                                break;
+                            case error.TIMEOUT:
+                                userMessage += 'Se agotó el tiempo de espera para obtener la ubicación.';
+                                break;
+                            default:
+                                userMessage += error.message;
+                                break;
+                        }
+                        showDriverPanelFeedback(userMessage, 'error');
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 15000,
+                        maximumAge: 0
+                    }
+                );
+                showDriverPanelFeedback(`Compartiendo ubicación para la solicitud #${requestId}.`, 'info');
+            } else {
+                console.error('Geolocalización no es soportada por este navegador.');
+                showDriverPanelFeedback('Geolocalización no soportada.', 'error');
+            }
+        };
+
+        const stopLocationTracking = () => {
+            if (locationWatchId !== null) {
+                navigator.geolocation.clearWatch(locationWatchId);
+                locationWatchId = null;
+                console.log(`Seguimiento de ubicación detenido para Request ID: ${currentTrackingRequestId}`);
+                if (currentTrackingRequestId) {
+                    showDriverPanelFeedback(`Se ha detenido el compartir ubicación para la solicitud #${currentTrackingRequestId}.`, 'info');
+                }
+                currentTrackingRequestId = null; // Clear the ID once tracking is stopped
+            }
+        };
+
+        const sendLocationUpdate = async (requestId, latitude, longitude) => {
+            if (!requestId) {
+                console.warn('sendLocationUpdate: requestId is missing.');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('action', 'cachilupi_update_driver_location');
+            formData.append('security', cachilupi_driver_vars.update_location_nonce);
+            formData.append('request_id', requestId);
+            formData.append('latitude', latitude);
+            formData.append('longitude', longitude);
+
+            try {
+                const response = await fetch(cachilupi_driver_vars.ajaxurl, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    // Try to get error message from response body if available
+                    let errorData = null;
+                    try {
+                        errorData = await response.json();
+                    } catch (e) {
+                        // Ignore if response is not json
+                    }
+                    const serverMessage = errorData && errorData.data && errorData.data.message ? errorData.data.message : response.statusText;
+                    throw new Error(`Network response was not ok: ${serverMessage}`);
+                }
+
+                const responseData = await response.json();
+
+                if (responseData.success) {
+                    console.log('Ubicación del conductor actualizada en el servidor.');
+                    // Optionally, provide feedback if the status code indicates "no_change"
+                    if (responseData.data && responseData.data.status_code === 'no_change') {
+                        console.log('Ubicación sin cambios significativos en el servidor.');
+                    }
+                } else {
+                    const message = responseData.data && responseData.data.message ? responseData.data.message : 'Error desconocido del servidor.';
+                    console.warn(`Fallo al actualizar ubicación del conductor en el servidor: ${message}`);
+                    // Do not show feedback for every location update failure to avoid spamming the UI,
+                    // but log it for debugging. The watchPosition error handler will show more persistent errors.
+                }
+            } catch (error) {
+                console.error('Error Fetch al enviar actualización de ubicación:', error.message);
+                // Similarly, avoid spamming UI for transient network issues during background tracking.
+                // showDriverPanelFeedback(`Error de red al actualizar ubicación: ${error.message}`, 'error');
+            }
+        };
+    });
+})(jQuery);
