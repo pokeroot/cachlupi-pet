@@ -20,6 +20,7 @@
         let submitButton = document.getElementById('submit-service-request');
         let petTypeSelect = document.getElementById('cachilupi-pet-pet-type');
         let notesTextArea = document.getElementById('cachilupi-pet-notes');
+        let petInstructionsTextArea = document.getElementById('cachilupi-pet-instructions');
         let distanceElement = document.getElementById('cachilupi-pet-distance');
 
         let pickupGeocoder = null;
@@ -379,6 +380,7 @@
                 }
                 if (petTypeSelect) petTypeSelect.addEventListener('change', () => validateForm(true));
                 if (notesTextArea) notesTextArea.addEventListener('input', () => validateForm(true));
+                if (petInstructionsTextArea) petInstructionsTextArea.addEventListener('input', () => validateForm(true)); // No specific validation, but trigger main validation flow
 
                 if (submitButton) {
                     submitButton.addEventListener('click', async (event) => { // Made async
@@ -394,6 +396,7 @@
                         const dropoffAddress = dropoffGeocoderInput ? dropoffGeocoderInput.value : '';
                         const petType = petTypeSelect ? petTypeSelect.value : '';
                         const notes = notesTextArea ? notesTextArea.value : '';
+                        const petInstructions = petInstructionsTextArea ? petInstructionsTextArea.value : '';
                         const serviceDate = serviceDateInput ? serviceDateInput.value : '';
                         const serviceTime = serviceTimeInput ? serviceTimeInput.value : '';
                         let scheduledDateTime;
@@ -418,6 +421,7 @@
                             dropoff_lon: dropoffCoords ? dropoffCoords.lng : 0.0,
                             pet_type: petType,
                             notes: notes,
+                            pet_instructions: petInstructions,
                         };
 
                         const formData = new FormData();
@@ -456,6 +460,7 @@
                                 if (serviceTimeInput) serviceTimeInput.value = '';
                                 if (petTypeSelect) petTypeSelect.value = '';
                                 if (notesTextArea) notesTextArea.value = '';
+                                if (petInstructionsTextArea) petInstructionsTextArea.value = '';
                                 if (pickupMarker) pickupMarker.remove();
                                 if (dropoffMarker) dropoffMarker.remove();
                                 if (map && map.getLayer('route')) map.removeLayer('route');
@@ -494,6 +499,7 @@
             if (!serviceTimeInput) serviceTimeInput = document.getElementById('service-time');
             if (!petTypeSelect) petTypeSelect = document.getElementById('cachilupi-pet-pet-type');
             if (!notesTextArea) notesTextArea = document.getElementById('cachilupi-pet-notes');
+            if (!petInstructionsTextArea) petInstructionsTextArea = document.getElementById('cachilupi-pet-instructions');
             if (!submitButton) submitButton = document.getElementById('submit-service-request');
             pickupGeocoderInput = document.getElementById('pickup-location-input'); // These are just standard inputs now
             dropoffGeocoderInput = document.getElementById('dropoff-location-input');
@@ -538,6 +544,8 @@
             }
             if (petTypeSelect) petTypeSelect.addEventListener('change', validateFormNoMap);
             if (notesTextArea) notesTextArea.addEventListener('input', validateFormNoMap);
+            if (petInstructionsTextArea) petInstructionsTextArea.addEventListener('input', validateFormNoMap); // No specific validation, but trigger main validation flow
+
 
             if (submitButton) {
                 submitButton.addEventListener('click', async (event) => { // Made async
@@ -552,6 +560,7 @@
                         const dropoffAddress = dropoffGeocoderInput ? dropoffGeocoderInput.value : '';
                         const petType = petTypeSelect ? petTypeSelect.value : '';
                         const notes = notesTextArea ? notesTextArea.value : '';
+                        const petInstructions = petInstructionsTextArea ? petInstructionsTextArea.value : '';
                         const serviceDate = serviceDateInput ? serviceDateInput.value : '';
                         const serviceTime = serviceTimeInput ? serviceTimeInput.value : '';
                         const scheduledDateTime = (serviceDate && serviceTime) ? `${serviceDate} ${serviceTime}:00` : '';
@@ -560,7 +569,7 @@
                             scheduled_date_time: scheduledDateTime,
                             pickup_address: pickupAddress, pickup_lat: 0.0, pickup_lon: 0.0,
                             dropoff_address: dropoffAddress, dropoff_lat: 0.0, dropoff_lon: 0.0,
-                            pet_type: petType, notes: notes,
+                            pet_type: petType, notes: notes, pet_instructions: petInstructions,
                         };
 
                         const formData = new FormData();
@@ -596,6 +605,7 @@
                                 if (serviceTimeInput) serviceTimeInput.value = '';
                                 if (petTypeSelect) petTypeSelect.value = '';
                                 if (notesTextArea) notesTextArea.value = '';
+                                if (petInstructionsTextArea) petInstructionsTextArea.value = '';
                                 if (distanceElement) distanceElement.textContent = '';
                                 validateForm(false);
                             } else {

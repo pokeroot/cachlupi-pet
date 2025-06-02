@@ -115,9 +115,18 @@
                         showDriverPanelFeedback('Viaje iniciado.', 'success');
                         startLocationTracking(requestId);
                     } else if (action === 'arrive') {
+                        // After 'arrive', both 'picked_up' and 'complete' might be available
+                        // The PHP renders them. The JS just needs to make sure they are shown
+                        // if they were hidden by the initial blanket hide.
+                        $row.find('.button[data-action="picked_up"]').show();
                         $row.find('.button[data-action="complete"]').show();
                         showDriverPanelFeedback('Llegada confirmada.', 'success');
                         stopLocationTracking();
+                    } else if (action === 'picked_up') {
+                        $row.find('.button[data-action="picked_up"]').hide(); // Hide itself
+                        $row.find('.button[data-action="complete"]').show(); // Ensure complete is visible
+                        showDriverPanelFeedback('Mascota recogida.', 'success');
+                        // Location tracking continues until 'complete'
                     } else if (action === 'complete') {
                         showDriverPanelFeedback('Servicio completado.', 'success');
                         stopLocationTracking();
@@ -269,5 +278,76 @@
                 // showDriverPanelFeedback(`Error de red al actualizar ubicación: ${error.message}`, 'error');
             }
         };
+
+        // --- Real-time New Request Notifications ---
+        let lastKnownRequestTimestamp = 0; // Or initialize from localStorage if preferred
+        const POLLING_INTERVAL = 20000; // 20 seconds
+
+        const showNewRequestNotification = (count) => {
+            let $notificationArea = $('#driver-new-requests-notification');
+            if (!$notificationArea.length) {
+                $notificationArea = $('<div id="driver-new-requests-notification"></div>').prependTo('.wrap');
+            }
+            const message = count > 1 
+                ? `Hay ${count} nuevas solicitudes pendientes.` 
+                : `Hay ${count} nueva solicitud pendiente.`;
+            
+            $notificationArea.html(`${message} <a href="#" onclick="location.reload(); return false;">Actualizar página</a>`)
+                             .slideDown();
+            
+            // Optional: Play a sound
+            // const audio = new Audio('path/to/notification-sound.mp3');
+            // audio.play().catch(e => console.warn("Error playing sound:", e));
+        };
+
+        const checkNewRequests = async () => {
+            if (typeof cachilupi_driver_vars === 'undefined' || !cachilupi_driver_vars.check_new_requests_nonce) {
+                console.error('check_new_requests_nonce is not defined in cachilupi_driver_vars.');
+                // Stop polling if critical variables are missing
+                if (requestPollingIntervalId) {
+                    clearInterval(requestPollingIntervalId);
+                }
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('action', 'cachilupi_check_new_requests');
+            formData.append('security', cachilupi_driver_vars.check_new_requests_nonce);
+            // formData.append('driver_id', cachilupi_driver_vars.driver_id); // Assuming driver_id is available if needed by backend
+            // formData.append('last_checked_timestamp', lastKnownRequestTimestamp); // For more advanced filtering
+
+            try {
+                const response = await fetch(cachilupi_driver_vars.ajaxurl, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    console.warn(`checkNewRequests: Network response was not ok: ${response.statusText}`);
+                    return; // Don't process further if network error
+                }
+
+                const responseData = await response.json();
+
+                if (responseData.success && responseData.data && responseData.data.new_requests_count > 0) {
+                    showNewRequestNotification(responseData.data.new_requests_count);
+                    // lastKnownRequestTimestamp = responseData.data.latest_request_timestamp; // Update if using timestamp
+                    // Potentially hide the notification after a while or if user clicks refresh
+                } else if (!responseData.success) {
+                    console.warn(`checkNewRequests: Server error - ${responseData.data ? responseData.data.message : 'Unknown error'}`);
+                }
+            } catch (error) {
+                console.error('checkNewRequests: Fetch Request Failed:', error);
+            }
+        };
+
+        // Start polling if the driver panel is visible
+        // Check if we are on the driver panel page (e.g. by checking for a specific element)
+        if ($('table.widefat').length > 0) { // Simple check, assumes table is always there on this panel
+            const requestPollingIntervalId = setInterval(checkNewRequests, POLLING_INTERVAL);
+            // Initial check soon after page load
+            setTimeout(checkNewRequests, 2000); 
+        }
+
     });
 })(jQuery);
