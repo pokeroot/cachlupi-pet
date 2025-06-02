@@ -172,7 +172,9 @@ function cachilupi_pet_generic_login_error( $errors ) {
     if ( ! empty( $errors ) ) {
         // Reemplaza cualquier mensaje de error de login por un mensaje genérico.
         // Esto cubre errores de usuario/email incorrecto y contraseña incorrecta.
-        $errors = '<p class="login-error-message"><strong>Error:</strong> Nombre de usuario o contraseña incorrectos.</p>';
+        $error_title = esc_html__( 'Error', 'cachilupi-pet' );
+        $error_message = esc_html__( 'Nombre de usuario o contraseña incorrectos.', 'cachilupi-pet' );
+        $errors = sprintf( '<p class="login-error-message"><strong>%s:</strong> %s</p>', $error_title, $error_message );
     }
     return $errors;
 }
@@ -222,10 +224,7 @@ function cachilupi_pet_driver_panel_shortcode() {
     // Check if user is logged in and has the 'driver' role
     $user = wp_get_current_user();
     if ( ! is_user_logged_in() || ! in_array( 'driver', (array) $user->roles ) ) {
-        // Si no está logueado o no es conductor, puedes redirigir o mostrar un mensaje
-        // Redirigir es a menudo una mejor UX para áreas restringidas
-        // wp_redirect( home_url('/pagina-de-acceso-restringido/') ); exit;
-        return '<p>Debes iniciar sesión como conductor para acceder a este panel.</p>';
+        return '<p>' . esc_html__( 'Debes iniciar sesión como conductor para acceder a este panel.', 'cachilupi-pet' ) . '</p>';
     }
 
     ob_start(); // Start output buffering
@@ -249,48 +248,44 @@ function cachilupi_pet_driver_panel_shortcode() {
 
     ?>
     <div class="wrap">
-        <h2>Panel del Conductor</h2>
+        <h2><?php esc_html_e('Panel del Conductor', 'cachilupi-pet'); ?></h2>
         <div id="driver-panel-feedback" class="feedback-messages-container" style="margin-bottom: 15px;"></div>
 
         <?php if ( $driver_requests ) : ?>
             <table class="widefat fixed" cellspacing="0">
                 <thead>
                     <tr>
-                        <th class="manage-column column-columnname" scope="col">ID</th>
-                        <th class="manage-column column-columnname" scope="col">Fecha y Hora</th>
-                        <th class="manage-column column-columnname" scope="col">Origen</th>
-                        <th class="manage-column column-columnname" scope="col">Cliente</th>
-                        <th class="manage-column column-columnname" scope="col">Destino</th>
-                        <th class="manage-column column-columnname" scope="col">Estado</th>
-                        <th class="manage-column column-columnname" scope="col">Mascota</th>
-                        <th class="manage-column column-columnname" scope="col">Notas</th>
-                        <th class="manage-column column-columnname" scope="col">Acciones</th>
+                        <th class="manage-column column-columnname" scope="col"><?php esc_html_e('ID', 'cachilupi-pet'); ?></th>
+                        <th class="manage-column column-columnname" scope="col"><?php esc_html_e('Fecha y Hora', 'cachilupi-pet'); ?></th>
+                        <th class="manage-column column-columnname" scope="col"><?php esc_html_e('Origen', 'cachilupi-pet'); ?></th>
+                        <th class="manage-column column-columnname" scope="col"><?php esc_html_e('Cliente', 'cachilupi-pet'); ?></th>
+                        <th class="manage-column column-columnname" scope="col"><?php esc_html_e('Destino', 'cachilupi-pet'); ?></th>
+                        <th class="manage-column column-columnname" scope="col"><?php esc_html_e('Estado', 'cachilupi-pet'); ?></th>
+                        <th class="manage-column column-columnname" scope="col"><?php esc_html_e('Mascota', 'cachilupi-pet'); ?></th>
+                        <th class="manage-column column-columnname" scope="col"><?php esc_html_e('Notas', 'cachilupi-pet'); ?></th>
+                        <th class="manage-column column-columnname" scope="col"><?php esc_html_e('Acciones', 'cachilupi-pet'); ?></th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php foreach ( $driver_requests as $request ) : ?>
                         <tr data-request-id="<?php echo esc_attr( $request->id ); ?>">
-                            <td class="column-columnname" data-label="ID:"><?php echo esc_html( $request->id ); ?></td>
-                            <td class="column-columnname" data-label="Fecha y Hora:"><?php echo esc_html( date( 'd/m/Y H:i', strtotime( $request->time ) ) ); ?></td>
-                             <td class="column-columnname" data-label="Origen:">
+                            <td class="column-columnname" data-label="<?php esc_attr_e('ID:', 'cachilupi-pet'); ?>"><?php echo esc_html( $request->id ); ?></td>
+                            <td class="column-columnname" data-label="<?php esc_attr_e('Fecha y Hora:', 'cachilupi-pet'); ?>"><?php echo esc_html( date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), strtotime( $request->time ) ) ); ?></td>
+                             <td class="column-columnname" data-label="<?php esc_attr_e('Origen:', 'cachilupi-pet'); ?>">
                                 <?php echo esc_html( $request->pickup_address ); ?>
                                 <br>
-                                <a href="https://www.google.com/maps/dir/?api=1&destination=<?php echo urlencode($request->pickup_address); ?>" target="_blank" class="map-link">Ver en Google Maps</a>
-                                <?php // Puedes añadir un enlace a Waze si lo prefieres ?>
-                                <?php /* <a href="https://waze.com/ul?q=<?php echo urlencode($request->pickup_address); ?>&navigate=yes" target="_blank" class="map-link">Ver en Waze</a> */ ?>
+                                <a href="https://www.google.com/maps/dir/?api=1&destination=<?php echo urlencode($request->pickup_address); ?>" target="_blank" class="map-link"><?php esc_html_e('Ver en Google Maps', 'cachilupi-pet'); ?></a>
                             </td>
-                            <td class="column-columnname" data-label="Cliente:"><?php echo esc_html( $request->client_name ? $request->client_name : 'N/A' ); ?></td>
-                             <td class="column-columnname" data-label="Destino:">
+                            <td class="column-columnname" data-label="<?php esc_attr_e('Cliente:', 'cachilupi-pet'); ?>"><?php echo esc_html( $request->client_name ? $request->client_name : __('N/A', 'cachilupi-pet') ); ?></td>
+                             <td class="column-columnname" data-label="<?php esc_attr_e('Destino:', 'cachilupi-pet'); ?>">
                                 <?php echo esc_html( $request->dropoff_address ); ?>
                                 <br>
-                                <a href="https://www.google.com/maps/dir/?api=1&destination=<?php echo urlencode($request->dropoff_address); ?>" target="_blank" class="map-link">Ver en Google Maps</a>
-                                <?php // Puedes añadir un enlace a Waze si lo prefieres ?>
-                                <?php /* <a href="https://waze.com/ul?q=<?php echo urlencode($request->dropoff_address); ?>&navigate=yes" target="_blank" class="map-link">Ver en Waze</a> */ ?>
+                                <a href="https://www.google.com/maps/dir/?api=1&destination=<?php echo urlencode($request->dropoff_address); ?>" target="_blank" class="map-link"><?php esc_html_e('Ver en Google Maps', 'cachilupi-pet'); ?></a>
                             </td>
-                            <td class="column-columnname request-status" data-label="Estado:"><?php echo esc_html( cachilupi_pet_translate_status( $request->status ) ); ?></td>
-                            <td class="column-columnname" data-label="Mascota:"><?php echo esc_html( $request->pet_type ); ?></td>
-                            <td class="column-columnname" data-label="Notas:"><?php echo esc_html( $request->notes ); ?></td>
-                            <td class="column-columnname" data-label="Acciones:">
+                            <td class="column-columnname request-status" data-label="<?php esc_attr_e('Estado:', 'cachilupi-pet'); ?>"><?php echo esc_html( cachilupi_pet_translate_status( $request->status ) ); ?></td>
+                            <td class="column-columnname" data-label="<?php esc_attr_e('Mascota:', 'cachilupi-pet'); ?>"><?php echo esc_html( $request->pet_type ); ?></td>
+                            <td class="column-columnname" data-label="<?php esc_attr_e('Notas:', 'cachilupi-pet'); ?>"><?php echo esc_html( $request->notes ); ?></td>
+                            <td class="column-columnname" data-label="<?php esc_attr_e('Acciones:', 'cachilupi-pet'); ?>">
                                 <?php
                                 // Usamos el slug original del estado para la lógica interna
                                 $current_status_slug = strtolower( $request->status );
@@ -310,35 +305,28 @@ function cachilupi_pet_driver_panel_shortcode() {
 
                                 // Botones para el estado 'pending'
                                 if ( $current_status_slug === 'pending' && is_null($request->driver_id) ) : // Solo mostrar si no está asignado ?>
-                                    <button class="button <?php echo esc_attr($accept_class); ?>" data-request-id="<?php echo esc_attr( $request->id ); ?>" data-action="accept">Aceptar</button>
-                                    <button class="button <?php echo esc_attr($reject_class); ?>" data-request-id="<?php echo esc_attr( $request->id ); ?>" data-action="reject">Rechazar</button>
-                                    <?php // Botones para acciones futuras, ocultos inicialmente ?>
-                                    <button class="button <?php echo esc_attr($on_the_way_class); ?>" data-request-id="<?php echo esc_attr( $request->id ); ?>" data-action="on_the_way" style="display:none;">Iniciar Viaje</button>
-                                    <button class="button <?php echo esc_attr($arrive_class); ?>" data-request-id="<?php echo esc_attr( $request->id ); ?>" data-action="arrive" style="display:none;">He Llegado al Origen</button>
-                                    <button class="button <?php echo esc_attr($complete_class); ?>" data-request-id="<?php echo esc_attr( $request->id ); ?>" data-action="complete" style="display:none;">Completar Viaje</button>
+                                    <button class="button <?php echo esc_attr($accept_class); ?>" data-request-id="<?php echo esc_attr( $request->id ); ?>" data-action="accept"><?php esc_html_e('Aceptar', 'cachilupi-pet'); ?></button>
+                                    <button class="button <?php echo esc_attr($reject_class); ?>" data-request-id="<?php echo esc_attr( $request->id ); ?>" data-action="reject"><?php esc_html_e('Rechazar', 'cachilupi-pet'); ?></button>
+                                    <button class="button <?php echo esc_attr($on_the_way_class); ?>" data-request-id="<?php echo esc_attr( $request->id ); ?>" data-action="on_the_way" style="display:none;"><?php esc_html_e('Iniciar Viaje', 'cachilupi-pet'); ?></button>
+                                    <button class="button <?php echo esc_attr($arrive_class); ?>" data-request-id="<?php echo esc_attr( $request->id ); ?>" data-action="arrive" style="display:none;"><?php esc_html_e('He Llegado al Origen', 'cachilupi-pet'); ?></button>
+                                    <button class="button <?php echo esc_attr($complete_class); ?>" data-request-id="<?php echo esc_attr( $request->id ); ?>" data-action="complete" style="display:none;"><?php esc_html_e('Completar Viaje', 'cachilupi-pet'); ?></button>
                                     <?php $action_button_shown = true; ?>
                                 <?php elseif ( $current_status_slug === 'accepted' ) : ?>
-                                    <?php // Botón visible para 'accepted' ?>
-                                    <button class="button <?php echo esc_attr($on_the_way_class); ?>" data-request-id="<?php echo esc_attr( $request->id ); ?>" data-action="on_the_way">Iniciar Viaje</button>
-                                    <?php // Botones para acciones futuras, ocultos inicialmente ?>
-                                    <button class="button <?php echo esc_attr($arrive_class); ?>" data-request-id="<?php echo esc_attr( $request->id ); ?>" data-action="arrive">He Llegado al Origen</button>
-                                    <button class="button <?php echo esc_attr($complete_class); ?>" data-request-id="<?php echo esc_attr( $request->id ); ?>" data-action="complete" style="display:none;">Completar Viaje</button>
+                                    <button class="button <?php echo esc_attr($on_the_way_class); ?>" data-request-id="<?php echo esc_attr( $request->id ); ?>" data-action="on_the_way"><?php esc_html_e('Iniciar Viaje', 'cachilupi-pet'); ?></button>
+                                    <button class="button <?php echo esc_attr($arrive_class); ?>" data-request-id="<?php echo esc_attr( $request->id ); ?>" data-action="arrive"><?php esc_html_e('He Llegado al Origen', 'cachilupi-pet'); ?></button>
+                                    <button class="button <?php echo esc_attr($complete_class); ?>" data-request-id="<?php echo esc_attr( $request->id ); ?>" data-action="complete" style="display:none;"><?php esc_html_e('Completar Viaje', 'cachilupi-pet'); ?></button>
                                     <?php $action_button_shown = true; ?>
                                 <?php elseif ( $current_status_slug === 'on_the_way' ) : ?>
-                                    <?php // Botón visible para 'on_the_way' ?>
-                                    <button class="button <?php echo esc_attr($arrive_class); ?>" data-request-id="<?php echo esc_attr( $request->id ); ?>" data-action="arrive">He Llegado al Origen</button>
-                                    <?php // Botón para acción futura, oculto inicialmente ?>
-                                    <button class="button <?php echo esc_attr($complete_class); ?>" data-request-id="<?php echo esc_attr( $request->id ); ?>" data-action="complete" style="display:none;">Completar Viaje</button>
+                                    <button class="button <?php echo esc_attr($arrive_class); ?>" data-request-id="<?php echo esc_attr( $request->id ); ?>" data-action="arrive"><?php esc_html_e('He Llegado al Origen', 'cachilupi-pet'); ?></button>
+                                    <button class="button <?php echo esc_attr($complete_class); ?>" data-request-id="<?php echo esc_attr( $request->id ); ?>" data-action="complete" style="display:none;"><?php esc_html_e('Completar Viaje', 'cachilupi-pet'); ?></button>
                                     <?php $action_button_shown = true; ?>
                                 <?php elseif ( $current_status_slug === 'arrived' ) : ?>
-                                    <?php // Botón visible para 'arrived' ?>
-                                    <button class="button <?php echo esc_attr($complete_class); ?>" data-request-id="<?php echo esc_attr( $request->id ); ?>" data-action="complete">Completar Viaje</button>
+                                    <button class="button <?php echo esc_attr($complete_class); ?>" data-request-id="<?php echo esc_attr( $request->id ); ?>" data-action="complete"><?php esc_html_e('Completar Viaje', 'cachilupi-pet'); ?></button>
                                     <?php $action_button_shown = true; ?>
                                 <?php endif; ?>
 
-                                <?php // Si no se mostró ningún botón de acción específico (ej. para 'rejected', 'completed') ?>
                                 <?php if ( !$action_button_shown ) : ?>
-                                    <span>--</span>
+                                    <span><?php esc_html_e('--', 'cachilupi-pet'); ?></span>
                                 <?php endif; ?>
                             </td>
                         </tr>
@@ -346,7 +334,7 @@ function cachilupi_pet_driver_panel_shortcode() {
                 </tbody>
             </table>
         <?php else : ?>
-            <p>No hay solicitudes pendientes en este momento.</p>
+            <p><?php esc_html_e('No hay solicitudes pendientes en este momento.', 'cachilupi-pet'); ?></p>
         <?php endif; ?>
     </div>
     <?php
@@ -383,39 +371,88 @@ function cachilupi_pet_handle_driver_action() {
 
     global $wpdb;
     $table_name = $wpdb->prefix . 'cachilupi_requests';
+
+    // Fetch the request to check current driver_id and status
+    $request_being_actioned = $wpdb->get_row($wpdb->prepare("SELECT driver_id, status FROM {$table_name} WHERE id = %d", $request_id));
+
+    if (!$request_being_actioned) {
+        wp_send_json_error(array('message' => 'Solicitud no encontrada.'));
+        wp_die();
+    }
+
     $new_status_slug = ''; // Slug for the new status
     $data_to_update = array();
+    $data_formats = array();
+    $where_formats = array('%d'); // For 'id' => $request_id
 
     // Get the current driver's user ID
     $current_driver_id = get_current_user_id();
+
+    // Additional check for 'reject' action: only assigned driver or admin (not implemented here) can reject an already assigned request.
+    // Unassigned requests can be rejected by any driver.
+    if ($action === 'reject' && !is_null($request_being_actioned->driver_id) && $request_being_actioned->driver_id != $current_driver_id) {
+        wp_send_json_error(array('message' => 'No puedes rechazar una solicitud asignada a otro conductor.'));
+        wp_die();
+    }
+
+    // Prevent re-accepting/re-rejecting already processed pending requests by another driver
+    if ($action === 'accept' && !is_null($request_being_actioned->driver_id) && $request_being_actioned->driver_id != $current_driver_id) {
+        wp_send_json_error(array('message' => 'Esta solicitud ya ha sido aceptada por otro conductor.'));
+        wp_die();
+    }
+    if ($action === 'accept' && $request_being_actioned->status !== 'pending') {
+        wp_send_json_error(array('message' => 'Esta solicitud no está pendiente y no puede ser aceptada.'));
+        wp_die();
+    }
+    if ($action === 'reject' && $request_being_actioned->status !== 'pending') {
+        wp_send_json_error(array('message' => 'Esta solicitud no está pendiente y no puede ser rechazada.'));
+        wp_die();
+    }
+
 
     // Determine the new status and data based on the action
     switch ($action) {
         case 'accept':
             $new_status_slug = 'accepted';
             $data_to_update['status'] = $new_status_slug;
+            $data_formats[] = '%s';
             $data_to_update['driver_id'] = $current_driver_id; // Assign driver
+            $data_formats[] = '%d';
+            // For 'accept', we also need to ensure the request is still pending and not assigned to another driver
+            // This is handled by an additional check before the switch for driver_id, and for status:
+            // $where_conditions['driver_id'] IS NULL implicitly handled by UI logic, but good to be safe.
+            // We ensure status is 'pending'. If a driver accepts, they are assigned.
+            // No explicit $where_conditions['driver_id'] = NULL, as another driver might have just accepted it.
+            // Instead, we check $request_being_actioned->driver_id earlier.
+            // We also add a condition that the current status must be 'pending'.
+            $where_conditions['status'] = 'pending';
+            $where_formats[] = '%s';
             break;
         case 'reject':
             $new_status_slug = 'rejected';
             $data_to_update['status'] = $new_status_slug;
-            // Consider if driver_id should be nulled if the request was previously assigned to this driver
-            // For now, we only update status. If it was unassigned, it remains unassigned (driver_id NULL).
-            // If it was assigned, it remains assigned but rejected. This might need refinement based on business logic.
+            $data_formats[] = '%s';
+            // If the request was assigned to the current driver and they reject it, driver_id could be nulled
+            // or kept. Current logic keeps it. If unassigned, it stays unassigned.
+            // The check for $request_being_actioned->driver_id != $current_driver_id (if set) is done above.
+            // We also add a condition that the current status must be 'pending'.
+            $where_conditions['status'] = 'pending';
+            $where_formats[] = '%s';
             break;
         case 'on_the_way':
             $new_status_slug = 'on_the_way';
             $data_to_update['status'] = $new_status_slug;
+            $data_formats[] = '%s';
             break;
         case 'arrive':
             $new_status_slug = 'arrived';
             $data_to_update['status'] = $new_status_slug;
-            // Action 'arrive' should only be possible if the request is already assigned to this driver.
-            // The $wpdb->update below will target by 'id' only. Add 'driver_id' to WHERE if strictness is needed.
+            $data_formats[] = '%s';
             break;
         case 'complete':
             $new_status_slug = 'completed';
             $data_to_update['status'] = $new_status_slug;
+            $data_formats[] = '%s';
             break;
         default:
             // This case should not be reached due to the in_array check above
@@ -426,19 +463,37 @@ function cachilupi_pet_handle_driver_action() {
     $where_conditions = array('id' => $request_id);
 
     // For actions that imply the request is already assigned to the current driver
+    // and are state transitions from an accepted state by that driver.
     if (in_array($action, array('on_the_way', 'arrive', 'complete'))) {
         $where_conditions['driver_id'] = $current_driver_id;
+        $where_formats[] = '%d';
     }
 
     // Update the database
     $result = $wpdb->update(
         $table_name,
         $data_to_update,
-        $where_conditions
+        $where_conditions,
+        $data_formats, // Format of data values
+        $where_formats   // Format of where_conditions values
     );
 
-
-    if ($result !== false) {
+    // If the update affected 0 rows because the conditions (e.g. status, current driver) were not met,
+    // $result will be 0. We should treat this as a potential issue or stale state.
+    if ($result === 0) {
+        // Check if the request still exists with the original status to differentiate
+        // "condition not met" from "request gone".
+        $current_db_status = $wpdb->get_var($wpdb->prepare("SELECT status FROM {$table_name} WHERE id = %d", $request_id));
+        if ($current_db_status && $current_db_status !== $request_being_actioned->status) {
+             wp_send_json_error(array('message' => 'La solicitud fue actualizada por otro proceso. Por favor, refresca la página.', 'error_code' => 'status_changed'));
+        } else if ($current_db_status && $action === 'accept' && $request_being_actioned->driver_id !== null && $request_being_actioned->driver_id != $current_driver_id){
+            wp_send_json_error(array('message' => 'La solicitud ya fue aceptada por otro conductor. Por favor, refresca la página.', 'error_code' => 'already_accepted'));
+        }
+        else {
+            wp_send_json_error(array('message' => 'No se pudo actualizar la solicitud. Es posible que ya haya sido procesada o las condiciones no se cumplen.', 'error_code' => 'condition_not_met'));
+        }
+        wp_die();
+    } elseif ($result !== false) {
         // Obtener detalles de la solicitud para las notificaciones
         $request_details = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$table_name} WHERE id = %d", $request_id));
         $new_status_display = cachilupi_pet_translate_status($new_status_slug);
@@ -505,8 +560,10 @@ function cachilupi_pet_handle_driver_action() {
             'new_status_display' => $new_status_display
         ));
     } else {
-        // Send error response
-        wp_send_json_error(array('message' => 'Error al actualizar la solicitud.', 'error' => $wpdb->last_error));
+        // Send error response without leaking potential DB info
+        // Consider logging $wpdb->last_error for debugging on the server-side
+        // error_log("Cachilupi Pet DB Error (handle_driver_action): " . $wpdb->last_error);
+        wp_send_json_error(array('message' => 'Error al actualizar la solicitud. Por favor, intenta de nuevo.'));
     }
     wp_die();
 }
@@ -524,13 +581,24 @@ function cachilupi_pet_update_driver_location() {
     check_ajax_referer('cachilupi_pet_update_location_nonce', 'security');
 
     $request_id = isset($_POST['request_id']) ? intval($_POST['request_id']) : 0;
-    $latitude = isset($_POST['latitude']) ? floatval($_POST['latitude']) : 0.0;
-    $longitude = isset($_POST['longitude']) ? floatval($_POST['longitude']) : 0.0;
+    $latitude = isset($_POST['latitude']) ? $_POST['latitude'] : null; // Keep as string for validation
+    $longitude = isset($_POST['longitude']) ? $_POST['longitude'] : null; // Keep as string for validation
 
-    if ($request_id <= 0 || $latitude == 0.0 || $longitude == 0.0) {
-        wp_send_json_error(array('message' => 'Datos de ubicación inválidos.'));
+    // Validate latitude and longitude more carefully
+    // Ensure they are numeric and within valid ranges. floatval will cast non-numeric to 0.0.
+    if (
+        $request_id <= 0 ||
+        !is_numeric($latitude) || !is_numeric($longitude) ||
+        floatval($latitude) < -90.0 || floatval($latitude) > 90.0 ||
+        floatval($longitude) < -180.0 || floatval($longitude) > 180.0
+    ) {
+        wp_send_json_error(array('message' => 'Datos de ubicación inválidos o fuera de rango.'));
         wp_die();
     }
+
+    // Convert to float after validation
+    $latitude_float = floatval($latitude);
+    $longitude_float = floatval($longitude);
 
     global $wpdb;
     $table_name = $wpdb->prefix . 'cachilupi_requests';
@@ -538,16 +606,35 @@ function cachilupi_pet_update_driver_location() {
 
     $result = $wpdb->update(
         $table_name,
-        array('driver_current_lat' => $latitude, 'driver_current_lon' => $longitude, 'driver_location_updated_at' => current_time('mysql')),
+        array('driver_current_lat' => $latitude_float, 'driver_current_lon' => $longitude_float, 'driver_location_updated_at' => current_time('mysql')),
         array('id' => $request_id, 'driver_id' => $current_driver_id, 'status' => 'on_the_way'), // Only update if status is 'on_the_way'
-        array('%f', '%f', '%s'),
-        array('%d', '%d', '%s')
+        array('%f', '%f', '%s'), // Formats for data
+        array('%d', '%d', '%s')  // Formats for WHERE clause
     );
 
-    if ($result !== false) {
+    // Check if the update actually changed a row. $result will be 0 if no row matched the WHERE clause or data was the same.
+    // For location updates, it's common to send the same location if stationary, so $result === 0 might not always be an "error"
+    // in the sense that the location wasn't recorded, but rather that it didn't change or conditions weren't met.
+    // However, if the intention is to confirm the driver is still on this active trip, a $result === 0 could mean the trip is no longer 'on_the_way'
+    // or assigned to this driver.
+    if ($result > 0) {
+        wp_send_json_success(array('message' => 'Ubicación actualizada.'));
+    } elseif ($result === 0) {
+        // Optionally, verify if the request still exists and matches conditions to give a more specific message.
+        $request_check = $wpdb->get_row($wpdb->prepare(
+            "SELECT status, driver_id FROM {$table_name} WHERE id = %d", $request_id
+        ));
+        if (!$request_check || $request_check->driver_id != $current_driver_id || $request_check->status != 'on_the_way') {
+            wp_send_json_error(array('message' => 'No se pudo actualizar la ubicación. El viaje ya no está activo o no está asignado a ti.', 'error_code' => 'trip_not_active'));
+        } else {
+            // This means the location data sent was identical to what's already in the DB.
+            wp_send_json_success(array('message' => 'Ubicación sin cambios.', 'status_code' => 'no_change'));
+        }
+    } else {
         wp_send_json_success(array('message' => 'Ubicación actualizada.'));
     } else {
-        wp_send_json_error(array('message' => 'Error al actualizar ubicación.', 'db_error' => $wpdb->last_error));
+        // error_log("Cachilupi Pet DB Error (update_driver_location): " . $wpdb->last_error);
+        wp_send_json_error(array('message' => 'Error al actualizar ubicación. Por favor, intenta de nuevo.'));
     }
     wp_die();
 }
@@ -580,10 +667,11 @@ function cachilupi_pet_get_driver_location() {
         )
     );
 
-    if ($location_data && $location_data->driver_current_lat && $location_data->driver_current_lon) {
+    // Check if data was found and lat/lon are not null (0.0 is a valid coordinate)
+    if ($location_data && !is_null($location_data->driver_current_lat) && !is_null($location_data->driver_current_lon)) {
         wp_send_json_success(array(
-            'latitude' => $location_data->driver_current_lat,
-            'longitude' => $location_data->driver_current_lon,
+            'latitude' => floatval($location_data->driver_current_lat), // Ensure float type in response
+            'longitude' => floatval($location_data->driver_current_lon), // Ensure float type in response
             'updated_at' => $location_data->driver_location_updated_at
         ));
     } else {
@@ -699,77 +787,59 @@ function cachilupi_pet_shortcode() {
     // MODIFICADO: Se añadió 'driver' a la lista de roles permitidos
     $user = wp_get_current_user();
     if ( ! is_user_logged_in() || ! array_intersect( array( 'client', 'administrator', 'driver' ), (array) $user->roles ) ) {
-        // Si no está logueado o no tiene el rol correcto, puedes redirigir o mostrar un mensaje.
-        // Redirigir a la página de login personalizada o mostrar un mensaje.
-        // wp_redirect( home_url('/log-in/') ); exit; // Ejemplo de redirección
-        return '<p>Debes iniciar sesión como cliente o conductor para solicitar un servicio.</p>';
+        return '<p>' . esc_html__( 'Debes iniciar sesión como cliente o conductor para solicitar un servicio.', 'cachilupi-pet' ) . '</p>';
     }
 
-    ob_start(); // Start output buffering
-    // --- INICIO: Formulario de Reserva (tu código existente) ---
+    ob_start();
     ?>
     <div class="cachilupi-booking-container">
         <div class="cachilupi-booking-form">
-            <h1>Solicitar Servicio</h1>
+            <h1><?php esc_html_e('Solicitar Servicio', 'cachilupi-pet'); ?></h1>
 
             <div class="form-group">
-                <?php
-                // MODIFICADO: El atributo 'for' ahora apunta al ID del input del geocodificador
-                // definido en maps.js ('pickup-location-input').
-                ?>
-                <label for="pickup-location-input" class="required-field-label">Lugar de Recogida:</label>
+                <label for="pickup-location-input" class="required-field-label"><?php esc_html_e('Lugar de Recogida:', 'cachilupi-pet'); ?></label>
                 <div id="pickup-geocoder-container" class="geocoder-container"></div>
-                <?php
-                // ELIMINADO: Botón "Usar mi ubicación actual"
-                // <button id="use-current-location" type="button" class="button-secondary">Usar mi ubicación actual</button>
-                ?>
             </div>
 
             <div class="form-group">
-                 <?php
-                // MODIFICADO: El atributo 'for' ahora apunta al ID del input del geocodificador
-                // definido en maps.js ('dropoff-location-input').
-                ?>
-                <label for="dropoff-location-input" class="required-field-label">Lugar de Destino:</label>
+                <label for="dropoff-location-input" class="required-field-label"><?php esc_html_e('Lugar de Destino:', 'cachilupi-pet'); ?></label>
                 <div id="dropoff-geocoder-container" class="geocoder-container"></div>
             </div>
 
             <div class="form-group">
-                <label for="service-date" class="required-field-label">Fecha de Servicio:</label>
+                <label for="service-date" class="required-field-label"><?php esc_html_e('Fecha de Servicio:', 'cachilupi-pet'); ?></label>
                 <input type="date" id="service-date" class="required-field form-control">
             </div>
 
             <div class="form-group">
-                <label for="service-time" class="required-field-label">Hora de Servicio:</label>
+                <label for="service-time" class="required-field-label"><?php esc_html_e('Hora de Servicio:', 'cachilupi-pet'); ?></label>
                 <input type="time" id="service-time" class="required-field form-control">
             </div>
 
              <div id="cachilupi-pet-distance" class="distance-display"></div>
 
             <div class="form-group">
-                <label for="cachilupi-pet-pet-type" class="required-field-label">Tipo de Mascota:</label>
+                <label for="cachilupi-pet-pet-type" class="required-field-label"><?php esc_html_e('Tipo de Mascota:', 'cachilupi-pet'); ?></label>
                 <select id="cachilupi-pet-pet-type" class="required-field form-control">
-                    <option value="">-- Selecciona una opción --</option>
-                    <option value="perro">Perro</option>
-                    <option value="gato">Gato</option>
-                    <option value="otro">Otro</option>
+                    <option value=""><?php esc_html_e('-- Selecciona una opción --', 'cachilupi-pet'); ?></option>
+                    <option value="perro"><?php esc_html_e('Perro', 'cachilupi-pet'); ?></option>
+                    <option value="gato"><?php esc_html_e('Gato', 'cachilupi-pet'); ?></option>
+                    <option value="otro"><?php esc_html_e('Otro', 'cachilupi-pet'); ?></option>
                 </select>
             </div>
 
             <div class="form-group">
-                <label for="cachilupi-pet-notes">Notas Adicionales:</label>
+                <label for="cachilupi-pet-notes"><?php esc_html_e('Notas Adicionales:', 'cachilupi-pet'); ?></label>
                 <textarea id="cachilupi-pet-notes" class="form-control"></textarea>
             </div>
 
-            <button id="submit-service-request" type="button" class="button-primary">Solicitar Servicio</button>
+            <button id="submit-service-request" type="button" class="button-primary"><?php esc_html_e('Solicitar Servicio', 'cachilupi-pet'); ?></button>
 
         </div>
         <div id="cachilupi-pet-map" class="booking-map"></div>
     </div>
-    <?php // --- FIN: Formulario de Reserva ---
+    <?php
 
-    // --- INICIO: Sección para Mostrar las Solicitudes del Cliente ---
-    // (Asegúrate de que $user ya está definido arriba en esta función)
     if ( is_user_logged_in() && ( in_array( 'client', (array) $user->roles ) || current_user_can( 'manage_options' ) ) ) {
         global $wpdb;
         $requests_table_name = $wpdb->prefix . 'cachilupi_requests';
@@ -785,46 +855,45 @@ function cachilupi_pet_shortcode() {
             )
         );
 
-        echo '<div class="cachilupi-client-requests-panel">'; // Styles moved to maps.css
-        echo '<h2>Mis Solicitudes de Servicio</h2>'; // Styles moved to maps.css
+        echo '<div class="cachilupi-client-requests-panel">';
+        echo '<h2>' . esc_html__('Mis Solicitudes de Servicio', 'cachilupi-pet') . '</h2>';
 
         if ( $client_requests ) {
-            // Se utilizan las clases 'widefat fixed' para que los estilos responsivos de driver-panel.css se apliquen.
-            echo '<table class="widefat fixed" cellspacing="0">'; // Styles moved to maps.css or driver-panel.css
+            echo '<table class="widefat fixed" cellspacing="0">';
             echo '<thead><tr>';
-            echo '<th class="manage-column column-columnname" scope="col">ID</th>';
-            echo '<th class="manage-column column-columnname" scope="col">Fecha Programada</th>';
-            echo '<th class="manage-column column-columnname" scope="col">Origen</th>';
-            echo '<th class="manage-column column-columnname" scope="col">Destino</th>';
-            echo '<th class="manage-column column-columnname" scope="col">Mascota</th>';
-            echo '<th class="manage-column column-columnname" scope="col">Estado</th>';
-            echo '<th class="manage-column column-columnname" scope="col">Conductor</th>';
-            echo '<th class="manage-column column-columnname" scope="col">Seguimiento</th>';
+            echo '<th class="manage-column column-columnname" scope="col">' . esc_html__('ID', 'cachilupi-pet') . '</th>';
+            echo '<th class="manage-column column-columnname" scope="col">' . esc_html__('Fecha Programada', 'cachilupi-pet') . '</th>';
+            echo '<th class="manage-column column-columnname" scope="col">' . esc_html__('Origen', 'cachilupi-pet') . '</th>';
+            echo '<th class="manage-column column-columnname" scope="col">' . esc_html__('Destino', 'cachilupi-pet') . '</th>';
+            echo '<th class="manage-column column-columnname" scope="col">' . esc_html__('Mascota', 'cachilupi-pet') . '</th>';
+            echo '<th class="manage-column column-columnname" scope="col">' . esc_html__('Estado', 'cachilupi-pet') . '</th>';
+            echo '<th class="manage-column column-columnname" scope="col">' . esc_html__('Conductor', 'cachilupi-pet') . '</th>';
+            echo '<th class="manage-column column-columnname" scope="col">' . esc_html__('Seguimiento', 'cachilupi-pet') . '</th>';
             echo '</tr></thead><tbody>';
 
-            foreach ( $client_requests as $request_idx => $request_item ) { // Renombrada la variable del bucle para evitar conflicto con $request
+            foreach ( $client_requests as $request_idx => $request_item ) {
                 echo '<tr data-request-id="' . esc_attr( $request_item->id ) . '">';
-                echo '<td class="column-columnname" data-label="ID:">' . esc_html( $request_item->id ) . '</td>';
-                echo '<td class="column-columnname" data-label="Fecha Programada:">' . esc_html( date( 'd/m/Y H:i', strtotime( $request_item->time ) ) ) . '</td>';
-                echo '<td class="column-columnname" data-label="Origen:">' . esc_html( $request_item->pickup_address ) . '</td>';
-                echo '<td class="column-columnname" data-label="Destino:">' . esc_html( $request_item->dropoff_address ) . '</td>';
-                echo '<td class="column-columnname" data-label="Mascota:">' . esc_html( $request_item->pet_type ) . '</td>';
-                echo '<td class="column-columnname request-status" data-label="Estado:">' . esc_html( cachilupi_pet_translate_status( $request_item->status ) ) . '</td>';
-                echo '<td class="column-columnname" data-label="Conductor:">' . esc_html( $request_item->driver_name ? $request_item->driver_name : 'No asignado' ) . '</td>';
-                echo '<td class="column-columnname" data-label="Seguimiento:">';
+                echo '<td class="column-columnname" data-label="' . esc_attr__('ID:', 'cachilupi-pet') . '">' . esc_html( $request_item->id ) . '</td>';
+                echo '<td class="column-columnname" data-label="' . esc_attr__('Fecha Programada:', 'cachilupi-pet') . '">' . esc_html( date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), strtotime( $request_item->time ) ) ) . '</td>';
+                echo '<td class="column-columnname" data-label="' . esc_attr__('Origen:', 'cachilupi-pet') . '">' . esc_html( $request_item->pickup_address ) . '</td>';
+                echo '<td class="column-columnname" data-label="' . esc_attr__('Destino:', 'cachilupi-pet') . '">' . esc_html( $request_item->dropoff_address ) . '</td>';
+                echo '<td class="column-columnname" data-label="' . esc_attr__('Mascota:', 'cachilupi-pet') . '">' . esc_html( $request_item->pet_type ) . '</td>';
+                echo '<td class="column-columnname request-status" data-label="' . esc_attr__('Estado:', 'cachilupi-pet') . '">' . esc_html( cachilupi_pet_translate_status( $request_item->status ) ) . '</td>';
+                echo '<td class="column-columnname" data-label="' . esc_attr__('Conductor:', 'cachilupi-pet') . '">' . esc_html( $request_item->driver_name ? $request_item->driver_name : __('No asignado', 'cachilupi-pet') ) . '</td>';
+                echo '<td class="column-columnname" data-label="' . esc_attr__('Seguimiento:', 'cachilupi-pet') . '">';
                 if ($request_item->status === 'on_the_way' && $request_item->driver_id) {
-                    echo '<button class="button cachilupi-follow-driver-btn" data-request-id="' . esc_attr( $request_item->id ) . '">' . __('Seguir Viaje', 'cachilupi-pet') . '</button>';
-                } else { echo '--'; }
+                    echo '<button class="button cachilupi-follow-driver-btn" data-request-id="' . esc_attr( $request_item->id ) . '">' . esc_html__('Seguir Viaje', 'cachilupi-pet') . '</button>';
+                } else { echo esc_html__('--', 'cachilupi-pet'); }
                 echo '</td>';
                 echo '</tr>';
             }
             echo '</tbody></table>';
         } else {
-            echo '<p>No has realizado ninguna solicitud de servicio todavía.</p>';
+            echo '<p>' . esc_html__('No has realizado ninguna solicitud de servicio todavía.', 'cachilupi-pet') . '</p>';
         }
-        echo '</div>'; // Fin de cachilupi-client-requests-panel
-        // Modal para el mapa de seguimiento del cliente
-        echo '<div id="cachilupi-follow-modal" style="display:none; position:fixed; top:0;left:0;width:100%;height:100%;background-color:rgba(0,0,0,0.5);z-index:10000;"><div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:80%;max-width:700px;height:70%;background-color:white;padding:20px;border-radius:8px;"><h3 id="cachilupi-follow-modal-title">Siguiendo Viaje</h3><div id="cachilupi-client-follow-map" style="width:100%;height:80%;"></div><button id="cachilupi-close-follow-modal" style="margin-top:10px;">Cerrar</button></div></div>';
+        echo '</div>';
+        // Modal
+        echo '<div id="cachilupi-follow-modal" style="display:none; position:fixed; top:0;left:0;width:100%;height:100%;background-color:rgba(0,0,0,0.5);z-index:10000;"><div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:80%;max-width:700px;height:70%;background-color:white;padding:20px;border-radius:8px;"><h3 id="cachilupi-follow-modal-title">' . esc_html__('Siguiendo Viaje', 'cachilupi-pet') . '</h3><div id="cachilupi-client-follow-map" style="width:100%;height:80%;"></div><button id="cachilupi-close-follow-modal" style="margin-top:10px;">' . esc_html__('Cerrar', 'cachilupi-pet') . '</button></div></div>';
     }
     // --- FIN: Sección para Mostrar las Solicitudes del Cliente ---
 
@@ -849,23 +918,45 @@ function cachilupi_pet_submit_service_request() {
 
     // Retrieve and sanitize data from $_POST
     $pickup_address = isset($_POST['pickup_address']) ? sanitize_text_field($_POST['pickup_address']) : '';
-    $pickup_lat = isset($_POST['pickup_lat']) ? floatval($_POST['pickup_lat']) : 0.0; // Use floatval for coordinates
-    $pickup_lon = isset($_POST['pickup_lon']) ? floatval($_POST['pickup_lon']) : 0.0; // Use floatval for coordinates
     $dropoff_address = isset($_POST['dropoff_address']) ? sanitize_text_field($_POST['dropoff_address']) : '';
-    $dropoff_lat = isset($_POST['dropoff_lat']) ? floatval($_POST['dropoff_lat']) : 0.0; // Use floatval for coordinates
-    $dropoff_lon = isset($_POST['dropoff_lon']) ? floatval($_POST['dropoff_lon']) : 0.0; // Use floatval for coordinates
     $pet_type = isset($_POST['pet_type']) ? sanitize_text_field($_POST['pet_type']) : '';
     $notes = isset($_POST['notes']) ? sanitize_textarea_field($_POST['notes']) : ''; // Use sanitize_textarea_field for textareas
     $scheduled_date_time = isset($_POST['scheduled_date_time']) ? sanitize_text_field($_POST['scheduled_date_time']) : '';
 
-    // Server-side validation
-    if ( empty($pickup_address) || $pickup_lat == 0.0 || $pickup_lon == 0.0 ||
-         empty($dropoff_address) || $dropoff_lat == 0.0 || $dropoff_lon == 0.0 ||
+    // Retrieve coordinates as strings for validation
+    $pickup_lat_str = isset($_POST['pickup_lat']) ? $_POST['pickup_lat'] : null;
+    $pickup_lon_str = isset($_POST['pickup_lon']) ? $_POST['pickup_lon'] : null;
+    $dropoff_lat_str = isset($_POST['dropoff_lat']) ? $_POST['dropoff_lat'] : null;
+    $dropoff_lon_str = isset($_POST['dropoff_lon']) ? $_POST['dropoff_lon'] : null;
+
+    // Server-side validation for presence of all required fields
+    if ( empty($pickup_address) || is_null($pickup_lat_str) || is_null($pickup_lon_str) ||
+         empty($dropoff_address) || is_null($dropoff_lat_str) || is_null($dropoff_lon_str) ||
          empty($pet_type) || empty($scheduled_date_time) ) {
          wp_send_json_error(array(
              'message' => 'Por favor, completa todos los campos requeridos.'
          ));
          wp_die();
+    }
+
+    // Validate numeric nature of coordinates
+    if (!is_numeric($pickup_lat_str) || !is_numeric($pickup_lon_str) ||
+        !is_numeric($dropoff_lat_str) || !is_numeric($dropoff_lon_str)) {
+        wp_send_json_error(array('message' => 'Las coordenadas deben ser numéricas.'));
+        wp_die();
+    }
+
+    // Convert to float after numeric validation
+    $pickup_lat = floatval($pickup_lat_str);
+    $pickup_lon = floatval($pickup_lon_str);
+    $dropoff_lat = floatval($dropoff_lat_str);
+    $dropoff_lon = floatval($dropoff_lon_str);
+
+    // Validate coordinate ranges
+    if ($pickup_lat < -90.0 || $pickup_lat > 90.0 || $pickup_lon < -180.0 || $pickup_lon > 180.0 ||
+        $dropoff_lat < -90.0 || $dropoff_lat > 90.0 || $dropoff_lon < -180.0 || $dropoff_lon > 180.0) {
+        wp_send_json_error(array('message' => 'Coordenadas geográficas fuera de rango.'));
+        wp_die();
     }
 
     // Validate scheduled date and time format and future time
@@ -936,10 +1027,10 @@ function cachilupi_pet_submit_service_request() {
     $result = $wpdb->insert($table_name, $data, $format); // Pass format array
 
     if ($result === false) {
-        // Send error response if insertion fails
+        // Send error response if insertion fails without leaking DB info
+        // error_log("Cachilupi Pet DB Error (submit_service_request): " . $wpdb->last_error);
         wp_send_json_error(array(
-            'message' => 'Error al guardar la solicitud.',
-            'error' => $wpdb->last_error
+            'message' => 'Error al guardar la solicitud. Por favor, intenta de nuevo.'
         ));
     } else {
         // Send success response if insertion is successful
@@ -968,7 +1059,7 @@ function cachilupi_pet_settings_page_html() {
             <?php
             settings_fields('cachilupi_pet_options_group');
             do_settings_sections('cachilupi_pet_settings_page');
-            submit_button('Guardar Ajustes');
+            submit_button( __('Guardar Ajustes', 'cachilupi-pet') );
             ?>
         </form>
     </div>
@@ -980,36 +1071,59 @@ function cachilupi_pet_register_settings() {
     register_setting('cachilupi_pet_options_group', 'cachilupi_pet_client_redirect_slug', 'sanitize_text_field');
     register_setting('cachilupi_pet_options_group', 'cachilupi_pet_driver_redirect_slug', 'sanitize_text_field');
 
-    add_settings_section('cachilupi_pet_general_section', 'Ajustes Generales', null, 'cachilupi_pet_settings_page');
+    add_settings_section(
+        'cachilupi_pet_general_section',
+        __('Ajustes Generales', 'cachilupi-pet'),
+        null,
+        'cachilupi_pet_settings_page'
+    );
 
-    add_settings_field('cachilupi_pet_mapbox_token_field', 'Mapbox Access Token', 'cachilupi_pet_mapbox_token_field_cb', 'cachilupi_pet_settings_page', 'cachilupi_pet_general_section');
-    add_settings_field('cachilupi_pet_client_redirect_slug_field', 'Slug Página Cliente (Reserva)', 'cachilupi_pet_client_redirect_slug_field_cb', 'cachilupi_pet_settings_page', 'cachilupi_pet_general_section');
-    add_settings_field('cachilupi_pet_driver_redirect_slug_field', 'Slug Página Conductor (Panel)', 'cachilupi_pet_driver_redirect_slug_field_cb', 'cachilupi_pet_settings_page', 'cachilupi_pet_general_section');
+    add_settings_field(
+        'cachilupi_pet_mapbox_token_field',
+        __('Mapbox Access Token', 'cachilupi-pet'),
+        'cachilupi_pet_mapbox_token_field_cb',
+        'cachilupi_pet_settings_page',
+        'cachilupi_pet_general_section'
+    );
+    add_settings_field(
+        'cachilupi_pet_client_redirect_slug_field',
+        __('Slug Página Cliente (Reserva)', 'cachilupi-pet'),
+        'cachilupi_pet_client_redirect_slug_field_cb',
+        'cachilupi_pet_settings_page',
+        'cachilupi_pet_general_section'
+    );
+    add_settings_field(
+        'cachilupi_pet_driver_redirect_slug_field',
+        __('Slug Página Conductor (Panel)', 'cachilupi-pet'),
+        'cachilupi_pet_driver_redirect_slug_field_cb',
+        'cachilupi_pet_settings_page',
+        'cachilupi_pet_general_section'
+    );
 }
 add_action('admin_init', 'cachilupi_pet_register_settings');
 
 function cachilupi_pet_mapbox_token_field_cb() {
     $option = get_option('cachilupi_pet_mapbox_token');
     echo '<input type="text" id="cachilupi_pet_mapbox_token" name="cachilupi_pet_mapbox_token" value="' . esc_attr($option) . '" class="regular-text" />';
-    echo '<p class="description">Ingresa tu token de acceso de Mapbox.</p>';
+    echo '<p class="description">' . esc_html__('Ingresa tu token de acceso de Mapbox.', 'cachilupi-pet') . '</p>';
 }
 
 function cachilupi_pet_client_redirect_slug_field_cb() {
     $option = get_option('cachilupi_pet_client_redirect_slug', 'reserva');
     echo '<input type="text" id="cachilupi_pet_client_redirect_slug" name="cachilupi_pet_client_redirect_slug" value="' . esc_attr($option) . '" class="regular-text" />';
-    echo '<p class="description">Slug de la página donde los clientes realizan reservas (ej: <code>reserva</code> para <code>'.home_url('/reserva/').'</code>).</p>';
+    echo '<p class="description">' . wp_kses_post( sprintf( __('Slug de la página donde los clientes realizan reservas (ej: %s para %s).', 'cachilupi-pet'), '<code>reserva</code>', '<code>' . home_url('/reserva/') . '</code>' ) ) . '</p>';
 }
 
 function cachilupi_pet_driver_redirect_slug_field_cb() {
     $option = get_option('cachilupi_pet_driver_redirect_slug', 'driver');
     echo '<input type="text" id="cachilupi_pet_driver_redirect_slug" name="cachilupi_pet_driver_redirect_slug" value="' . esc_attr($option) . '" class="regular-text" />';
-    echo '<p class="description">Slug de la página del panel de conductores (ej: <code>driver</code> para <code>'.home_url('/driver/').'</code>).</p>';
+    echo '<p class="description">' . wp_kses_post( sprintf( __('Slug de la página del panel de conductores (ej: %s para %s).', 'cachilupi-pet'), '<code>driver</code>', '<code>' . home_url('/driver/') . '</code>' ) ) . '</p>';
 }
 
 function cachilupi_pet_add_settings_page() {
     add_options_page(
-        'Cachilupi Pet Ajustes',
-        'Cachilupi Pet',
+        __('Cachilupi Pet Ajustes', 'cachilupi-pet'),
+        __('Cachilupi Pet', 'cachilupi-pet'),
         'manage_options',
         'cachilupi_pet_settings_page',
         'cachilupi_pet_settings_page_html'
@@ -1017,5 +1131,12 @@ function cachilupi_pet_add_settings_page() {
 }
 add_action('admin_menu', 'cachilupi_pet_add_settings_page');
 
+/**
+ * Carga el text domain del plugin para la traducción.
+ */
+function cachilupi_pet_load_textdomain() {
+    load_plugin_textdomain( 'cachilupi-pet', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
+}
+add_action( 'plugins_loaded', 'cachilupi_pet_load_textdomain' );
 
 register_activation_hook( __FILE__, 'cachilupi_pet_activate' );
