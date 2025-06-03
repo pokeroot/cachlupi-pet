@@ -652,9 +652,8 @@ function cachilupi_pet_update_driver_location() {
             // This means the location data sent was identical to what's already in the DB.
             wp_send_json_success(array('message' => 'Ubicación sin cambios.', 'status_code' => 'no_change'));
         }
-    } else {
-        wp_send_json_success(array('message' => 'Ubicación actualizada.'));
-    } else {
+    }
+    else {
         // error_log("Cachilupi Pet DB Error (update_driver_location): " . $wpdb->last_error);
         wp_send_json_error(array('message' => 'Error al actualizar ubicación. Por favor, intenta de nuevo.'));
     }
