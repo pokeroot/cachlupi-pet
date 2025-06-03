@@ -432,9 +432,10 @@
                         }
 
                         console.log('Sending Service Request Data (Map Context):', Object.fromEntries(formData));
+                        let fetchResponse; // Declare fetchResponse here to access in catch block
 
                         try {
-                            const fetchResponse = await fetch(cachilupi_pet_vars.ajaxurl, {
+                            fetchResponse = await fetch(cachilupi_pet_vars.ajaxurl, { // Assign to outer scope variable
                                 method: 'POST',
                                 body: formData
                             });
@@ -442,14 +443,23 @@
                             if (!fetchResponse.ok) {
                                 // Try to parse error from server if possible
                                 let errorMsg = `Error HTTP: ${fetchResponse.status}`;
+                                // Attempt to read response text for more detail, even for non-JSON error responses.
                                 try {
-                                    const errorData = await fetchResponse.json();
-                                    errorMsg = errorData.data && errorData.data.message ? errorData.data.message : errorMsg;
-                                } catch (e) { /* Ignore if error response is not JSON */ }
+                                    const errorText = await fetchResponse.text();
+                                    console.error("Raw error response from server (Map Context):", errorText);
+                                    // Try to parse as JSON if possible, otherwise use text.
+                                    try {
+                                        const errorData = JSON.parse(errorText);
+                                        errorMsg = errorData.data && errorData.data.message ? errorData.data.message : errorMsg;
+                                    } catch (e) {
+                                        // If not JSON, use a snippet of the text or a generic message
+                                        errorMsg = `Server error: ${fetchResponse.statusText}. Check console for raw response.`;
+                                    }
+                                } catch (e) { /* Ignore if reading text also fails */ }
                                 throw new Error(errorMsg);
                             }
 
-                            const responseData = await fetchResponse.json();
+                            const responseData = await fetchResponse.json(); // This can throw SyntaxError
                             console.log('Fetch Response (Map Context):', responseData);
 
                             if (responseData.success) {
@@ -473,8 +483,21 @@
                                 showFeedbackMessage(errorMessage, 'error');
                             }
                         } catch (error) {
-                            showFeedbackMessage(`Error de comunicación: ${error.message}`, 'error');
-                            console.error('Fetch Error (Map Context):', error);
+                            console.error('Fetch Error (Map Context):', error); // Log the original error
+
+                            if (error instanceof SyntaxError && fetchResponse) { // Check if fetchResponse is defined
+                                fetchResponse.text().then(text => {
+                                    console.error("Raw non-JSON response from server (Map Context):", text);
+                                    showFeedbackMessage(`Error del servidor: Formato de respuesta inesperado. Revise la consola para más detalles.`, 'error');
+                                }).catch(textError => {
+                                    console.error("Error trying to read raw response text (Map Context):", textError);
+                                    showFeedbackMessage(`Error de comunicación: ${error.message}. Además, la respuesta del servidor no pudo ser leída como texto.`, 'error');
+                                });
+                            } else if (!fetchResponse) {
+                                showFeedbackMessage(`Error de red o comunicación: ${error.message}. No se recibió respuesta del servidor.`, 'error');
+                            } else {
+                                showFeedbackMessage(`Error de comunicación: ${error.message}`, 'error');
+                            }
                         } finally {
                             if (submitButton) {
                                 submitButton.classList.remove('cachilupi-button--loading');
@@ -579,8 +602,10 @@
                             formData.append(key, serviceRequestData[key]);
                         }
                         console.log('Sending Service Request Data (Non-Map Context):', Object.fromEntries(formData));
+                        let fetchResponse; // Declare fetchResponse here
+
                         try {
-                            const fetchResponse = await fetch(cachilupi_pet_vars.ajaxurl, {
+                            fetchResponse = await fetch(cachilupi_pet_vars.ajaxurl, { // Assign to outer scope variable
                                 method: 'POST',
                                 body: formData
                             });
@@ -588,13 +613,19 @@
                             if (!fetchResponse.ok) {
                                 let errorMsg = `Error HTTP: ${fetchResponse.status}`;
                                 try {
-                                    const errorData = await fetchResponse.json();
-                                    errorMsg = errorData.data && errorData.data.message ? errorData.data.message : errorMsg;
+                                    const errorText = await fetchResponse.text();
+                                    console.error("Raw error response from server (Non-Map Context):", errorText);
+                                    try {
+                                     const errorData = JSON.parse(errorText);
+                                     errorMsg = errorData.data && errorData.data.message ? errorData.data.message : errorMsg;
+                                    } catch(e){
+                                        errorMsg = `Server error: ${fetchResponse.statusText}. Check console for raw response.`;
+                                    }
                                 } catch (e) { /* Ignore */ }
                                 throw new Error(errorMsg);
                             }
 
-                            const responseData = await fetchResponse.json();
+                            const responseData = await fetchResponse.json(); // This can throw SyntaxError
                             console.log('Fetch Response (Non-Map Context):', responseData);
 
                             if (responseData.success) {
@@ -613,8 +644,21 @@
                                 showFeedbackMessage(errorMessage, 'error');
                             }
                         } catch (error) {
-                            showFeedbackMessage(`Error de comunicación: ${error.message}`, 'error');
-                            console.error('Fetch Error (Non-Map Context):', error);
+                            console.error('Fetch Error (Non-Map Context):', error); // Log the original error
+
+                            if (error instanceof SyntaxError && fetchResponse) {
+                                fetchResponse.text().then(text => {
+                                    console.error("Raw non-JSON response from server (Non-Map Context):", text);
+                                    showFeedbackMessage(`Error del servidor: Formato de respuesta inesperado. Revise la consola para más detalles.`, 'error');
+                                }).catch(textError => {
+                                    console.error("Error trying to read raw response text (Non-Map Context):", textError);
+                                    showFeedbackMessage(`Error de comunicación: ${error.message}. Además, la respuesta del servidor no pudo ser leída como texto.`, 'error');
+                                });
+                            } else if (!fetchResponse) {
+                                showFeedbackMessage(`Error de red o comunicación: ${error.message}. No se recibió respuesta del servidor.`, 'error');
+                            } else {
+                                showFeedbackMessage(`Error de comunicación: ${error.message}`, 'error');
+                            }
                         } finally {
                             if (submitButton) {
                                 submitButton.classList.remove('cachilupi-button--loading');
