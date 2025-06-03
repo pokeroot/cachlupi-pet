@@ -306,7 +306,7 @@ function cachilupi_pet_driver_panel_shortcode() {
                                 $on_the_way_class = 'on-the-way-request'; // Nueva clase
                                 $picked_up_class = 'picked-up-request'; // Nueva clase
                                 $complete_class = 'complete-request'; // Ejemplo: 'complete-request' o 'completar-solicitud'
-
+                                
                                 $action_button_shown = false;
 
                                 // Botones para el estado 'pending'
@@ -873,9 +873,9 @@ function cachilupi_pet_shortcode() {
 
         $client_requests = $wpdb->get_results(
             $wpdb->prepare(
-                "SELECT r.*, u.display_name as driver_name
-                 FROM {$requests_table_name} r
-                 LEFT JOIN {$wpdb->users} u ON r.driver_id = u.ID
+                "SELECT r.*, u.display_name as driver_name 
+                 FROM {$requests_table_name} r 
+                 LEFT JOIN {$wpdb->users} u ON r.driver_id = u.ID 
                  WHERE r.client_user_id = %d ORDER BY r.created_at DESC",
                 $client_id
             )
