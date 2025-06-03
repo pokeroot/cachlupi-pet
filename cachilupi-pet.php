@@ -1045,10 +1045,10 @@ function cachilupi_pet_submit_service_request() {
         '%f', // dropoff_lon (decimal)
         '%s', // pet_type (varchar)
         '%s', // notes (text)
-        '%s', // pet_instructions (text)
         '%s', // status (varchar)
         '%s', // created_at (datetime)
         '%d', // client_user_id (bigint)
+        '%s'  // pet_instructions (text)
     );
 
 
