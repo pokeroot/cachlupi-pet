@@ -262,29 +262,20 @@
                         messageElement.attr('aria-live', 'polite');
                     }
 
-                    // Determine where to place the message
-                    // Option 1: After the submit button (if it exists)
-                    // Option 2: At the top of the booking panel/form
-                    // Option 3: A dedicated feedback container (if one exists)
-
-                    // For this specific form, placing it after the submit button seems reasonable for form-level feedback.
-                    // If a more generic feedback area is desired, that could be targeted.
-                    // Let's ensure there's a fallback if submitButton isn't on the page for some reason.
-                    const $bookingForm = $('.cachilupi-booking-form'); // Assuming this is the main form container
+                    const $bookingForm = $('.cachilupi-booking-form');
 
                     if (submitButton && $(submitButton).length) {
                         $(submitButton).after(messageElement);
                     } else if ($bookingForm.length) {
-                        $bookingForm.prepend(messageElement); // Prepend to form if button not found
+                        $bookingForm.prepend(messageElement);
                     } else {
-                        // Fallback to body or a generic container - less ideal
                         $('body').prepend(messageElement);
                         console.warn('Submit button or booking form not found for feedback message. Appended to body.');
                     }
 
                     setTimeout(() => {
                         messageElement.fadeOut('slow', () => messageElement.remove());
-                    }, 5000); // Auto-hide after 5 seconds
+                    }, 5000);
                 };
 
                 const showError = (fieldElement, message) => {
@@ -363,7 +354,7 @@
                 }
                 if (serviceTimeInput) {
                     serviceTimeInput.addEventListener('input', () => validateForm(true));
-                    serviceTimeInput.addEventListener('blur', function() { // 'this' context needed here, so not arrow
+                    serviceTimeInput.addEventListener('blur', function() {
                         const timeValue = this.value;
                         if (timeValue) {
                             let [hours, minutes] = timeValue.split(':');
@@ -380,10 +371,10 @@
                 }
                 if (petTypeSelect) petTypeSelect.addEventListener('change', () => validateForm(true));
                 if (notesTextArea) notesTextArea.addEventListener('input', () => validateForm(true));
-                if (petInstructionsTextArea) petInstructionsTextArea.addEventListener('input', () => validateForm(true)); // No specific validation, but trigger main validation flow
+                if (petInstructionsTextArea) petInstructionsTextArea.addEventListener('input', () => validateForm(true));
 
                 if (submitButton) {
-                    submitButton.addEventListener('click', async (event) => { // Made async
+                    submitButton.addEventListener('click', async (event) => {
                         event.preventDefault();
                         if (!validateForm(true)) return;
 
@@ -432,34 +423,30 @@
                         }
 
                         console.log('Sending Service Request Data (Map Context):', Object.fromEntries(formData));
-                        let fetchResponse; // Declare fetchResponse here to access in catch block
+                        let fetchResponse;
 
                         try {
-                            fetchResponse = await fetch(cachilupi_pet_vars.ajaxurl, { // Assign to outer scope variable
+                            fetchResponse = await fetch(cachilupi_pet_vars.ajaxurl, {
                                 method: 'POST',
                                 body: formData
                             });
 
                             if (!fetchResponse.ok) {
-                                // Try to parse error from server if possible
                                 let errorMsg = `Error HTTP: ${fetchResponse.status}`;
-                                // Attempt to read response text for more detail, even for non-JSON error responses.
                                 try {
                                     const errorText = await fetchResponse.text();
                                     console.error("Raw error response from server (Map Context):", errorText);
-                                    // Try to parse as JSON if possible, otherwise use text.
                                     try {
                                         const errorData = JSON.parse(errorText);
                                         errorMsg = errorData.data && errorData.data.message ? errorData.data.message : errorMsg;
                                     } catch (e) {
-                                        // If not JSON, use a snippet of the text or a generic message
                                         errorMsg = `Server error: ${fetchResponse.statusText}. Check console for raw response.`;
                                     }
-                                } catch (e) { /* Ignore if reading text also fails */ }
+                                } catch (e) {  }
                                 throw new Error(errorMsg);
                             }
 
-                            const responseData = await fetchResponse.json(); // This can throw SyntaxError
+                            const responseData = await fetchResponse.json();
                             console.log('Fetch Response (Map Context):', responseData);
 
                             if (responseData.success) {
@@ -483,9 +470,9 @@
                                 showFeedbackMessage(errorMessage, 'error');
                             }
                         } catch (error) {
-                            console.error('Fetch Error (Map Context):', error); // Log the original error
+                            console.error('Fetch Error (Map Context):', error);
 
-                            if (error instanceof SyntaxError && fetchResponse) { // Check if fetchResponse is defined
+                            if (error instanceof SyntaxError && fetchResponse) {
                                 fetchResponse.text().then(text => {
                                     console.error("Raw non-JSON response from server (Map Context):", text);
                                     showFeedbackMessage(`Error del servidor: Formato de respuesta inesperado. Revise la consola para más detalles.`, 'error');
@@ -517,16 +504,16 @@
             handleFormWithoutMap();
         }
 
-        const handleFormWithoutMap = () => { // Converted to const arrow
+        const handleFormWithoutMap = () => {
             if (!serviceDateInput) serviceDateInput = document.getElementById('service-date');
             if (!serviceTimeInput) serviceTimeInput = document.getElementById('service-time');
             if (!petTypeSelect) petTypeSelect = document.getElementById('cachilupi-pet-pet-type');
             if (!notesTextArea) notesTextArea = document.getElementById('cachilupi-pet-notes');
             if (!petInstructionsTextArea) petInstructionsTextArea = document.getElementById('cachilupi-pet-instructions');
             if (!submitButton) submitButton = document.getElementById('submit-service-request');
-            pickupGeocoderInput = document.getElementById('pickup-location-input'); // These are just standard inputs now
+            pickupGeocoderInput = document.getElementById('pickup-location-input');
             dropoffGeocoderInput = document.getElementById('dropoff-location-input');
-            if (!pickupGeocoderContainer) pickupGeocoderContainer = document.getElementById('pickup-geocoder-container'); // May not exist or be simple divs
+            if (!pickupGeocoderContainer) pickupGeocoderContainer = document.getElementById('pickup-geocoder-container');
             if (!dropoffGeocoderContainer) dropoffGeocoderContainer = document.getElementById('dropoff-geocoder-container');
             if (!distanceElement) distanceElement = document.getElementById('cachilupi-pet-distance');
 
@@ -550,7 +537,7 @@
             }
             if (serviceTimeInput) {
                 serviceTimeInput.addEventListener('input', validateFormNoMap);
-                serviceTimeInput.addEventListener('blur', function() { // 'this' context
+                serviceTimeInput.addEventListener('blur', function() {
                     const timeValue = this.value;
                     if (timeValue) {
                         let [hours, minutes] = timeValue.split(':');
@@ -567,11 +554,11 @@
             }
             if (petTypeSelect) petTypeSelect.addEventListener('change', validateFormNoMap);
             if (notesTextArea) notesTextArea.addEventListener('input', validateFormNoMap);
-            if (petInstructionsTextArea) petInstructionsTextArea.addEventListener('input', validateFormNoMap); // No specific validation, but trigger main validation flow
+            if (petInstructionsTextArea) petInstructionsTextArea.addEventListener('input', validateFormNoMap);
 
 
             if (submitButton) {
-                submitButton.addEventListener('click', async (event) => { // Made async
+                submitButton.addEventListener('click', async (event) => {
                     event.preventDefault();
                     if (validateForm(false)) {
                         submitButton.disabled = true;
@@ -602,10 +589,10 @@
                             formData.append(key, serviceRequestData[key]);
                         }
                         console.log('Sending Service Request Data (Non-Map Context):', Object.fromEntries(formData));
-                        let fetchResponse; // Declare fetchResponse here
+                        let fetchResponse;
 
                         try {
-                            fetchResponse = await fetch(cachilupi_pet_vars.ajaxurl, { // Assign to outer scope variable
+                            fetchResponse = await fetch(cachilupi_pet_vars.ajaxurl, {
                                 method: 'POST',
                                 body: formData
                             });
@@ -621,11 +608,11 @@
                                     } catch(e){
                                         errorMsg = `Server error: ${fetchResponse.statusText}. Check console for raw response.`;
                                     }
-                                } catch (e) { /* Ignore */ }
+                                } catch (e) {  }
                                 throw new Error(errorMsg);
                             }
 
-                            const responseData = await fetchResponse.json(); // This can throw SyntaxError
+                            const responseData = await fetchResponse.json();
                             console.log('Fetch Response (Non-Map Context):', responseData);
 
                             if (responseData.success) {
@@ -644,7 +631,7 @@
                                 showFeedbackMessage(errorMessage, 'error');
                             }
                         } catch (error) {
-                            console.error('Fetch Error (Non-Map Context):', error); // Log the original error
+                            console.error('Fetch Error (Non-Map Context):', error);
 
                             if (error instanceof SyntaxError && fetchResponse) {
                                 fetchResponse.text().then(text => {
@@ -680,8 +667,8 @@
         let driverMarker = null;
 
         console.log('maps.js: Setting up "Seguir Viaje" button listener.');
-        $(document).on('click', '.cachilupi-follow-driver-btn', function() { // Keep 'this' or change to e.currentTarget
-            const $button = $(this); // 'this' refers to the clicked button
+        $(document).on('click', '.cachilupi-follow-driver-btn', function() {
+            const $button = $(this);
             console.log('Botón "Seguir Viaje" clickeado.');
             currentFollowingRequestId = $button.data('request-id');
             console.log('Request ID:', currentFollowingRequestId);
@@ -697,7 +684,7 @@
             if (typeof mapboxgl !== 'undefined' && !mapboxgl.accessToken && cachilupi_pet_vars.mapbox_access_token) {
                 mapboxgl.accessToken = cachilupi_pet_vars.mapbox_access_token;
             }
-            
+
             if (typeof mapboxgl === 'undefined' || !mapboxgl.accessToken) {
                 console.error("Mapbox GL JS no está cargado o falta el token de acceso.");
                 alert("Error al cargar el mapa: Mapbox no está disponible.");
@@ -714,7 +701,7 @@
                         center: [-70.6693, -33.4489], zoom: 9
                     });
                     clientFollowMap.addControl(new mapboxgl.NavigationControl());
-                    clientFollowMap.on('load', () => clientFollowMap.resize() ); // Arrow function
+                    clientFollowMap.on('load', () => clientFollowMap.resize() );
                 } catch (e) {
                     console.error("Error inicializando el mapa de seguimiento del cliente:", e);
                     alert("Error al cargar el mapa de seguimiento.");
@@ -722,16 +709,16 @@
                     return;
                 }
             }
-            
+
             if (clientFollowMap) clientFollowMap.resize();
             if (followInterval) clearInterval(followInterval);
 
             console.log('Iniciando fetch de ubicación para request ID:', currentFollowingRequestId);
             fetchDriverLocationForClient(currentFollowingRequestId);
-            followInterval = setInterval(() => fetchDriverLocationForClient(currentFollowingRequestId), 15000); // Arrow
+            followInterval = setInterval(() => fetchDriverLocationForClient(currentFollowingRequestId), 15000);
         });
 
-        $('#cachilupi-close-follow-modal').on('click', () => { // Arrow
+        $('#cachilupi-close-follow-modal').on('click', () => {
             $('#cachilupi-follow-modal').hide();
             console.log('Modal de seguimiento cerrado.');
             if (followInterval) { clearInterval(followInterval); followInterval = null; }
@@ -758,7 +745,7 @@
                     try {
                         const errorData = await response.json();
                         errorMsg = errorData.data && errorData.data.message ? errorData.data.message : errorMsg;
-                    } catch (e) { /* Ignore */ }
+                    } catch (e) {  }
                     throw new Error(errorMsg);
                 }
 
@@ -767,7 +754,7 @@
                 if (responseData.success && responseData.data.latitude && responseData.data.longitude) {
                     console.log('Ubicación recibida:', responseData.data);
                     const driverPosition = [parseFloat(responseData.data.longitude), parseFloat(responseData.data.latitude)];
-                    if (clientFollowMap && typeof clientFollowMap.getStyle === 'function') { // Check if map is initialized and not removed
+                    if (clientFollowMap && typeof clientFollowMap.getStyle === 'function') {
                         if (!driverMarker) {
                             driverMarker = new mapboxgl.Marker().setLngLat(driverPosition).addTo(clientFollowMap);
                         } else {
@@ -786,8 +773,6 @@
             } catch (error) {
                 console.error('Error al obtener ubicación del conductor:', error.message);
                 $('#cachilupi-follow-modal-title').text('Error al obtener ubicación');
-                 // Optionally, provide a toast for persistent errors, but be mindful of interval calls
-                // showGlobalToast(`Error al obtener ubicación: ${error.message}`, 'error');
             }
         };
 
@@ -796,26 +781,29 @@
             const toast = $('<div>').addClass('cachilupi-toast-notification').addClass(type).text(message).appendTo('body');
             toast.width();
             toast.addClass('show');
-            setTimeout(() => { // Arrow
+            setTimeout(() => {
                 toast.removeClass('show');
-                setTimeout(() => toast.remove(), 500); // Arrow
+                setTimeout(() => toast.remove(), 500);
             }, duration);
         };
 
         const updateClientRequestsTable = (statuses) => {
             if (!statuses || !Array.isArray(statuses)) {
-                console.warn('updateClientRequestsTable: `statuses` is undefined or not an array.');
+                console.warn('updateClientRequestsTable: `statuses` is undefined or not an array. Called with:', statuses);
                 return;
             }
-            // Ensure cachilupi_pet_vars is available for text_follow_driver
-            const followButtonText = (typeof cachilupi_pet_vars !== 'undefined' && cachilupi_pet_vars.text_follow_driver) 
-                                   ? cachilupi_pet_vars.text_follow_driver 
+
+            const followButtonText = (typeof cachilupi_pet_vars !== 'undefined' && cachilupi_pet_vars.text_follow_driver)
+                                   ? cachilupi_pet_vars.text_follow_driver
                                    : 'Seguir Viaje';
 
             $('.cachilupi-client-requests-panel table.widefat tbody tr').each(function() {
                 const $row = $(this);
                 const requestId = $row.data('request-id');
-                if (typeof requestId === 'undefined') return; // Skip row if no request-id
+                if (typeof requestId === 'undefined') {
+                    console.warn('updateClientRequestsTable: Row found with undefined request-id.');
+                    return;
+                }
 
                 const currentStatusCell = $row.find('td.request-status');
                 const currentFollowButtonCell = $row.find('td[data-label="Seguimiento:"]');
@@ -823,98 +811,110 @@
                 const requestUpdate = statuses.find(req => String(req.request_id) === String(requestId));
 
                 if (requestUpdate) {
-                    const oldStatusDisplay = currentStatusCell.text();
-                    if (oldStatusDisplay !== requestUpdate.status_display) {
-                        currentStatusCell.text(requestUpdate.status_display);
-                        if (oldStatusDisplay && oldStatusDisplay !== '--' && oldStatusDisplay !== requestUpdate.status_display) {
-                            showGlobalToast(`Tu solicitud #${requestId} ahora está: ${requestUpdate.status_display}`, 'info');
+
+                    const oldStatusDisplay = currentStatusCell.find('span').text();
+                    const newStatusSlugFromServer = requestUpdate.status_slug;
+                    const newStatusDisplay = requestUpdate.status_display;
+
+                    if (oldStatusDisplay !== newStatusDisplay) {
+                        currentStatusCell.find('span').text(newStatusDisplay);
+                        currentStatusCell.removeClass (function (index, className) {
+                            return (className.match (/(^|\s)request-status-\S+/g) || []).join(' ');
+                        }).addClass('request-status-' + newStatusSlugFromServer);
+
+                        if (oldStatusDisplay && oldStatusDisplay !== '--' && oldStatusDisplay !== newStatusDisplay) {
+                            showGlobalToast(`Tu solicitud #${requestId} ahora está: ${newStatusDisplay}`, 'info');
                         }
-                        console.log(`Solicitud ID ${requestId} estado actualizado a: ${requestUpdate.status_display}`);
                     }
 
-                    const followButton = $row.find('.cachilupi-follow-driver-btn');
-                    const shouldShowFollowButton = requestUpdate.status_slug === 'on_the_way' && requestUpdate.driver_id;
+                    let followCellHTML = '--';
+                    const statusSlugForSwitch = newStatusSlugFromServer;
 
-                    if (shouldShowFollowButton) {
-                        if (!followButton.length) { // Button doesn't exist, create it
-                            const newButtonHTML = `<button class="button cachilupi-follow-driver-btn" data-request-id="${requestId}">${followButtonText}</button>`;
-                            currentFollowButtonCell.html(newButtonHTML);
-                            // Show toast only when button is newly added and it's a transition to on_the_way
-                            if (oldStatusDisplay !== requestUpdate.status_display) { // Check if status actually changed
-                               showGlobalToast(`¡El conductor para tu solicitud #${requestId} está en camino! Puedes seguir el viaje.`, 'success');
+                    switch (statusSlugForSwitch) {
+                        case 'on_the_way':
+                            if (requestUpdate.driver_id) {
+                                followCellHTML = `<button class="button cachilupi-follow-driver-btn" data-request-id="${requestId}">${followButtonText}</button>`;
+                            } else {
+                                followCellHTML = 'Información no disponible';
                             }
-                            console.log(`Solicitud ID ${requestId}: Botón "Seguir Viaje" añadido.`);
-                        } else if (!followButton.is(':visible')) { // Button exists but is hidden, show it
-                            followButton.show();
-                            console.log(`Solicitud ID ${requestId}: Botón "Seguir Viaje" mostrado.`);
-                        }
-                    } else { // Should not show follow button
-                        if (followButton.length && followButton.is(':visible')) { // Button exists and is visible, hide it
-                            followButton.hide();
-                            console.log(`Solicitud ID ${requestId}: Botón "Seguir Viaje" ocultado.`);
-                        }
-                        // If button is already hidden or doesn't exist, ensure placeholder is correct
-                        // This check is to prevent replacing '--' with '--' unnecessarily if button was never there.
-                        if (currentFollowButtonCell.find('.cachilupi-follow-driver-btn').length === 0 && currentFollowButtonCell.text().trim() !== '--') {
-                           currentFollowButtonCell.html('--');
-                        } else if (followButton.length && !followButton.is(':visible') && currentFollowButtonCell.text().trim() !== '--') {
-                            // If button is present but hidden, we still want the cell to show '--' if button is not the only content
-                            // This case is tricky; usually hiding the button is enough.
-                            // If the button is the only content, hiding it would leave the cell empty.
-                            // The most robust way is to ensure html is '--' if button is hidden.
-                            // However, if other text could be in the cell, this is destructive.
-                            // Let's assume if followButton exists, it's the only meaningful content.
-                            // If it's hidden, the cell should appear as if it has no button.
-                            // For simplicity, if the button is hidden, the cell might appear empty or show button's text if not fully hidden by CSS.
-                            // Let's ensure the placeholder is set if the button is hidden.
-                             if(currentFollowButtonCell.text().trim() !== '--') {
-                                // currentFollowButtonCell.html('--'); // This might be too aggressive if button is just display:none
-                             }
-                        }
+                            break;
+                        case 'pending':
+                            followCellHTML = 'Disponible cuando se acepte el viaje';
+                            break;
+                        case 'accepted':
+                            followCellHTML = 'Disponible cuando el viaje inicie';
+                            break;
+                        case 'arrived':
+                            followCellHTML = 'Conductor en origen, esperando recogida';
+                            break;
+                        case 'picked_up':
+                            followCellHTML = 'Mascota recogida, viaje en curso';
+                            break;
+                        case 'completed':
+                            followCellHTML = 'Viaje finalizado';
+                            break;
+                        case 'rejected':
+                            followCellHTML = 'Viaje rechazado';
+                            break;
+                        default:
+                            followCellHTML = '--';
+                            break;
                     }
+
+                    currentFollowButtonCell.html(followCellHTML);
+
+                } else {
                 }
             });
         };
 
-        const fetchClientRequestsStatus = async () => { // To be refactored
+        const fetchClientRequestsStatus = async () => {
             if ($('.cachilupi-client-requests-panel').length === 0) {
                 if (clientRequestsStatusInterval) {
                     clearInterval(clientRequestsStatusInterval);
                     clientRequestsStatusInterval = null;
-                    console.log('maps.js: Panel de solicitudes del cliente no encontrado. Sondeo de estado detenido.');
                 }
                 return;
             }
             const url = new URL(cachilupi_pet_vars.ajaxurl);
             url.searchParams.append('action', 'cachilupi_get_client_requests_status');
             url.searchParams.append('security', cachilupi_pet_vars.get_requests_status_nonce);
+            let response;
 
             try {
-                const response = await fetch(url);
+                response = await fetch(url);
                 if (!response.ok) {
                     let errorMsg = `Error HTTP: ${response.status}`;
                     try {
-                        const errorData = await response.json();
-                        errorMsg = errorData.data && errorData.data.message ? errorData.data.message : errorMsg;
-                    } catch (e) { /* Ignore */ }
+                        const errorText = await response.text();
+                        console.error('fetchClientRequestsStatus: Non-OK HTTP response text:', errorText); // Keep this error log
+                        try {
+                            const errorData = JSON.parse(errorText);
+                            errorMsg = errorData.data && errorData.data.message ? errorData.data.message : errorMsg;
+                        } catch (e_json) {
+                             errorMsg = `Server error (${response.status}). Check console for raw response.`;
+                        }
+                    } catch (e_text) {
+                    }
                     throw new Error(errorMsg);
                 }
                 const responseData = await response.json();
+
                 if (responseData.success && responseData.data) {
                     updateClientRequestsTable(responseData.data);
                 } else {
-                    console.warn('No se pudieron obtener los estados de las solicitudes del cliente o no se recibieron datos válidos.');
+                    console.warn('fetchClientRequestsStatus: Response not successful or data missing. Full responseData:', responseData); // Keep this warn
                 }
             } catch (error) {
-                console.error('Error al obtener los estados de las solicitudes del cliente:', error.message);
-                // showGlobalToast(`Error al actualizar estados: ${error.message}`, 'error'); // Optional: feedback for polling failure
+                console.error('fetchClientRequestsStatus: Error during fetch:', error); // Keep this error log
             }
         };
 
         if ($('.cachilupi-client-requests-panel').length > 0) {
-            console.log('maps.js: Panel de solicitudes del cliente encontrado. Iniciando sondeo de estado.');
             fetchClientRequestsStatus();
-            clientRequestsStatusInterval = setInterval(fetchClientRequestsStatus, 20000); // Arrow for setInterval callback not strictly needed as it's just calling a named func
+            clientRequestsStatusInterval = setInterval(fetchClientRequestsStatus, 20000);
+        } else {
         }
     });
 })(jQuery);
+```

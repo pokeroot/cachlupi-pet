@@ -288,13 +288,13 @@
             if (!$notificationArea.length) {
                 $notificationArea = $('<div id="driver-new-requests-notification"></div>').prependTo('.wrap');
             }
-            const message = count > 1 
-                ? `Hay ${count} nuevas solicitudes pendientes.` 
+            const message = count > 1
+                ? `Hay ${count} nuevas solicitudes pendientes.`
                 : `Hay ${count} nueva solicitud pendiente.`;
-            
+
             $notificationArea.html(`${message} <a href="#" onclick="location.reload(); return false;">Actualizar página</a>`)
                              .slideDown();
-            
+
             // Optional: Play a sound
             // const audio = new Audio('path/to/notification-sound.mp3');
             // audio.play().catch(e => console.warn("Error playing sound:", e));
@@ -346,7 +346,7 @@
         if ($('table.widefat').length > 0) { // Simple check, assumes table is always there on this panel
             const requestPollingIntervalId = setInterval(checkNewRequests, POLLING_INTERVAL);
             // Initial check soon after page load
-            setTimeout(checkNewRequests, 2000); 
+            setTimeout(checkNewRequests, 2000);
         }
 
     });
