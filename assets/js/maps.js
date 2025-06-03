@@ -758,45 +758,74 @@
             }, duration);
         };
 
-        const updateClientRequestsTable = (statuses) => { // Converted
-            if (!statuses || statuses.length === 0) return;
-            $('.cachilupi-client-requests-panel table.widefat tbody tr').each(function() { // Keep 'this' or change
-                const $row = $(this); // 'this' refers to the current tr element
+        const updateClientRequestsTable = (statuses) => {
+            if (!statuses || !Array.isArray(statuses)) {
+                console.warn('updateClientRequestsTable: `statuses` is undefined or not an array.');
+                return;
+            }
+            // Ensure cachilupi_pet_vars is available for text_follow_driver
+            const followButtonText = (typeof cachilupi_pet_vars !== 'undefined' && cachilupi_pet_vars.text_follow_driver) 
+                                   ? cachilupi_pet_vars.text_follow_driver 
+                                   : 'Seguir Viaje';
+
+            $('.cachilupi-client-requests-panel table.widefat tbody tr').each(function() {
+                const $row = $(this);
                 const requestId = $row.data('request-id');
+                if (typeof requestId === 'undefined') return; // Skip row if no request-id
+
                 const currentStatusCell = $row.find('td.request-status');
                 const currentFollowButtonCell = $row.find('td[data-label="Seguimiento:"]');
 
-                const requestUpdate = statuses.find(req => String(req.request_id) === String(requestId)); // Arrow
+                const requestUpdate = statuses.find(req => String(req.request_id) === String(requestId));
 
                 if (requestUpdate) {
                     const oldStatusDisplay = currentStatusCell.text();
-                    if (currentStatusCell.text() !== requestUpdate.status_display) {
+                    if (oldStatusDisplay !== requestUpdate.status_display) {
                         currentStatusCell.text(requestUpdate.status_display);
-                        if (oldStatusDisplay !== requestUpdate.status_display && oldStatusDisplay !== '--') {
+                        if (oldStatusDisplay && oldStatusDisplay !== '--' && oldStatusDisplay !== requestUpdate.status_display) {
                             showGlobalToast(`Tu solicitud #${requestId} ahora está: ${requestUpdate.status_display}`, 'info');
                         }
                         console.log(`Solicitud ID ${requestId} estado actualizado a: ${requestUpdate.status_display}`);
                     }
 
                     const followButton = $row.find('.cachilupi-follow-driver-btn');
-                    if (requestUpdate.status_slug === 'on_the_way' && requestUpdate.driver_id) {
-                        if (!followButton.length) {
-                            const newButtonHTML = `<button class="button cachilupi-follow-driver-btn" data-request-id="${requestId}">${cachilupi_pet_vars.text_follow_driver || 'Seguir Viaje'}</button>`;
+                    const shouldShowFollowButton = requestUpdate.status_slug === 'on_the_way' && requestUpdate.driver_id;
+
+                    if (shouldShowFollowButton) {
+                        if (!followButton.length) { // Button doesn't exist, create it
+                            const newButtonHTML = `<button class="button cachilupi-follow-driver-btn" data-request-id="${requestId}">${followButtonText}</button>`;
                             currentFollowButtonCell.html(newButtonHTML);
-                            if (requestUpdate.status_slug === 'on_the_way') {
-                                showGlobalToast(`¡El conductor para tu solicitud #${requestId} está en camino!`, 'success');
+                            // Show toast only when button is newly added and it's a transition to on_the_way
+                            if (oldStatusDisplay !== requestUpdate.status_display) { // Check if status actually changed
+                               showGlobalToast(`¡El conductor para tu solicitud #${requestId} está en camino! Puedes seguir el viaje.`, 'success');
                             }
                             console.log(`Solicitud ID ${requestId}: Botón "Seguir Viaje" añadido.`);
-                        } else if (!followButton.is(':visible')) {
+                        } else if (!followButton.is(':visible')) { // Button exists but is hidden, show it
                             followButton.show();
                             console.log(`Solicitud ID ${requestId}: Botón "Seguir Viaje" mostrado.`);
                         }
-                    } else {
-                        if (followButton.length && followButton.is(':visible')) {
+                    } else { // Should not show follow button
+                        if (followButton.length && followButton.is(':visible')) { // Button exists and is visible, hide it
                             followButton.hide();
                             console.log(`Solicitud ID ${requestId}: Botón "Seguir Viaje" ocultado.`);
-                        } else if (followButton.length === 0 && currentFollowButtonCell.text().trim() !== '--') {
-                            currentFollowButtonCell.html('--');
+                        }
+                        // If button is already hidden or doesn't exist, ensure placeholder is correct
+                        // This check is to prevent replacing '--' with '--' unnecessarily if button was never there.
+                        if (currentFollowButtonCell.find('.cachilupi-follow-driver-btn').length === 0 && currentFollowButtonCell.text().trim() !== '--') {
+                           currentFollowButtonCell.html('--');
+                        } else if (followButton.length && !followButton.is(':visible') && currentFollowButtonCell.text().trim() !== '--') {
+                            // If button is present but hidden, we still want the cell to show '--' if button is not the only content
+                            // This case is tricky; usually hiding the button is enough.
+                            // If the button is the only content, hiding it would leave the cell empty.
+                            // The most robust way is to ensure html is '--' if button is hidden.
+                            // However, if other text could be in the cell, this is destructive.
+                            // Let's assume if followButton exists, it's the only meaningful content.
+                            // If it's hidden, the cell should appear as if it has no button.
+                            // For simplicity, if the button is hidden, the cell might appear empty or show button's text if not fully hidden by CSS.
+                            // Let's ensure the placeholder is set if the button is hidden.
+                             if(currentFollowButtonCell.text().trim() !== '--') {
+                                // currentFollowButtonCell.html('--'); // This might be too aggressive if button is just display:none
+                             }
                         }
                     }
                 }
