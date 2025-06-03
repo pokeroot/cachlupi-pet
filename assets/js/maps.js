@@ -8,7 +8,6 @@
     }
 
     jQuery(document).ready(($) => { // Arrow function for ready callback
-        console.log('maps.js: Document ready. Initializing...');
         const mapElement = document.getElementById('cachilupi-pet-map');
 
         // --- Declare variables ---
@@ -262,12 +261,12 @@
                         messageElement.attr('aria-live', 'polite');
                     }
 
-                    const $bookingForm = $('.cachilupi-booking-form');
+                    const $bookingForm = $('.cachilupi-booking-form'); 
 
                     if (submitButton && $(submitButton).length) {
                         $(submitButton).after(messageElement);
                     } else if ($bookingForm.length) {
-                        $bookingForm.prepend(messageElement);
+                        $bookingForm.prepend(messageElement); 
                     } else {
                         $('body').prepend(messageElement);
                         console.warn('Submit button or booking form not found for feedback message. Appended to body.');
@@ -275,7 +274,7 @@
 
                     setTimeout(() => {
                         messageElement.fadeOut('slow', () => messageElement.remove());
-                    }, 5000);
+                    }, 5000); 
                 };
 
                 const showError = (fieldElement, message) => {
@@ -354,7 +353,7 @@
                 }
                 if (serviceTimeInput) {
                     serviceTimeInput.addEventListener('input', () => validateForm(true));
-                    serviceTimeInput.addEventListener('blur', function() {
+                    serviceTimeInput.addEventListener('blur', function() { 
                         const timeValue = this.value;
                         if (timeValue) {
                             let [hours, minutes] = timeValue.split(':');
@@ -371,10 +370,10 @@
                 }
                 if (petTypeSelect) petTypeSelect.addEventListener('change', () => validateForm(true));
                 if (notesTextArea) notesTextArea.addEventListener('input', () => validateForm(true));
-                if (petInstructionsTextArea) petInstructionsTextArea.addEventListener('input', () => validateForm(true));
+                if (petInstructionsTextArea) petInstructionsTextArea.addEventListener('input', () => validateForm(true)); 
 
                 if (submitButton) {
-                    submitButton.addEventListener('click', async (event) => {
+                    submitButton.addEventListener('click', async (event) => { 
                         event.preventDefault();
                         if (!validateForm(true)) return;
 
@@ -422,11 +421,10 @@
                             formData.append(key, serviceRequestData[key]);
                         }
 
-                        console.log('Sending Service Request Data (Map Context):', Object.fromEntries(formData));
-                        let fetchResponse;
+                        let fetchResponse; 
 
                         try {
-                            fetchResponse = await fetch(cachilupi_pet_vars.ajaxurl, {
+                            fetchResponse = await fetch(cachilupi_pet_vars.ajaxurl, { 
                                 method: 'POST',
                                 body: formData
                             });
@@ -446,8 +444,7 @@
                                 throw new Error(errorMsg);
                             }
 
-                            const responseData = await fetchResponse.json();
-                            console.log('Fetch Response (Map Context):', responseData);
+                            const responseData = await fetchResponse.json(); 
 
                             if (responseData.success) {
                                 showFeedbackMessage('Solicitud enviada con éxito.', 'success');
@@ -470,9 +467,9 @@
                                 showFeedbackMessage(errorMessage, 'error');
                             }
                         } catch (error) {
-                            console.error('Fetch Error (Map Context):', error);
+                            console.error('Fetch Error (Map Context):', error); 
 
-                            if (error instanceof SyntaxError && fetchResponse) {
+                            if (error instanceof SyntaxError && fetchResponse) { 
                                 fetchResponse.text().then(text => {
                                     console.error("Raw non-JSON response from server (Map Context):", text);
                                     showFeedbackMessage(`Error del servidor: Formato de respuesta inesperado. Revise la consola para más detalles.`, 'error');
@@ -500,20 +497,19 @@
                 handleFormWithoutMap();
             }
         } else {
-            console.log('Map element not found. Assuming non-map context for form handling.');
             handleFormWithoutMap();
         }
 
-        const handleFormWithoutMap = () => {
+        const handleFormWithoutMap = () => { 
             if (!serviceDateInput) serviceDateInput = document.getElementById('service-date');
             if (!serviceTimeInput) serviceTimeInput = document.getElementById('service-time');
             if (!petTypeSelect) petTypeSelect = document.getElementById('cachilupi-pet-pet-type');
             if (!notesTextArea) notesTextArea = document.getElementById('cachilupi-pet-notes');
             if (!petInstructionsTextArea) petInstructionsTextArea = document.getElementById('cachilupi-pet-instructions');
             if (!submitButton) submitButton = document.getElementById('submit-service-request');
-            pickupGeocoderInput = document.getElementById('pickup-location-input');
+            pickupGeocoderInput = document.getElementById('pickup-location-input'); 
             dropoffGeocoderInput = document.getElementById('dropoff-location-input');
-            if (!pickupGeocoderContainer) pickupGeocoderContainer = document.getElementById('pickup-geocoder-container');
+            if (!pickupGeocoderContainer) pickupGeocoderContainer = document.getElementById('pickup-geocoder-container'); 
             if (!dropoffGeocoderContainer) dropoffGeocoderContainer = document.getElementById('dropoff-geocoder-container');
             if (!distanceElement) distanceElement = document.getElementById('cachilupi-pet-distance');
 
@@ -537,7 +533,7 @@
             }
             if (serviceTimeInput) {
                 serviceTimeInput.addEventListener('input', validateFormNoMap);
-                serviceTimeInput.addEventListener('blur', function() {
+                serviceTimeInput.addEventListener('blur', function() { 
                     const timeValue = this.value;
                     if (timeValue) {
                         let [hours, minutes] = timeValue.split(':');
@@ -554,11 +550,11 @@
             }
             if (petTypeSelect) petTypeSelect.addEventListener('change', validateFormNoMap);
             if (notesTextArea) notesTextArea.addEventListener('input', validateFormNoMap);
-            if (petInstructionsTextArea) petInstructionsTextArea.addEventListener('input', validateFormNoMap);
+            if (petInstructionsTextArea) petInstructionsTextArea.addEventListener('input', validateFormNoMap); 
 
 
             if (submitButton) {
-                submitButton.addEventListener('click', async (event) => {
+                submitButton.addEventListener('click', async (event) => { 
                     event.preventDefault();
                     if (validateForm(false)) {
                         submitButton.disabled = true;
@@ -588,11 +584,10 @@
                         for (const key in serviceRequestData) {
                             formData.append(key, serviceRequestData[key]);
                         }
-                        console.log('Sending Service Request Data (Non-Map Context):', Object.fromEntries(formData));
-                        let fetchResponse;
+                        let fetchResponse; 
 
                         try {
-                            fetchResponse = await fetch(cachilupi_pet_vars.ajaxurl, {
+                            fetchResponse = await fetch(cachilupi_pet_vars.ajaxurl, { 
                                 method: 'POST',
                                 body: formData
                             });
@@ -612,8 +607,7 @@
                                 throw new Error(errorMsg);
                             }
 
-                            const responseData = await fetchResponse.json();
-                            console.log('Fetch Response (Non-Map Context):', responseData);
+                            const responseData = await fetchResponse.json(); 
 
                             if (responseData.success) {
                                 showFeedbackMessage('Solicitud enviada con éxito.', 'success');
@@ -631,7 +625,7 @@
                                 showFeedbackMessage(errorMessage, 'error');
                             }
                         } catch (error) {
-                            console.error('Fetch Error (Non-Map Context):', error);
+                            console.error('Fetch Error (Non-Map Context):', error); 
 
                             if (error instanceof SyntaxError && fetchResponse) {
                                 fetchResponse.text().then(text => {
@@ -666,12 +660,9 @@
         let currentFollowingRequestId = null;
         let driverMarker = null;
 
-        console.log('maps.js: Setting up "Seguir Viaje" button listener.');
-        $(document).on('click', '.cachilupi-follow-driver-btn', function() {
-            const $button = $(this);
-            console.log('Botón "Seguir Viaje" clickeado.');
+        $(document).on('click', '.cachilupi-follow-driver-btn', function() { 
+            const $button = $(this); 
             currentFollowingRequestId = $button.data('request-id');
-            console.log('Request ID:', currentFollowingRequestId);
 
             if (!currentFollowingRequestId) {
                 console.error('Error: No se pudo obtener el ID de la solicitud para seguir.');
@@ -679,7 +670,6 @@
                 return;
             }
             $('#cachilupi-follow-modal').show();
-            console.log('Modal de seguimiento mostrado.');
 
             if (typeof mapboxgl !== 'undefined' && !mapboxgl.accessToken && cachilupi_pet_vars.mapbox_access_token) {
                 mapboxgl.accessToken = cachilupi_pet_vars.mapbox_access_token;
@@ -701,7 +691,7 @@
                         center: [-70.6693, -33.4489], zoom: 9
                     });
                     clientFollowMap.addControl(new mapboxgl.NavigationControl());
-                    clientFollowMap.on('load', () => clientFollowMap.resize() );
+                    clientFollowMap.on('load', () => clientFollowMap.resize() ); 
                 } catch (e) {
                     console.error("Error inicializando el mapa de seguimiento del cliente:", e);
                     alert("Error al cargar el mapa de seguimiento.");
@@ -713,14 +703,12 @@
             if (clientFollowMap) clientFollowMap.resize();
             if (followInterval) clearInterval(followInterval);
 
-            console.log('Iniciando fetch de ubicación para request ID:', currentFollowingRequestId);
             fetchDriverLocationForClient(currentFollowingRequestId);
-            followInterval = setInterval(() => fetchDriverLocationForClient(currentFollowingRequestId), 15000);
+            followInterval = setInterval(() => fetchDriverLocationForClient(currentFollowingRequestId), 15000); 
         });
 
-        $('#cachilupi-close-follow-modal').on('click', () => {
+        $('#cachilupi-close-follow-modal').on('click', () => { 
             $('#cachilupi-follow-modal').hide();
-            console.log('Modal de seguimiento cerrado.');
             if (followInterval) { clearInterval(followInterval); followInterval = null; }
             currentFollowingRequestId = null;
             if (driverMarker) { driverMarker.remove(); driverMarker = null; }
@@ -752,9 +740,8 @@
                 const responseData = await response.json();
 
                 if (responseData.success && responseData.data.latitude && responseData.data.longitude) {
-                    console.log('Ubicación recibida:', responseData.data);
                     const driverPosition = [parseFloat(responseData.data.longitude), parseFloat(responseData.data.latitude)];
-                    if (clientFollowMap && typeof clientFollowMap.getStyle === 'function') {
+                    if (clientFollowMap && typeof clientFollowMap.getStyle === 'function') { 
                         if (!driverMarker) {
                             driverMarker = new mapboxgl.Marker().setLngLat(driverPosition).addTo(clientFollowMap);
                         } else {
@@ -781,20 +768,20 @@
             const toast = $('<div>').addClass('cachilupi-toast-notification').addClass(type).text(message).appendTo('body');
             toast.width();
             toast.addClass('show');
-            setTimeout(() => {
+            setTimeout(() => { 
                 toast.removeClass('show');
-                setTimeout(() => toast.remove(), 500);
+                setTimeout(() => toast.remove(), 500); 
             }, duration);
         };
 
         const updateClientRequestsTable = (statuses) => {
             if (!statuses || !Array.isArray(statuses)) {
-                console.warn('updateClientRequestsTable: `statuses` is undefined or not an array. Called with:', statuses);
+                console.warn('updateClientRequestsTable: `statuses` is undefined or not an array. Called with:', statuses); 
                 return;
             }
-
-            const followButtonText = (typeof cachilupi_pet_vars !== 'undefined' && cachilupi_pet_vars.text_follow_driver)
-                                   ? cachilupi_pet_vars.text_follow_driver
+            
+            const followButtonText = (typeof cachilupi_pet_vars !== 'undefined' && cachilupi_pet_vars.text_follow_driver) 
+                                   ? cachilupi_pet_vars.text_follow_driver 
                                    : 'Seguir Viaje';
 
             $('.cachilupi-client-requests-panel table.widefat tbody tr').each(function() {
@@ -802,22 +789,22 @@
                 const requestId = $row.data('request-id');
                 if (typeof requestId === 'undefined') {
                     console.warn('updateClientRequestsTable: Row found with undefined request-id.');
-                    return;
+                    return; 
                 }
 
                 const currentStatusCell = $row.find('td.request-status');
-                const currentFollowButtonCell = $row.find('td[data-label="Seguimiento:"]');
+                const currentFollowButtonCell = $row.find('td[data-label="Seguimiento:"]'); 
 
                 const requestUpdate = statuses.find(req => String(req.request_id) === String(requestId));
 
                 if (requestUpdate) {
-
-                    const oldStatusDisplay = currentStatusCell.find('span').text();
-                    const newStatusSlugFromServer = requestUpdate.status_slug;
+                    
+                    const oldStatusDisplay = currentStatusCell.find('span').text(); 
+                    const newStatusSlugFromServer = requestUpdate.status_slug; 
                     const newStatusDisplay = requestUpdate.status_display;
 
                     if (oldStatusDisplay !== newStatusDisplay) {
-                        currentStatusCell.find('span').text(newStatusDisplay);
+                        currentStatusCell.find('span').text(newStatusDisplay); 
                         currentStatusCell.removeClass (function (index, className) {
                             return (className.match (/(^|\s)request-status-\S+/g) || []).join(' ');
                         }).addClass('request-status-' + newStatusSlugFromServer);
@@ -826,38 +813,38 @@
                             showGlobalToast(`Tu solicitud #${requestId} ahora está: ${newStatusDisplay}`, 'info');
                         }
                     }
-
-                    let followCellHTML = '--';
-                    const statusSlugForSwitch = newStatusSlugFromServer;
+                    
+                    let followCellHTML = '--'; 
+                    const statusSlugForSwitch = newStatusSlugFromServer; 
 
                     switch (statusSlugForSwitch) {
                         case 'on_the_way':
                             if (requestUpdate.driver_id) {
                                 followCellHTML = `<button class="button cachilupi-follow-driver-btn" data-request-id="${requestId}">${followButtonText}</button>`;
                             } else {
-                                followCellHTML = 'Información no disponible';
+                                followCellHTML = 'Información no disponible'; 
                             }
                             break;
                         case 'pending':
-                            followCellHTML = 'Disponible cuando se acepte el viaje';
+                            followCellHTML = 'Disponible cuando se acepte el viaje'; 
                             break;
                         case 'accepted':
-                            followCellHTML = 'Disponible cuando el viaje inicie';
+                            followCellHTML = 'Disponible cuando el viaje inicie'; 
                             break;
                         case 'arrived':
-                            followCellHTML = 'Conductor en origen, esperando recogida';
+                            followCellHTML = 'Conductor en origen, esperando recogida'; 
                             break;
                         case 'picked_up':
-                            followCellHTML = 'Mascota recogida, viaje en curso';
+                            followCellHTML = 'Mascota recogida, viaje en curso'; 
                             break;
                         case 'completed':
-                            followCellHTML = 'Viaje finalizado';
+                            followCellHTML = 'Viaje finalizado'; 
                             break;
                         case 'rejected':
-                            followCellHTML = 'Viaje rechazado';
+                            followCellHTML = 'Viaje rechazado'; 
                             break;
                         default:
-                            followCellHTML = '--';
+                            followCellHTML = '--'; 
                             break;
                     }
 
@@ -868,7 +855,7 @@
             });
         };
 
-        const fetchClientRequestsStatus = async () => {
+        const fetchClientRequestsStatus = async () => { 
             if ($('.cachilupi-client-requests-panel').length === 0) {
                 if (clientRequestsStatusInterval) {
                     clearInterval(clientRequestsStatusInterval);
@@ -879,14 +866,14 @@
             const url = new URL(cachilupi_pet_vars.ajaxurl);
             url.searchParams.append('action', 'cachilupi_get_client_requests_status');
             url.searchParams.append('security', cachilupi_pet_vars.get_requests_status_nonce);
-            let response;
+            let response; 
 
             try {
-                response = await fetch(url);
+                response = await fetch(url); 
                 if (!response.ok) {
                     let errorMsg = `Error HTTP: ${response.status}`;
                     try {
-                        const errorText = await response.text();
+                        const errorText = await response.text(); 
                         console.error('fetchClientRequestsStatus: Non-OK HTTP response text:', errorText); // Keep this error log
                         try {
                             const errorData = JSON.parse(errorText);
@@ -894,12 +881,12 @@
                         } catch (e_json) {
                              errorMsg = `Server error (${response.status}). Check console for raw response.`;
                         }
-                    } catch (e_text) {
+                    } catch (e_text) { 
                     }
                     throw new Error(errorMsg);
                 }
                 const responseData = await response.json();
-
+                
                 if (responseData.success && responseData.data) {
                     updateClientRequestsTable(responseData.data);
                 } else {
@@ -911,10 +898,9 @@
         };
 
         if ($('.cachilupi-client-requests-panel').length > 0) {
-            fetchClientRequestsStatus();
-            clientRequestsStatusInterval = setInterval(fetchClientRequestsStatus, 20000);
+            fetchClientRequestsStatus(); 
+            clientRequestsStatusInterval = setInterval(fetchClientRequestsStatus, 20000); 
         } else {
         }
     });
 })(jQuery);
-```
