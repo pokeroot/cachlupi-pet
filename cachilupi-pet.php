@@ -1215,3 +1215,57 @@ function cachilupi_pet_check_new_requests_ajax_handler() {
     wp_die();
 }
 add_action('wp_ajax_cachilupi_check_new_requests', 'cachilupi_pet_check_new_requests_ajax_handler');
+
+// AJAX Handler for getting client requests status (for client panel polling)
+function cachilupi_pet_get_client_requests_status_ajax_handler() {
+    // Security & Permissions
+    $user = wp_get_current_user();
+    if ( ! is_user_logged_in() || ! array_intersect( array( 'client', 'administrator' ), (array) $user->roles ) ) {
+        wp_send_json_error(array(
+            'message' => __('Acceso no autorizado.', 'cachilupi-pet')
+        ));
+        wp_die();
+    }
+
+    // Verify AJAX nonce
+    check_ajax_referer('cachilupi_pet_get_requests_status_nonce', 'security');
+
+    // Fetch Data
+    global $wpdb;
+    $client_id = get_current_user_id();
+    $table_name = $wpdb->prefix . 'cachilupi_requests';
+
+    $client_requests = $wpdb->get_results(
+        $wpdb->prepare(
+            "SELECT id, status, driver_id FROM {$table_name} WHERE client_user_id = %d ORDER BY created_at DESC",
+            $client_id
+        )
+    );
+
+    if ( $wpdb->last_error ) {
+        // error_log("Cachilupi Pet DB Error (get_client_requests_status): " . $wpdb->last_error);
+        wp_send_json_error(array(
+            'message' => __('Error al obtener el estado de las solicitudes.', 'cachilupi-pet')
+        ));
+        wp_die();
+    }
+
+    // Process Data
+    $statuses_data = array();
+    if ( $client_requests ) {
+        foreach ( $client_requests as $request ) {
+            $status_display = cachilupi_pet_translate_status( $request->status );
+            $statuses_data[] = array(
+                'request_id'     => $request->id,
+                'status_slug'    => $request->status,
+                'status_display' => $status_display,
+                'driver_id'      => $request->driver_id ? (int) $request->driver_id : null,
+            );
+        }
+    }
+
+    // Send Response
+    wp_send_json_success( $statuses_data );
+    wp_die();
+}
+add_action('wp_ajax_cachilupi_get_client_requests_status', 'cachilupi_pet_get_client_requests_status_ajax_handler');
