@@ -904,12 +904,43 @@ function cachilupi_pet_shortcode() {
                 echo '<td class="column-columnname" data-label="' . esc_attr__('Origen:', 'cachilupi-pet') . '">' . esc_html( $request_item->pickup_address ) . '</td>';
                 echo '<td class="column-columnname" data-label="' . esc_attr__('Destino:', 'cachilupi-pet') . '">' . esc_html( $request_item->dropoff_address ) . '</td>';
                 echo '<td class="column-columnname" data-label="' . esc_attr__('Mascota:', 'cachilupi-pet') . '">' . esc_html( $request_item->pet_type ) . '</td>';
-                echo '<td class="column-columnname request-status" data-label="' . esc_attr__('Estado:', 'cachilupi-pet') . '">' . esc_html( cachilupi_pet_translate_status( $request_item->status ) ) . '</td>';
+                $status_slug_class = 'request-status-' . esc_attr( strtolower( $request_item->status ) );
+                echo '<td class="column-columnname request-status ' . $status_slug_class . '" data-label="' . esc_attr__('Estado:', 'cachilupi-pet') . '"><span>' . esc_html( cachilupi_pet_translate_status( $request_item->status ) ) . '</span></td>';
                 echo '<td class="column-columnname" data-label="' . esc_attr__('Conductor:', 'cachilupi-pet') . '">' . esc_html( $request_item->driver_name ? $request_item->driver_name : __('No asignado', 'cachilupi-pet') ) . '</td>';
                 echo '<td class="column-columnname" data-label="' . esc_attr__('Seguimiento:', 'cachilupi-pet') . '">';
-                if ($request_item->status === 'on_the_way' && $request_item->driver_id) {
-                    echo '<button class="button cachilupi-follow-driver-btn" data-request-id="' . esc_attr( $request_item->id ) . '">' . esc_html__('Seguir Viaje', 'cachilupi-pet') . '</button>';
-                } else { echo esc_html__('--', 'cachilupi-pet'); }
+                switch ( $request_item->status ) {
+                    case 'on_the_way':
+                        if ( $request_item->driver_id ) {
+                            echo '<button class="button cachilupi-follow-driver-btn" data-request-id="' . esc_attr( $request_item->id ) . '">' . esc_html__('Seguir Viaje', 'cachilupi-pet') . '</button>';
+                        } else {
+                            // Caso improbable: en camino pero sin driver_id? Mostrar un estado genérico.
+                            echo esc_html__('Información no disponible', 'cachilupi-pet');
+                        }
+                        break;
+                    case 'pending':
+                        echo esc_html__('Disponible cuando se acepte el viaje', 'cachilupi-pet');
+                        break;
+                    case 'accepted':
+                        echo esc_html__('Disponible cuando el viaje inicie', 'cachilupi-pet');
+                        break;
+                    case 'arrived':
+                        echo esc_html__('Conductor en origen, esperando recogida', 'cachilupi-pet');
+                        break;
+                    case 'picked_up':
+                        echo esc_html__('Mascota recogida, viaje en curso', 'cachilupi-pet');
+                        // Based on current logic, follow button is only for 'on_the_way'.
+                        // If cachilupi_get_driver_location is updated for 'picked_up', this could change.
+                        break;
+                    case 'completed':
+                        echo esc_html__('Viaje finalizado', 'cachilupi-pet');
+                        break;
+                    case 'rejected':
+                        echo esc_html__('Viaje rechazado', 'cachilupi-pet');
+                        break;
+                    default:
+                        echo esc_html__('--', 'cachilupi-pet'); // Fallback para estados desconocidos
+                        break;
+                }
                 echo '</td>';
                 echo '</tr>';
             }
