@@ -47,7 +47,7 @@ function cachilupi_pet_activate() {
         driver_current_lon decimal(10,7) NULL DEFAULT NULL,
         driver_location_updated_at datetime NULL DEFAULT NULL,
         client_user_id bigint(20) unsigned NULL DEFAULT NULL,
-        pet_instructions TEXT NULLABLE,
+        pet_instructions TEXT NULL,
         PRIMARY KEY  (id),
         KEY driver_id (driver_id),
         KEY client_user_id (client_user_id)
@@ -652,9 +652,7 @@ function cachilupi_pet_update_driver_location() {
             // This means the location data sent was identical to what's already in the DB.
             wp_send_json_success(array('message' => 'Ubicación sin cambios.', 'status_code' => 'no_change'));
         }
-    } else {
-        wp_send_json_success(array('message' => 'Ubicación actualizada.'));
-    } else {
+    } else { // This else handles the case where $result is false (WPDB error)
         // error_log("Cachilupi Pet DB Error (update_driver_location): " . $wpdb->last_error);
         wp_send_json_error(array('message' => 'Error al actualizar ubicación. Por favor, intenta de nuevo.'));
     }
