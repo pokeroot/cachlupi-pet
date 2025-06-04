@@ -255,8 +255,8 @@
                 };
 
                 loadMapboxGeocoder(() => {
-                    const pickupPlaceholder = (typeof cachilupi_pet_vars !== 'undefined' && cachilupi_pet_vars.text_pickup_placeholder) ? cachilupi_pet_vars.text_pickup_placeholder : 'Ingrese dirección de recogida';
-                    const dropoffPlaceholder = (typeof cachilupi_pet_vars !== 'undefined' && cachilupi_pet_vars.text_dropoff_placeholder) ? cachilupi_pet_vars.text_dropoff_placeholder : 'Ingrese dirección de destino';
+                    const pickupPlaceholder = (typeof cachilupi_pet_vars !== 'undefined' && cachilupi_pet_vars.text_pickup_placeholder_detailed) ? cachilupi_pet_vars.text_pickup_placeholder_detailed : 'Lugar de Recogida: Ingresa la dirección completa...';
+                    const dropoffPlaceholder = (typeof cachilupi_pet_vars !== 'undefined' && cachilupi_pet_vars.text_dropoff_placeholder_detailed) ? cachilupi_pet_vars.text_dropoff_placeholder_detailed : 'Lugar de Destino: ¿A dónde irá tu mascota?';
 
                     if (pickupGeocoderContainer) {
                         pickupGeocoder = new MapboxGeocoder({
@@ -290,7 +290,15 @@
                             const lngLat = event.result.geometry.coordinates;
                             pickupCoords = { lng: lngLat[0], lat: lngLat[1] };
                             if (pickupMarker) pickupMarker.remove();
-                            pickupMarker = new mapboxgl.Marker({ color: '#0073aa' }).setLngLat(lngLat).addTo(map);
+
+                            const pickupIconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="30" height="30" fill="#0073aa"><path d="M12 2L2 7v13h20V7L12 2zm0 2.09L19.22 7H4.78L12 4.09zM4 9h16v10H4V9zm2 1v2h2v-2H6zm4 0v2h2v-2h-2zm4 0v2h2v-2h-2z"/></svg>`;
+                            const elPickup = document.createElement('div');
+                            elPickup.innerHTML = pickupIconSvg;
+                            elPickup.style.width = '30px';
+                            elPickup.style.height = '30px';
+                            elPickup.style.cursor = 'pointer';
+
+                            pickupMarker = new mapboxgl.Marker(elPickup).setLngLat(lngLat).addTo(map);
                             getRouteAndDistance();
                             validateForm(true);
                         });
@@ -333,7 +341,15 @@
                             const lngLat = event.result.geometry.coordinates;
                             dropoffCoords = { lng: lngLat[0], lat: lngLat[1] };
                             if (dropoffMarker) dropoffMarker.remove();
-                            dropoffMarker = new mapboxgl.Marker({ color: '#d32f2f' }).setLngLat(lngLat).addTo(map);
+
+                            const dropoffIconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="30" height="30" fill="#d32f2f"><path d="M14.4 6L14 4H5v17h2v-7h5.6l.4 2h7V6h-5.6z"/></svg>`;
+                            const elDropoff = document.createElement('div');
+                            elDropoff.innerHTML = dropoffIconSvg;
+                            elDropoff.style.width = '30px';
+                            elDropoff.style.height = '30px';
+                            elDropoff.style.cursor = 'pointer';
+
+                            dropoffMarker = new mapboxgl.Marker(elDropoff).setLngLat(lngLat).addTo(map);
                             getRouteAndDistance();
                             validateForm(true);
                         });
@@ -381,6 +397,39 @@
                     setTimeout(() => {
                         messageElement.fadeOut('slow', () => messageElement.remove());
                     }, 5000); 
+                };
+
+                // This is the new Toast function
+                const showCachilupiToast = (message, type = 'success', duration = 4000) => {
+                    // Remover toasts existentes para evitar acumulación
+                    $('.cachilupi-toast-notification').remove();
+
+                    const toast = $('<div></div>')
+                        .addClass('cachilupi-toast-notification')
+                        .addClass(type) // success, error, info
+                        .text(message);
+
+                    $('body').append(toast);
+
+                    // Forzar reflow para asegurar que la animación de entrada se ejecute
+                    // toast.width(); // This can sometimes be problematic, setTimeout is more reliable
+
+                    // Añadir clase 'show' para activar la animación de entrada
+                    setTimeout(() => { // Added a slight delay for CSS transition
+                        toast.addClass('show');
+                    }, 100);
+
+
+                    // Auto-dismiss
+                    if (duration > 0) {
+                        setTimeout(() => {
+                            toast.removeClass('show');
+                            // Esperar a que la animación de salida termine antes de remover el elemento
+                            setTimeout(() => {
+                                toast.remove();
+                            }, 300); // Debe coincidir con la duración de la transición en CSS
+                        }, duration);
+                    }
                 };
 
                 const showError = (fieldElement, message) => {
@@ -521,6 +570,11 @@
                     submitButton.addEventListener('click', async (event) => { 
                         event.preventDefault();
                         if (!validateForm(true)) {
+                            // showCachilupiToast is already called by validateForm if it returns false during submission attempt.
+                            // No need to call it again here if validateForm itself handles it.
+                            // However, the prompt asks to ensure validateForm uses it.
+                            // The current validateForm does not use showCachilupiToast, it uses showError.
+                            // So, we'll add the toast here as requested.
                             showCachilupiToast('Por favor, corrige los errores en el formulario.', 'error');
                             return;
                         }
@@ -599,7 +653,7 @@
                             if (responseData.success) {
                                 showCachilupiToast(responseData.data.message || 'Solicitud enviada con éxito.', 'success');
                                 // Reset form fields
-                                if (pickupGeocoder) pickupGeocoder.clear(); // Clear Mapbox geocoder
+                                if (pickupGeocoder) pickupGeocoder.clear();
                                 if (dropoffGeocoder) dropoffGeocoder.clear(); // Clear Mapbox geocoder
                                 // For Flatpickr instances, use their clear method
                                 if (window.flatpickr && serviceDateInput._flatpickr) serviceDateInput._flatpickr.clear();
@@ -638,6 +692,8 @@
                         } finally {
                             if ($button) {
                                 $button.removeClass('loading').text(originalButtonText).prop('disabled', false);
+                                // Re-validate after form reset or error to set button state correctly
+                                validateForm(true);
                             }
                         }
                     });
@@ -707,12 +763,12 @@
             if (submitButton) {
                 submitButton.addEventListener('click', async (event) => { 
                     event.preventDefault();
-                        if (validateForm(false)) { // Pass false as it's not map context
+                        if (validateForm(false)) {
                             const $button = $(submitButton);
                             const originalButtonText = $button.text();
                             $button.prop('disabled', true).text('Enviando Solicitud...').addClass('loading');
 
-                            $('.cachilupi-feedback').remove(); // Remove old inline feedback
+                            $('.cachilupi-feedback').remove();
 
                         const pickupAddress = pickupGeocoderInput ? pickupGeocoderInput.value : '';
                         const dropoffAddress = dropoffGeocoderInput ? dropoffGeocoderInput.value : '';
@@ -762,7 +818,8 @@
                             const responseData = await fetchResponse.json(); 
 
                             if (responseData.success) {
-                                showFeedbackMessage('Solicitud enviada con éxito.', 'success');
+                                // Replaced showFeedbackMessage with showCachilupiToast
+                                showCachilupiToast('Solicitud enviada con éxito.', 'success');
                                 if (pickupGeocoderInput) pickupGeocoderInput.value = '';
                                 if (dropoffGeocoderInput) dropoffGeocoderInput.value = '';
                                 if (serviceDateInput) serviceDateInput.value = '';
@@ -785,9 +842,11 @@
                         } finally {
                            if ($button) {
                                 $button.removeClass('loading').text(originalButtonText).prop('disabled', false);
+                                validateForm(false); // Re-validate after form reset or error
                             }
                         }
                     } else {
+                         // This case is when validateForm(false) initially returns false
                          showCachilupiToast('Por favor, corrige los errores en el formulario.', 'error');
                     }
                 });

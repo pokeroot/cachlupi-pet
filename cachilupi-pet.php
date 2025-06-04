@@ -809,8 +809,10 @@ function cachilupi_pet_enqueue_scripts() {
             'mapbox_access_token' => $mapbox_token,
             'text_follow_driver' => __('Seguir Conductor', 'cachilupi-pet'),
             'text_driver_location_not_available' => __('Ubicación del conductor no disponible en este momento.', 'cachilupi-pet'),
-            'text_pickup_placeholder' => __('Dirección de recogida...', 'cachilupi-pet'),
-            'text_dropoff_placeholder' => __('Dirección de destino...', 'cachilupi-pet'),
+            'text_pickup_placeholder' => __('Dirección de recogida...', 'cachilupi-pet'), // Original simple placeholder
+            'text_dropoff_placeholder' => __('Dirección de destino...', 'cachilupi-pet'), // Original simple placeholder
+            'text_pickup_placeholder_detailed' => __('Lugar de Recogida: Ingresa la dirección completa...', 'cachilupi-pet'),
+            'text_dropoff_placeholder_detailed' => __('Lugar de Destino: ¿A dónde irá tu mascota?', 'cachilupi-pet'),
         ) );
     }
 
@@ -893,12 +895,12 @@ function cachilupi_pet_shortcode() {
 
                 <div class="form-group">
                     <label for="cachilupi-pet-instructions"><?php esc_html_e('Instrucciones Específicas para la Mascota:', 'cachilupi-pet'); ?></label>
-                    <textarea id="cachilupi-pet-instructions" class="form-control" placeholder="<?php esc_attr_e('Ej: Alergias, medicación, comportamiento con extraños, etc.', 'cachilupi-pet'); ?>"></textarea>
+                    <textarea id="cachilupi-pet-instructions" class="form-control" placeholder="<?php esc_attr_e('Ej: Comportamiento con extraños, si necesita bozal, si es amigable con otros animales, medicación, etc.', 'cachilupi-pet'); ?>"></textarea>
                 </div>
 
                 <div class="form-group">
                     <label for="cachilupi-pet-notes"><?php esc_html_e('Notas Adicionales:', 'cachilupi-pet'); ?></label>
-                    <textarea id="cachilupi-pet-notes" class="form-control" placeholder="<?php esc_attr_e('Ej: Referencias de la dirección, consideraciones especiales para el transporte, etc.', 'cachilupi-pet'); ?>"></textarea>
+                    <textarea id="cachilupi-pet-notes" class="form-control" placeholder="<?php esc_attr_e('Ej: Referencias de la dirección (casa esquina, portón rojo), consideraciones para el transporte (ej. necesita jaula grande), contacto alternativo, etc.', 'cachilupi-pet'); ?>"></textarea>
                 </div>
             </fieldset>
 

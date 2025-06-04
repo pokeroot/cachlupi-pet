@@ -49,6 +49,7 @@
     --focus-outline: 2px solid var(--primary-color);
     --focus-outline-offset: 2px;
     --focus-shadow-color: rgba(0, 115, 170, 0.3);
+    --focus-shadow-error-color: rgba(220, 53, 69, 0.25); /* Added for consistency in error shadows */
 
     /* Feedback Message Colors */
     --feedback-success-bg: #d4edda;
@@ -126,35 +127,43 @@
 /* Toast Notifications */
 .cachilupi-toast-notification {
     position: fixed;
-    bottom: 20px;
+    bottom: 20px; /* O top: 20px; */
     right: 20px;
+    min-width: 250px;
+    max-width: 350px;
     padding: 15px 20px;
     border-radius: var(--border-radius-standard, 5px);
     box-shadow: var(--shadow-standard, 0 2px 10px rgba(0,0,0,0.2));
-    z-index: 10000;
+    z-index: 10000; /* Encima de otros elementos */
     font-size: 0.95em;
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(20px); /* Empieza un poco abajo */
     transition: opacity 0.3s ease, transform 0.3s ease;
+    border-left-width: 5px;
+    border-left-style: solid;
 }
+
 .cachilupi-toast-notification.show {
     opacity: 1;
     transform: translateY(0);
 }
+
 .cachilupi-toast-notification.success {
     background-color: var(--feedback-success-bg, #d4edda);
     color: var(--feedback-success-text, #155724);
-    border: 1px solid var(--feedback-success-border, #c3e6cb);
+    border-left-color: var(--feedback-success-border, #c3e6cb); /* O un verde más oscuro */
 }
+
 .cachilupi-toast-notification.error {
     background-color: var(--feedback-error-bg, #f8d7da);
     color: var(--feedback-error-text, #721c24);
-    border: 1px solid var(--feedback-error-border, #f5c6cb);
+    border-left-color: var(--feedback-error-border, #f5c6cb); /* O un rojo más oscuro */
 }
-.cachilupi-toast-notification.info { /* Added for general info toasts */
+
+.cachilupi-toast-notification.info {
     background-color: var(--feedback-info-bg, #d1ecf1);
     color: var(--feedback-info-text, #0c5460);
-    border: 1px solid var(--feedback-info-border, #bee5eb);
+    border-left-color: var(--feedback-info-border, #bee5eb); /* O un azul más oscuro */
 }
 
 
@@ -241,15 +250,37 @@
 
 /* Form Field Icons */
 .form-group label::before {
-    display: inline-block;
-    margin-right: 8px;
-    font-family: 'Arial', sans-serif; /* Fallback, ensure good Unicode support */
+    display: inline-flex; /* Use inline-flex for better vertical alignment if needed with text */
+    align-items: center; /* Vertically align icon with text */
+    margin-right: 8px; /* Espacio entre el icono y el texto de la etiqueta */
+    font-family: 'Arial', sans-serif; /* O una fuente de iconos si estuviera disponible */
+    /* Considerar usar 'Segoe UI Symbol' o similar para mejor soporte de algunos caracteres unicode */
     color: var(--text-color-medium, #555);
-    font-size: 1.1em; /* Slightly larger for icons */
-    line-height: 1; /* Prevent extra spacing */
+    font-size: 1.1em; /* Ligeramente más grande para que el icono destaque un poco */
+    line-height: 1; /* Para evitar espaciado extra vertical */
+    width: 1.2em; /* Ancho fijo para alinear etiquetas si los iconos varían en ancho */
+    text-align: center; /* Centrar el icono dentro de su espacio */
 }
 
-label[for="pickup-location-input"]::before,
+/* Específicos para cada campo, usando el atributo 'for' de la etiqueta o un ID/clase en la etiqueta */
+/* Los IDs de label son los que se usan en cachilupi-pet.php para los 'for' */
+
+/* Para Lugar de Recogida y Destino (usando el ID de la etiqueta que definimos en el PHP) */
+/* Asumiendo que las etiquetas tienen IDs como 'pickup-location-label' y 'dropoff-location-label' */
+/* Estas etiquetas en el PHP envuelven los contenedores de geocodificador */
+
+label#pickup-location-label::before, /* Targeting the specific label ID */
+label[for="pickup-location-input"]::before { /* Keep existing for broader compatibility if ID not always present */
+    content: "\1F4CD"; /* 📍 Round Pushpin */
+}
+
+label#dropoff-location-label::before, /* Targeting the specific label ID */
+label[for="dropoff-location-input"]::before { /* Keep existing for broader compatibility */
+    content: "\1F4CD"; /* 📍 Round Pushpin (puede ser el mismo o diferente si se prefiere) */
+                                /* Alternativa para destino: 🏁 (Bandera de cuadros) "\1F3C1" */
+}
+
+label[for="service-date"]::before {
 label[for="dropoff-location-input"]::before { /* Targeting by specific label ID from PHP */
     content: "\1F4CD"; /* 📍 Round Pushpin */
 }
@@ -285,31 +316,36 @@ input.flatpickr-input.form-control { /* Flatpickr might add its own class to the
 }
 
 
-.form-control:focus, .flatpickr-input:focus { /* Added .flatpickr-input */
+.form-control:focus,
+.flatpickr-input:focus { /* Grouped for consistency */
     border-color: var(--border-color-focus, var(--primary-color, #0073aa));
-    box-shadow: 0 0 0 0.2rem var(--focus-shadow-color);
+    box-shadow: 0 0 0 0.2rem var(--focus-shadow-color, rgba(0, 115, 170, 0.3));
     outline: none;
 }
 
 /* Input Error Styling */
-.form-control.input-error, .flatpickr-input.input-error { /* Added .flatpickr-input */
-    border-color: var(--border-color-error) !important; /* Ensure error border overrides focus */
-    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important; /* Red shadow for error */
-    /* background-image for icon can be added here if preferred over label::after */
+.form-control.input-error,
+.flatpickr-input.input-error,
+.mapboxgl-ctrl-geocoder--input.input-error { /* Grouped for consistency */
+    border-color: var(--border-color-error, #dc3545) !important; /* Ensure error border overrides focus */
+    box-shadow: 0 0 0 0.2rem var(--focus-shadow-error-color, rgba(220, 53, 69, 0.25)) !important; /* Red shadow for error */
 }
+
 /* Remove background icon for error if using label::after for consistency or to avoid overlap */
-.form-control.input-error {
+.form-control.input-error { /* This is specific to general .form-control, not geocoders */
     background-image: none; /* Remove if previously set, and using label::after for icon */
     padding-right: var(--padding-standard, 10px); /* Reset padding if icon removed */
 }
 
 /* Styling for error icon next to label (alternative to background-image on input) */
 .form-group label.label-error::after {
-    content: " \26A0"; /* Unicode warning sign U+26A0 */
-    color: var(--text-color-error);
-    font-weight: bold;
+    content: " \26A0"; /* Unicode Warning Sign U+26A0 with space before */
+    /* Alternatively, use " ⚠️" if file encoding is UTF-8 and supported */
+    font-weight: normal; /* Label text is already bold */
     display: inline-block;
-    margin-left: 5px;
+    margin-left: 6px; /* Space between label text (and asterisk) and warning icon */
+    font-size: 1em; /* Adjust as needed, relative to label font size */
+    color: var(--text-color-error); /* Ensure icon color matches error text color */
 }
 
 
@@ -318,13 +354,10 @@ input.flatpickr-input.form-control { /* Flatpickr might add its own class to the
     margin-bottom: var(--padding-standard, 10px);
     position: relative;
 }
-.mapboxgl-ctrl-geocoder--input.input-error {
-    border-color: var(--border-color-error) !important;
-    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important; /* Ensure error shadow */
-}
-.geocoder-container.input-error .mapboxgl-ctrl-geocoder--input {
-    border-color: var(--border-color-error) !important;
-    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+/* .mapboxgl-ctrl-geocoder--input.input-error is handled by the grouped selector above */
+.geocoder-container.input-error .mapboxgl-ctrl-geocoder--input { /* This targets the input when its container has .input-error */
+    border-color: var(--border-color-error, #dc3545) !important;
+    box-shadow: 0 0 0 0.2rem var(--focus-shadow-error-color, rgba(220, 53, 69, 0.25)) !important;
 }
 
 
@@ -485,8 +518,8 @@ input.flatpickr-input.form-control { /* Flatpickr might add its own class to the
 @media (max-width: 768px) {
     .cachilupi-booking-container {
         flex-direction: column;
-        gap: var(--margin-medium, 15px);
-        padding: var(--padding-large, 15px);
+        gap: var(--margin-large, 20px); /* Adjusted from margin-medium to maintain some spacing, or use a specific smaller value */
+        padding: var(--padding-medium, 15px); /* Adjusted from padding-large */
     }
     .cachilupi-booking-form {
         order: 1;
@@ -512,8 +545,9 @@ input.flatpickr-input.form-control { /* Flatpickr might add its own class to the
     max-width: none !important;
     transition: box-shadow 0.2s ease-in-out; /* Add transition */
 }
-.mapboxgl-ctrl-geocoder.mapboxgl-ctrl-geocoder--focused { /* When geocoder is focused */
-    box-shadow: 0 0 0 0.2rem var(--focus-shadow-color) !important;
+.mapboxgl-ctrl-geocoder.mapboxgl-ctrl-geocoder--focused { /* When geocoder control itself is focused */
+    /* This rule already applies a box-shadow. Ensure it's consistent. */
+    box-shadow: 0 0 0 0.2rem var(--focus-shadow-color, rgba(0, 115, 170, 0.3)) !important;
 }
 
 
@@ -545,15 +579,13 @@ input.flatpickr-input.form-control { /* Flatpickr might add its own class to the
     background-clip: padding-box;
     transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
-.mapboxgl-ctrl-geocoder--input:focus { /* This specific focus might be overridden by library's direct focus on the control itself */
+.mapboxgl-ctrl-geocoder--input:focus {
+    /* The border color is important here if the parent's box-shadow doesn't make it obvious enough */
     border-color: var(--border-color-focus, var(--primary-color, #0073aa)) !important;
-    /* box-shadow: 0 0 0 0.2rem var(--focus-shadow-color) !important;  Let the parent .mapboxgl-ctrl-geocoder handle shadow */
+    /* The box-shadow on the parent .mapboxgl-ctrl-geocoder--focused is usually preferred */
     outline: none !important;
 }
-.mapboxgl-ctrl-geocoder--input.input-error {
-    border-color: var(--border-color-error) !important;
-    /* box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important; */
-}
+/* .mapboxgl-ctrl-geocoder--input.input-error is already handled by the grouped selector above */
 
 
 /* Styling for Mapbox Geocoder search icon */
