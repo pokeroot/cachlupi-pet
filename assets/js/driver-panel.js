@@ -5,6 +5,36 @@
             return; // Exit if config is missing
         }
 
+        // Tab Switching Logic for Driver Panel
+        // Ensure this runs only if tab navigation exists on the page
+        if ($('.nav-tab-wrapper').length > 0) {
+            // The PHP script already adds 'nav-tab-active' to the first tab
+            // and hides the other tab content using inline style="display:none;".
+            // So, no initial setup is strictly needed here if PHP handles the default state.
+
+            $(document).on('click', '.nav-tab-wrapper a.nav-tab', function(e) {
+                e.preventDefault();
+
+                var $thisTab = $(this); // Cache the clicked tab
+
+                // Remove active class from all tabs and hide all content
+                $('.nav-tab-wrapper a.nav-tab').removeClass('nav-tab-active');
+                $('.tab-content').hide(); // Hide all tab content divs
+
+                // Add active class to the clicked tab and show its content
+                $thisTab.addClass('nav-tab-active');
+                var activeTabContentID = $thisTab.attr('href'); // Get the href value (e.g., "#active-requests")
+
+                // Ensure the target element exists before trying to show it
+                if ($(activeTabContentID).length) {
+                    $(activeTabContentID).show(); // Show the target tab content
+                } else {
+                    console.error("Tab content not found for ID: " + activeTabContentID);
+                }
+            });
+        }
+
+
         const showDriverPanelFeedback = (message, type = 'success') => {
             let $feedbackContainer = $('#driver-panel-feedback');
             if (!$feedbackContainer.length) {

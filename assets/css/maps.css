@@ -60,23 +60,38 @@
     --feedback-info-border: #bee5eb;
     --feedback-info-text: #0c5460;
 
-    /* Status Badge Colors */
-    --status-pending-bg: #ffc107;
-    --status-pending-text: #333;
-    --status-accepted-bg: #28a745;
-    --status-accepted-text: #fff;
-    --status-on_the_way-bg: #17a2b8;
-    --status-on_the_way-text: #fff;
-    --status-arrived-bg: #007bff;
-    --status-arrived-text: #fff;
-    --status-picked_up-bg: #fd7e14;
-    --status-picked_up-text: #fff;
-    --status-completed-bg: #6c757d;
-    --status-completed-text: #fff;
-    --status-rejected-bg: #dc3545;
-    --status-rejected-text: #fff;
-    --status-default-bg: #f0f0f0; /* For unknown statuses */
+    /* Status Badge Colors (Updated based on request) */
+    --status-pending-bg: #ffebcc;
+    --status-pending-text: #996515;
+    --status-pending-border: #f0ad4e;
+
+    --status-accepted-bg: #cfe2ff;
+    --status-accepted-text: #0a58ca;
+    --status-accepted-border: #0d6efd;
+
+    --status-on_the_way-bg: #d1e7dd;
+    --status-on_the_way-text: #0f5132;
+    --status-on_the_way-border: #198754;
+
+    --status-arrived-bg: #e0f7fa;
+    --status-arrived-text: #00796b;
+    --status-arrived-border: #00bcd4;
+
+    --status-picked_up-bg: #d1e7dd; /* Same as on_the_way for active travel */
+    --status-picked_up-text: #0f5132;
+    --status-picked_up-border: #198754;
+
+    --status-completed-bg: #e9ecef;
+    --status-completed-text: #495057;
+    --status-completed-border: #adb5bd;
+
+    --status-rejected-bg: #f8d7da;
+    --status-rejected-text: #721c24;
+    --status-rejected-border: #dc3545;
+
+    --status-default-bg: #f0f0f0;
     --status-default-text: #333;
+    --status-default-border: #ccc;
 }
 
 /* Feedback Messages (Standardized) */
@@ -415,44 +430,74 @@
 /* Estilos para los badges de estado */
 .cachilupi-client-requests-panel .request-status span { /* Target the span inside */
     font-weight: bold;
-    padding: var(--padding-small, 5px) var(--padding-standard, 8px);
-    border-radius: var(--border-radius-standard, 4px);
+    padding: 5px 10px; /* Adjusted from example */
+    border-radius: 15px; /* Pill shape from example */
     text-align: center;
     display: inline-block;
     min-width: 110px; /* Ancho mínimo para consistencia */
-    font-size: 0.9em;
+    font-size: 0.85em; /* Adjusted from example */
     line-height: 1.4;
+    text-transform: uppercase; /* From example */
+    border-width: 1px; /* Adding border width */
+    border-style: solid; /* Adding border style */
 }
 
-.cachilupi-client-requests-panel .request-status-pending span { background-color: var(--status-pending-bg); color: var(--status-pending-text); }
-.cachilupi-client-requests-panel .request-status-accepted span { background-color: var(--status-accepted-bg); color: var(--status-accepted-text); }
-.cachilupi-client-requests-panel .request-status-on_the_way span { background-color: var(--status-on_the_way-bg); color: var(--status-on_the_way-text); }
-.cachilupi-client-requests-panel .request-status-arrived span { background-color: var(--status-arrived-bg); color: var(--status-arrived-text); }
-.cachilupi-client-requests-panel .request-status-picked_up span { background-color: var(--status-picked_up-bg); color: var(--status-picked_up-text); }
-.cachilupi-client-requests-panel .request-status-completed span { background-color: var(--status-completed-bg); color: var(--status-completed-text); }
-.cachilupi-client-requests-panel .request-status-rejected span { background-color: var(--status-rejected-bg); color: var(--status-rejected-text); }
+.cachilupi-client-requests-panel .request-status-pending span {
+    background-color: var(--status-pending-bg);
+    color: var(--status-pending-text);
+    border-color: var(--status-pending-border);
+}
+.cachilupi-client-requests-panel .request-status-accepted span {
+    background-color: var(--status-accepted-bg);
+    color: var(--status-accepted-text);
+    border-color: var(--status-accepted-border);
+}
+.cachilupi-client-requests-panel .request-status-on_the_way span,
+.cachilupi-client-requests-panel .request-status-picked_up span { /* Grouped picked_up with on_the_way */
+    background-color: var(--status-on_the_way-bg);
+    color: var(--status-on_the_way-text);
+    border-color: var(--status-on_the_way-border);
+}
+.cachilupi-client-requests-panel .request-status-arrived span {
+    background-color: var(--status-arrived-bg);
+    color: var(--status-arrived-text);
+    border-color: var(--status-arrived-border);
+}
+.cachilupi-client-requests-panel .request-status-completed span {
+    background-color: var(--status-completed-bg);
+    color: var(--status-completed-text);
+    border-color: var(--status-completed-border);
+}
+.cachilupi-client-requests-panel .request-status-rejected span {
+    background-color: var(--status-rejected-bg);
+    color: var(--status-rejected-text);
+    border-color: var(--status-rejected-border);
+}
 /* Fallback for any other status not explicitly defined */
 .cachilupi-client-requests-panel .request-status span:not([class*='request-status-']) {
     background-color: var(--status-default-bg);
     color: var(--status-default-text);
+    border-color: var(--status-default-border);
 }
 
 
 /* Botón de seguimiento */
 .cachilupi-client-requests-panel .cachilupi-follow-driver-btn {
-    padding: var(--padding-small, 6px) var(--padding-standard, 12px); /* Ajuste de padding */
-    font-size: var(--font-size-small, 0.9em);
+    padding: 6px 12px; /* From example */
+    font-size: 0.9em; /* From example */
     cursor: pointer;
-    border: 1px solid transparent; /* Sin borde por defecto */
-    background-color: var(--primary-color, #0073aa);
-    color: var(--text-color-light, white);
-    border-radius: var(--border-radius-standard, 4px);
+    background-color: var(--primary-color); /* WordPress blue from example */
+    border-color: var(--primary-color-hover); /* Darker shade for border */
+    color: var(--text-color-light);
+    border-radius: var(--border-radius-standard);
     text-decoration: none;
-    transition: background-color 0.2s ease;
+    transition: background-color 0.3s ease;
+    border-style: solid;
+    border-width: 1px;
 }
 .cachilupi-client-requests-panel .cachilupi-follow-driver-btn:hover,
 .cachilupi-client-requests-panel .cachilupi-follow-driver-btn:focus {
-    background-color: var(--primary-color-hover, #005177);
+    background-color: var(--primary-color-hover); /* From example */
 }
 
 
@@ -568,6 +613,11 @@
      .cachilupi-client-requests-panel table.widefat td.request-status span {
         /* The span is already inline-block, so it will respect text-align of parent td */
          margin-top: 0; /* Reset any top margin if needed */
+         /* From example: Ensure it fits well in the data-label layout */
+        display: inline; /* Might be better than inline-block for flow with data-label */
+        padding: 3px 6px;
+        font-size: 0.8em;
+        min-width: auto;
     }
     .cachilupi-client-requests-panel table.widefat td[data-label="Seguimiento:"] .button {
         display: inline-block; /* Allow button to sit naturally with text-align:right */
@@ -592,6 +642,14 @@
     .cachilupi-client-requests-panel table.widefat td.request-status {
         text-align: left;
     }
+    .cachilupi-client-requests-panel table.widefat td.request-status span {
+        /* From example: Make status take its own line under the label */
+        display: block;
+        width: fit-content; /* Adjust width */
+        /* margin-left: auto; If text-align: right on td */
+        /* margin-right: auto; If text-align: center on td */
+    }
+
     .cachilupi-client-requests-panel table.widefat td[data-label="Seguimiento:"] .button {
         width: 100%; /* Make button full width for easier tapping */
         margin-top: var(--margin-small, 5px);
