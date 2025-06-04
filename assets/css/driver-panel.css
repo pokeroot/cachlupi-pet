@@ -1,17 +1,17 @@
 /* General Styles for Driver Panel */
-.wrap {
+.cachilupi-driver-panel.wrap { /* Scoped to the panel */
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
     margin: 20px;
 }
 
-#driver-panel-feedback {
+.cachilupi-driver-panel #driver-panel-feedback {
     margin-bottom: 20px;
     padding: 15px;
     border-radius: 4px;
     font-size: 1em;
 }
 
-.cachilupi-feedback {
+.cachilupi-driver-panel .cachilupi-feedback {
     padding: 12px 18px;
     margin-bottom: 15px;
     border-radius: 5px;
@@ -19,45 +19,104 @@
     border: 1px solid transparent;
 }
 
-.cachilupi-feedback--success {
+.cachilupi-driver-panel .cachilupi-feedback--success {
     background-color: #d4edda;
     border-color: #c3e6cb;
     color: #155724;
 }
 
-.cachilupi-feedback--error {
+.cachilupi-driver-panel .cachilupi-feedback--error {
     background-color: #f8d7da;
     border-color: #f5c6cb;
     color: #721c24;
 }
 
-.cachilupi-feedback--info {
+.cachilupi-driver-panel .cachilupi-feedback--info {
     background-color: #d1ecf1;
     border-color: #bee5eb;
     color: #0c5460;
 }
 
+/* Tab Navigation */
+.cachilupi-driver-panel .nav-tab-wrapper {
+    margin-bottom: 0; /* Remove bottom margin to connect with tab content border */
+    padding-bottom: 0; /* WordPress adds padding, remove it if using own border */
+    border-bottom: 1px solid #ccc; /* Standard WordPress-like bottom border for the wrapper */
+}
+
+.cachilupi-driver-panel .nav-tab {
+    padding: 10px 15px;
+    text-decoration: none;
+    background-color: #f0f0f0; /* Default tab background - WP uses #f1f1f1 or #f7f7f7 */
+    border: 1px solid #ccc;
+    border-bottom: none; /* Important: active tab will "connect" */
+    margin-right: 5px;
+    border-radius: 4px 4px 0 0;
+    color: #555; /* WordPress uses a darker color like #32373c */
+    font-weight: 600; /* WordPress uses normal font weight for inactive */
+    display: inline-block; /* Ensure tabs are inline */
+    line-height: normal; /* Ensure consistent line height */
+}
+
+.cachilupi-driver-panel .nav-tab.nav-tab-active {
+    background-color: #fff; /* Active tab background (white) */
+    border-color: #ccc;
+    border-bottom: 1px solid #fff; /* Key to make it look like it merges with content */
+    color: #000; /* WordPress uses #000 or a dark blue */
+    position: relative; /* For z-index or slight adjustments if needed */
+    /* top: 1px; */ /* This can cause slight misalignments if not careful with borders */
+    margin-bottom: -1px; /* Pulls the active tab down to cover the wrapper's bottom border */
+    font-weight: bold; /* WordPress often bolds active tabs */
+}
+
+.cachilupi-driver-panel .nav-tab:hover:not(.nav-tab-active) {
+    background-color: #e0e0e0; /* Slightly darker on hover for inactive tabs */
+    color: #000;
+}
+
+/* Tab Content */
+.cachilupi-driver-panel .tab-content {
+    /* display: none; */ /* JS handles display. Kept for reference. */
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-top: none; /* Connects with the nav-tab-wrapper's bottom border */
+    background-color: #fff;
+    border-radius: 0 0 4px 4px; /* Rounded bottom corners */
+    margin-bottom: 20px; /* Space below tab content */
+}
+
+/* .cachilupi-driver-panel .tab-content.active {
+    display: block;
+} */ /* JS handles display */
+
+.cachilupi-driver-panel .tab-content h3 { /* Assuming h3 might be used inside tab content */
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 1.5em;
+    color: #333;
+}
+
 
 /* Table Styling */
-table.widefat {
+.cachilupi-driver-panel table.widefat {
     border-collapse: collapse;
     width: 100%;
-    margin-top: 20px;
+    margin-top: 0; /* Adjusted as tab content has padding */
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     border-radius: 5px;
     overflow: hidden; /* Important for border-radius on table */
 }
 
-table.widefat th,
-table.widefat td {
+.cachilupi-driver-panel table.widefat th,
+.cachilupi-driver-panel table.widefat td {
     padding: 12px 15px;
     text-align: left;
     border-bottom: 1px solid #e0e0e0;
     font-size: 0.95em;
 }
 
-table.widefat th {
-    background-color: #f8f9fa;
+.cachilupi-driver-panel table.widefat th {
+    background-color: #f8f9fa; /* Light gray, common for headers */
     font-weight: 600;
     color: #333;
     text-transform: uppercase;
@@ -65,16 +124,16 @@ table.widefat th {
     letter-spacing: 0.5px;
 }
 
-table.widefat tbody tr:hover {
+.cachilupi-driver-panel table.widefat tbody tr:hover {
     background-color: #f1f1f1;
 }
 
-table.widefat tbody tr:last-child td {
+.cachilupi-driver-panel table.widefat tbody tr:last-child td {
     border-bottom: none;
 }
 
 /* Action Buttons Styling */
-.button, button.button { /* Added button.button for specificity */
+.cachilupi-driver-panel .button, .cachilupi-driver-panel button.button {
     background-color: #0073aa; /* WordPress blue */
     border: none;
     color: white;
@@ -89,39 +148,39 @@ table.widefat tbody tr:last-child td {
     transition: background-color 0.3s ease;
 }
 
-.button:hover, button.button:hover {
+.cachilupi-driver-panel .button:hover, .cachilupi-driver-panel button.button:hover {
     background-color: #005a87;
 }
 
-.button.reject-request, button.button.reject-request {
+.cachilupi-driver-panel .button.reject-request, .cachilupi-driver-panel button.button.reject-request {
     background-color: #dc3545; /* Red for reject/cancel */
 }
-.button.reject-request:hover, button.button.reject-request:hover {
+.cachilupi-driver-panel .button.reject-request:hover, .cachilupi-driver-panel button.button.reject-request:hover {
     background-color: #c82333;
 }
 
-.button.accept-request, button.button.accept-request,
-.button.on-the-way-request, button.button.on-the-way-request,
-.button.arrive-request, button.button.arrive-request,
-.button.picked-up-request, button.button.picked-up-request,
-.button.complete-request, button.button.complete-request {
+.cachilupi-driver-panel .button.accept-request, .cachilupi-driver-panel button.button.accept-request,
+.cachilupi-driver-panel .button.on-the-way-request, .cachilupi-driver-panel button.button.on-the-way-request,
+.cachilupi-driver-panel .button.arrive-request, .cachilupi-driver-panel button.button.arrive-request,
+.cachilupi-driver-panel .button.picked-up-request, .cachilupi-driver-panel button.button.picked-up-request,
+.cachilupi-driver-panel .button.complete-request, .cachilupi-driver-panel button.button.complete-request {
     background-color: #28a745; /* Green for positive actions */
 }
-.button.accept-request:hover, button.button.accept-request:hover,
-.button.on-the-way-request:hover, button.button.on-the-way-request:hover,
-.button.arrive-request:hover, button.button.arrive-request:hover,
-.button.picked-up-request:hover, button.button.picked-up-request:hover,
-.button.complete-request:hover, button.button.complete-request:hover {
+.cachilupi-driver-panel .button.accept-request:hover, .cachilupi-driver-panel button.button.accept-request:hover,
+.cachilupi-driver-panel .button.on-the-way-request:hover, .cachilupi-driver-panel button.button.on-the-way-request:hover,
+.cachilupi-driver-panel .button.arrive-request:hover, .cachilupi-driver-panel button.button.arrive-request:hover,
+.cachilupi-driver-panel .button.picked-up-request:hover, .cachilupi-driver-panel button.button.picked-up-request:hover,
+.cachilupi-driver-panel .button.complete-request:hover, .cachilupi-driver-panel button.button.complete-request:hover {
     background-color: #218838;
 }
 
 /* Loading state for buttons */
-.cachilupi-button--loading {
+.cachilupi-driver-panel .cachilupi-button--loading {
     position: relative;
     color: transparent !important; /* Hide text */
 }
 
-.cachilupi-button--loading::after {
+.cachilupi-driver-panel .cachilupi-button--loading::after {
     content: "";
     display: block;
     width: 16px;
@@ -146,21 +205,22 @@ table.widefat tbody tr:last-child td {
 
 /* Responsive Table */
 @media screen and (max-width: 782px) {
-    table.widefat {
+    .cachilupi-driver-panel table.widefat {
         display: block;
         overflow-x: auto; /* Allows horizontal scrolling for the table body */
     }
 
-    table.widefat thead {
+    .cachilupi-driver-panel table.widefat thead {
         display: none; /* Hide table header on small screens */
     }
 
-    table.widefat tbody, table.widefat tr, table.widefat td {
+    .cachilupi-driver-panel table.widefat tbody, .cachilupi-driver-panel table.widefat tr, .cachilupi-driver-panel table.widefat td {
         display: block;
         width: 100%;
+        box-sizing: border-box; /* Ensure padding and border don't make it wider */
     }
 
-    table.widefat tr {
+    .cachilupi-driver-panel table.widefat tr {
         margin-bottom: 15px;
         border: 1px solid #ddd;
         border-radius: 4px;
@@ -168,17 +228,17 @@ table.widefat tbody tr:last-child td {
         box-shadow: 0 1px 2px rgba(0,0,0,0.05);
     }
 
-    table.widefat td {
+    .cachilupi-driver-panel table.widefat td {
         text-align: right; /* Align text to the right */
         padding-left: 50%; /* Create space for the label */
         position: relative;
         border-bottom: 1px solid #eee;
     }
-    table.widefat td:last-child {
+    .cachilupi-driver-panel table.widefat td:last-child {
         border-bottom: none;
     }
 
-    table.widefat td::before {
+    .cachilupi-driver-panel table.widefat td::before {
         content: attr(data-label); /* Use data-label for pseudo-element content */
         position: absolute;
         left: 10px; /* Align label to the left */
@@ -189,29 +249,46 @@ table.widefat tbody tr:last-child td {
         white-space: nowrap; /* Prevent label from wrapping */
     }
 
-    table.widefat td[data-label="Acciones:"] .button { /* Stack buttons */
+    .cachilupi-driver-panel table.widefat td[data-label="Acciones:"] .button { /* Stack buttons */
         display: block;
         width: 100%;
         margin-bottom: 5px;
     }
-    table.widefat td[data-label="Acciones:"] .button:last-child {
+    .cachilupi-driver-panel table.widefat td[data-label="Acciones:"] .button:last-child {
         margin-bottom: 0;
+    }
+
+    /* Responsive tabs */
+    .cachilupi-driver-panel .nav-tab {
+        display: block; /* Stack tabs on smaller screens */
+        width: auto; /* Let them take natural width or 100% if needed */
+        text-align: center;
+        margin-bottom: 2px; /* Space between stacked tabs */
+        border-radius: 4px; /* Adjust radius if stacked */
+    }
+    .cachilupi-driver-panel .nav-tab.nav-tab-active {
+        border-bottom: 1px solid #ccc; /* Restore bottom border for active stacked tab */
+    }
+    .cachilupi-driver-panel .tab-content {
+         /* No specific change needed for tab content border based on this stacking,
+           as border-top was already none. If nav-tab-wrapper border was removed,
+           then .tab-content might need border-top: 1px solid #ccc; */
     }
 }
 
 /* Hide map links on smaller screens if they become too cluttered, or style them appropriately */
 @media screen and (max-width: 480px) {
-    .map-link {
+    .cachilupi-driver-panel .map-link {
         display: block; /* Make map links take full width for easier tapping */
         margin-top: 5px;
         font-size: 0.9em;
     }
-     table.widefat td {
+    .cachilupi-driver-panel table.widefat td {
         padding-left: 10px; /* Adjust padding for very small screens */
         padding-right: 10px;
         text-align: left; /* Re-align for stacked view */
     }
-    table.widefat td::before {
+    .cachilupi-driver-panel table.widefat td::before {
         position: static; /* Let labels flow naturally */
         display: block; /* Make label a block element */
         width: auto;
@@ -221,7 +298,7 @@ table.widefat tbody tr:last-child td {
     }
 }
 
-#driver-new-requests-notification {
+.cachilupi-driver-panel #driver-new-requests-notification {
     background-color: #0073aa;
     color: white;
     padding: 10px;
@@ -231,25 +308,34 @@ table.widefat tbody tr:last-child td {
     display: none; /* Hidden by default */
     margin-bottom: 15px;
 }
-#driver-new-requests-notification a {
+.cachilupi-driver-panel #driver-new-requests-notification a {
     color: #e0f7fa;
     text-decoration: underline;
 }
-#driver-new-requests-notification a:hover {
+.cachilupi-driver-panel #driver-new-requests-notification a:hover {
     color: #ffffff;
 }
 
 /* Make sure the .wrap h2 title is styled consistently */
-.wrap h2 {
-    font-size: 1.8em;
-    color: #23282d;
+.cachilupi-driver-panel.wrap > h2:first-of-type { /* Target the main panel title */
+    font-size: 1.8em; /* WordPress default is 23px, this is ~28px */
+    color: #23282d; /* WordPress standard admin page title color */
     margin-bottom: 15px;
+    padding: 0; /* Remove default padding if any from h2.title */
 }
 
+/* Style for h2 used as tab container - .nav-tab-wrapper is an h2 in WP */
+.cachilupi-driver-panel .nav-tab-wrapper {
+    font-size: 1em; /* Reset font size if it's an h2 */
+    padding: 0;
+    margin-bottom: 0; /* Already set, but ensure it's correct */
+}
+
+
 /* Add some spacing for action buttons if they are many */
-td.column-columnname[data-label="Acciones:"] .button {
+.cachilupi-driver-panel td.column-columnname[data-label="Acciones:"] .button {
     margin-bottom: 5px;
 }
-td.column-columnname[data-label="Acciones:"] .button:last-child {
+.cachilupi-driver-panel td.column-columnname[data-label="Acciones:"] .button:last-child {
     margin-bottom: 0;
 }

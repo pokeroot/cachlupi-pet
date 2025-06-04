@@ -232,121 +232,184 @@ function cachilupi_pet_driver_panel_shortcode() {
     ob_start(); // Start output buffering
     global $wpdb;
     $table_name = $wpdb->prefix . 'cachilupi_requests';
+    $current_driver_id = $user->ID;
 
-    // Get pending and accepted requests assigned to this driver
-    $current_driver_id = $user->ID; // Get the current driver's user ID
-
-    $driver_requests = $wpdb->get_results(
+    // Fetch all requests for the current driver (any status) AND all 'pending' unassigned requests.
+    // Sorted by time DESC, then created_at DESC.
+    $all_requests = $wpdb->get_results(
         $wpdb->prepare(
-            "SELECT r.*, u.display_name as client_name FROM {$table_name} r LEFT JOIN {$wpdb->users} u ON r.client_user_id = u.ID WHERE r.status IN (%s, %s, %s, %s, %s) AND (r.driver_id = %d OR r.driver_id IS NULL AND r.status = %s) ORDER BY r.created_at DESC",
-            'pending', // Mostrar pendientes (para que el conductor los acepte si no están asignados)
-            'accepted', // Mostrar los que el conductor ha aceptado
-            'on_the_way', // Mostrar los que están en camino
-            'arrived', // Mostrar los que el conductor ha marcado como llegados
-            'picked_up', // Mostrar los que han sido recogidos
-            $current_driver_id, // Filtrar por el ID del conductor actual
-            'pending' // Para la condición r.driver_id IS NULL AND r.status = %s
+            "SELECT r.*, u.display_name as client_name
+             FROM {$table_name} r
+             LEFT JOIN {$wpdb->users} u ON r.client_user_id = u.ID
+             WHERE (r.driver_id = %d OR (r.status = %s AND r.driver_id IS NULL))
+             ORDER BY r.time DESC, r.created_at DESC",
+            $current_driver_id,
+            'pending'
         )
     );
 
+    $active_requests = [];
+    $historical_requests = [];
+
+    $active_statuses = ['pending', 'accepted', 'on_the_way', 'arrived', 'picked_up'];
+    $historical_statuses = ['completed', 'rejected'];
+
+    if ($all_requests) {
+        foreach ($all_requests as $request) {
+            if (in_array($request->status, $active_statuses)) {
+                // Include unassigned pending requests for all drivers to see
+                if ($request->status === 'pending' && is_null($request->driver_id)) {
+                    $active_requests[] = $request;
+                } elseif (!is_null($request->driver_id) && $request->driver_id == $current_driver_id) {
+                    // Include requests assigned to the current driver
+                    $active_requests[] = $request;
+                }
+            } elseif (in_array($request->status, $historical_statuses) && !is_null($request->driver_id) && $request->driver_id == $current_driver_id) {
+                $historical_requests[] = $request;
+            }
+        }
+    }
     ?>
-    <div class="wrap">
+    <div class="wrap cachilupi-driver-panel">
         <h2><?php esc_html_e('Panel del Conductor', 'cachilupi-pet'); ?></h2>
         <div id="driver-panel-feedback" class="feedback-messages-container" style="margin-bottom: 15px;"></div>
 
-        <?php if ( $driver_requests ) : ?>
-            <table class="widefat fixed" cellspacing="0">
-                <thead>
-                    <tr>
-                        <th class="manage-column column-columnname" scope="col"><?php esc_html_e('ID', 'cachilupi-pet'); ?></th>
-                        <th class="manage-column column-columnname" scope="col"><?php esc_html_e('Fecha y Hora', 'cachilupi-pet'); ?></th>
-                        <th class="manage-column column-columnname" scope="col"><?php esc_html_e('Origen', 'cachilupi-pet'); ?></th>
-                        <th class="manage-column column-columnname" scope="col"><?php esc_html_e('Cliente', 'cachilupi-pet'); ?></th>
-                        <th class="manage-column column-columnname" scope="col"><?php esc_html_e('Destino', 'cachilupi-pet'); ?></th>
-                        <th class="manage-column column-columnname" scope="col"><?php esc_html_e('Estado', 'cachilupi-pet'); ?></th>
-                        <th class="manage-column column-columnname" scope="col"><?php esc_html_e('Mascota', 'cachilupi-pet'); ?></th>
-                        <th class="manage-column column-columnname" scope="col"><?php esc_html_e('Instrucciones Mascota', 'cachilupi-pet'); ?></th>
-                        <th class="manage-column column-columnname" scope="col"><?php esc_html_e('Notas', 'cachilupi-pet'); ?></th>
-                        <th class="manage-column column-columnname" scope="col"><?php esc_html_e('Acciones', 'cachilupi-pet'); ?></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ( $driver_requests as $request ) : ?>
-                        <tr data-request-id="<?php echo esc_attr( $request->id ); ?>">
-                            <td class="column-columnname" data-label="<?php esc_attr_e('ID:', 'cachilupi-pet'); ?>"><?php echo esc_html( $request->id ); ?></td>
-                            <td class="column-columnname" data-label="<?php esc_attr_e('Fecha y Hora:', 'cachilupi-pet'); ?>"><?php echo esc_html( date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), strtotime( $request->time ) ) ); ?></td>
-                             <td class="column-columnname" data-label="<?php esc_attr_e('Origen:', 'cachilupi-pet'); ?>">
-                                <?php echo esc_html( $request->pickup_address ); ?>
-                                <br>
-                                <a href="https://www.google.com/maps/dir/?api=1&destination=<?php echo urlencode($request->pickup_address); ?>" target="_blank" class="map-link"><?php esc_html_e('Ver en Google Maps', 'cachilupi-pet'); ?></a>
-                            </td>
-                            <td class="column-columnname" data-label="<?php esc_attr_e('Cliente:', 'cachilupi-pet'); ?>"><?php echo esc_html( $request->client_name ? $request->client_name : __('N/A', 'cachilupi-pet') ); ?></td>
-                             <td class="column-columnname" data-label="<?php esc_attr_e('Destino:', 'cachilupi-pet'); ?>">
-                                <?php echo esc_html( $request->dropoff_address ); ?>
-                                <br>
-                                <a href="https://www.google.com/maps/dir/?api=1&destination=<?php echo urlencode($request->dropoff_address); ?>" target="_blank" class="map-link"><?php esc_html_e('Ver en Google Maps', 'cachilupi-pet'); ?></a>
-                            </td>
-                            <td class="column-columnname request-status" data-label="<?php esc_attr_e('Estado:', 'cachilupi-pet'); ?>"><?php echo esc_html( cachilupi_pet_translate_status( $request->status ) ); ?></td>
-                            <td class="column-columnname" data-label="<?php esc_attr_e('Mascota:', 'cachilupi-pet'); ?>"><?php echo esc_html( $request->pet_type ); ?></td>
-                            <td class="column-columnname" data-label="<?php esc_attr_e('Instrucciones Mascota:', 'cachilupi-pet'); ?>"><?php echo esc_html( $request->pet_instructions ? $request->pet_instructions : '--' ); ?></td>
-                            <td class="column-columnname" data-label="<?php esc_attr_e('Notas:', 'cachilupi-pet'); ?>"><?php echo esc_html( $request->notes ? $request->notes : '--'); ?></td>
-                            <td class="column-columnname" data-label="<?php esc_attr_e('Acciones:', 'cachilupi-pet'); ?>">
-                                <?php
-                                // Usamos el slug original del estado para la lógica interna
-                                $current_status_slug = strtolower( $request->status );
+        <h2 class="nav-tab-wrapper">
+            <a href="#active-requests" class="nav-tab nav-tab-active"><?php esc_html_e('Solicitudes Activas', 'cachilupi-pet'); ?></a>
+            <a href="#historical-requests" class="nav-tab"><?php esc_html_e('Historial de Solicitudes', 'cachilupi-pet'); ?></a>
+        </h2>
 
-                                // --- IMPORTANTE: Configura estas clases CSS ---
-                                // Asegúrate de que estos nombres de clase coincidan EXACTAMENTE
-                                // con los que tienes definidos en tu archivo assets/css/driver-panel.css
-                                // Si tradujiste '.accept-request' a '.aceptar-solicitud' en tu CSS,
-                                // entonces cambia '$accept_class' a 'aceptar-solicitud'.
-                                $accept_class   = 'accept-request';   // Ejemplo: 'accept-request' o 'aceptar-solicitud'
-                                $reject_class   = 'reject-request';   // Ejemplo: 'reject-request' o 'rechazar-solicitud'
-                                $arrive_class   = 'arrive-request';   // Ejemplo: 'arrive-request' o 'llegada-solicitud'
-                                $on_the_way_class = 'on-the-way-request'; // Nueva clase
-                                $picked_up_class = 'picked-up-request'; // Nueva clase
-                                $complete_class = 'complete-request'; // Ejemplo: 'complete-request' o 'completar-solicitud'
-                                
-                                $action_button_shown = false;
-
-                                // Botones para el estado 'pending'
-                                if ( $current_status_slug === 'pending' && is_null($request->driver_id) ) : // Solo mostrar si no está asignado ?>
-                                    <button class="button <?php echo esc_attr($accept_class); ?>" data-request-id="<?php echo esc_attr( $request->id ); ?>" data-action="accept"><?php esc_html_e('Aceptar', 'cachilupi-pet'); ?></button>
-                                    <button class="button <?php echo esc_attr($reject_class); ?>" data-request-id="<?php echo esc_attr( $request->id ); ?>" data-action="reject"><?php esc_html_e('Rechazar', 'cachilupi-pet'); ?></button>
-                                    <button class="button <?php echo esc_attr($on_the_way_class); ?>" data-request-id="<?php echo esc_attr( $request->id ); ?>" data-action="on_the_way" style="display:none;"><?php esc_html_e('Iniciar Viaje', 'cachilupi-pet'); ?></button>
-                                    <button class="button <?php echo esc_attr($arrive_class); ?>" data-request-id="<?php echo esc_attr( $request->id ); ?>" data-action="arrive" style="display:none;"><?php esc_html_e('He Llegado al Origen', 'cachilupi-pet'); ?></button>
-                                    <button class="button <?php echo esc_attr($complete_class); ?>" data-request-id="<?php echo esc_attr( $request->id ); ?>" data-action="complete" style="display:none;"><?php esc_html_e('Completar Viaje', 'cachilupi-pet'); ?></button>
-                                    <?php $action_button_shown = true; ?>
-                                <?php elseif ( $current_status_slug === 'accepted' ) : ?>
-                                    <button class="button <?php echo esc_attr($on_the_way_class); ?>" data-request-id="<?php echo esc_attr( $request->id ); ?>" data-action="on_the_way"><?php esc_html_e('Iniciar Viaje', 'cachilupi-pet'); ?></button>
-                                    <button class="button <?php echo esc_attr($arrive_class); ?>" data-request-id="<?php echo esc_attr( $request->id ); ?>" data-action="arrive"><?php esc_html_e('He Llegado al Origen', 'cachilupi-pet'); ?></button>
-                                    <button class="button <?php echo esc_attr($complete_class); ?>" data-request-id="<?php echo esc_attr( $request->id ); ?>" data-action="complete" style="display:none;"><?php esc_html_e('Completar Viaje', 'cachilupi-pet'); ?></button>
-                                    <?php $action_button_shown = true; ?>
-                                <?php elseif ( $current_status_slug === 'on_the_way' ) : ?>
-                                    <button class="button <?php echo esc_attr($arrive_class); ?>" data-request-id="<?php echo esc_attr( $request->id ); ?>" data-action="arrive"><?php esc_html_e('He Llegado al Origen', 'cachilupi-pet'); ?></button>
-                                    <button class="button <?php echo esc_attr($complete_class); ?>" data-request-id="<?php echo esc_attr( $request->id ); ?>" data-action="complete" style="display:none;"><?php esc_html_e('Completar Viaje', 'cachilupi-pet'); ?></button>
-                                    <?php $action_button_shown = true; ?>
-                                <?php elseif ( $current_status_slug === 'arrived' ) : ?>
-                                    <button class="button <?php echo esc_attr($picked_up_class); ?>" data-request-id="<?php echo esc_attr( $request->id ); ?>" data-action="picked_up"><?php esc_html_e('Mascota Recogida', 'cachilupi-pet'); ?></button>
-                                    <button class="button <?php echo esc_attr($complete_class); ?>" data-request-id="<?php echo esc_attr( $request->id ); ?>" data-action="complete"><?php esc_html_e('Completar Viaje', 'cachilupi-pet'); ?></button>
-                                    <?php $action_button_shown = true; ?>
-                                <?php elseif ( $current_status_slug === 'picked_up' ) : ?>
-                                    <button class="button <?php echo esc_attr($complete_class); ?>" data-request-id="<?php echo esc_attr( $request->id ); ?>" data-action="complete"><?php esc_html_e('Completar Viaje', 'cachilupi-pet'); ?></button>
-                                    <?php $action_button_shown = true; ?>
-                                <?php endif; ?>
-
-                                <?php if ( !$action_button_shown ) : ?>
-                                    <span><?php esc_html_e('--', 'cachilupi-pet'); ?></span>
-                                <?php endif; ?>
-                            </td>
+        <div id="active-requests" class="tab-content">
+            <?php if ( !empty($active_requests) ) : ?>
+                <table class="widefat fixed striped" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th class="manage-column column-columnname" scope="col"><?php esc_html_e('ID', 'cachilupi-pet'); ?></th>
+                            <th class="manage-column column-columnname" scope="col"><?php esc_html_e('Fecha y Hora', 'cachilupi-pet'); ?></th>
+                            <th class="manage-column column-columnname" scope="col"><?php esc_html_e('Origen', 'cachilupi-pet'); ?></th>
+                            <th class="manage-column column-columnname" scope="col"><?php esc_html_e('Cliente', 'cachilupi-pet'); ?></th>
+                            <th class="manage-column column-columnname" scope="col"><?php esc_html_e('Destino', 'cachilupi-pet'); ?></th>
+                            <th class="manage-column column-columnname" scope="col"><?php esc_html_e('Estado', 'cachilupi-pet'); ?></th>
+                            <th class="manage-column column-columnname" scope="col"><?php esc_html_e('Mascota', 'cachilupi-pet'); ?></th>
+                            <th class="manage-column column-columnname" scope="col"><?php esc_html_e('Instrucciones Mascota', 'cachilupi-pet'); ?></th>
+                            <th class="manage-column column-columnname" scope="col"><?php esc_html_e('Notas', 'cachilupi-pet'); ?></th>
+                            <th class="manage-column column-columnname" scope="col"><?php esc_html_e('Acciones', 'cachilupi-pet'); ?></th>
                         </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        <?php else : ?>
-            <p><?php esc_html_e('No hay solicitudes pendientes en este momento.', 'cachilupi-pet'); ?></p>
-        <?php endif; ?>
+                    </thead>
+                    <tbody>
+                        <?php foreach ( $active_requests as $request ) : ?>
+                            <tr data-request-id="<?php echo esc_attr( $request->id ); ?>">
+                                <td class="column-columnname" data-label="<?php esc_attr_e('ID:', 'cachilupi-pet'); ?>"><?php echo esc_html( $request->id ); ?></td>
+                                <td class="column-columnname" data-label="<?php esc_attr_e('Fecha y Hora:', 'cachilupi-pet'); ?>"><?php echo esc_html( date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), strtotime( $request->time ) ) ); ?></td>
+                                <td class="column-columnname" data-label="<?php esc_attr_e('Origen:', 'cachilupi-pet'); ?>">
+                                    <?php echo esc_html( $request->pickup_address ); ?>
+                                    <br>
+                                    <a href="https://www.google.com/maps/dir/?api=1&destination=<?php echo urlencode($request->pickup_address); ?>" target="_blank" class="map-link"><?php esc_html_e('Ver en Google Maps', 'cachilupi-pet'); ?></a>
+                                </td>
+                                <td class="column-columnname" data-label="<?php esc_attr_e('Cliente:', 'cachilupi-pet'); ?>"><?php echo esc_html( $request->client_name ? $request->client_name : __('N/A', 'cachilupi-pet') ); ?></td>
+                                <td class="column-columnname" data-label="<?php esc_attr_e('Destino:', 'cachilupi-pet'); ?>">
+                                    <?php echo esc_html( $request->dropoff_address ); ?>
+                                    <br>
+                                    <a href="https://www.google.com/maps/dir/?api=1&destination=<?php echo urlencode($request->dropoff_address); ?>" target="_blank" class="map-link"><?php esc_html_e('Ver en Google Maps', 'cachilupi-pet'); ?></a>
+                                </td>
+                                <td class="column-columnname request-status" data-label="<?php esc_attr_e('Estado:', 'cachilupi-pet'); ?>"><?php echo esc_html( cachilupi_pet_translate_status( $request->status ) ); ?></td>
+                                <td class="column-columnname" data-label="<?php esc_attr_e('Mascota:', 'cachilupi-pet'); ?>"><?php echo esc_html( $request->pet_type ); ?></td>
+                                <td class="column-columnname" data-label="<?php esc_attr_e('Instrucciones Mascota:', 'cachilupi-pet'); ?>"><?php echo esc_html( $request->pet_instructions ? $request->pet_instructions : '--' ); ?></td>
+                                <td class="column-columnname" data-label="<?php esc_attr_e('Notas:', 'cachilupi-pet'); ?>"><?php echo esc_html( $request->notes ? $request->notes : '--'); ?></td>
+                                <td class="column-columnname" data-label="<?php esc_attr_e('Acciones:', 'cachilupi-pet'); ?>">
+                                    <?php
+                                    $current_status_slug = strtolower( $request->status );
+                                    $accept_class   = 'accept-request';
+                                    $reject_class   = 'reject-request';
+                                    $arrive_class   = 'arrive-request';
+                                    $on_the_way_class = 'on-the-way-request';
+                                    $picked_up_class = 'picked-up-request';
+                                    $complete_class = 'complete-request';
+                                    $action_button_shown = false;
+
+                                    if ( $current_status_slug === 'pending' && (is_null($request->driver_id) || $request->driver_id == $current_driver_id) ) : ?>
+                                        <button class="button <?php echo esc_attr($accept_class); ?>" data-request-id="<?php echo esc_attr( $request->id ); ?>" data-action="accept"><?php esc_html_e('Aceptar', 'cachilupi-pet'); ?></button>
+                                        <button class="button <?php echo esc_attr($reject_class); ?>" data-request-id="<?php echo esc_attr( $request->id ); ?>" data-action="reject"><?php esc_html_e('Rechazar', 'cachilupi-pet'); ?></button>
+                                        <?php $action_button_shown = true; ?>
+                                    <?php elseif ( $current_status_slug === 'accepted' && $request->driver_id == $current_driver_id ) : ?>
+                                        <button class="button <?php echo esc_attr($on_the_way_class); ?>" data-request-id="<?php echo esc_attr( $request->id ); ?>" data-action="on_the_way"><?php esc_html_e('Iniciar Viaje', 'cachilupi-pet'); ?></button>
+                                        <?php $action_button_shown = true; ?>
+                                    <?php elseif ( $current_status_slug === 'on_the_way' && $request->driver_id == $current_driver_id ) : ?>
+                                        <button class="button <?php echo esc_attr($arrive_class); ?>" data-request-id="<?php echo esc_attr( $request->id ); ?>" data-action="arrive"><?php esc_html_e('He Llegado al Origen', 'cachilupi-pet'); ?></button>
+                                        <?php $action_button_shown = true; ?>
+                                    <?php elseif ( $current_status_slug === 'arrived' && $request->driver_id == $current_driver_id ) : ?>
+                                        <button class="button <?php echo esc_attr($picked_up_class); ?>" data-request-id="<?php echo esc_attr( $request->id ); ?>" data-action="picked_up"><?php esc_html_e('Mascota Recogida', 'cachilupi-pet'); ?></button>
+                                        <?php $action_button_shown = true; ?>
+                                    <?php elseif ( $current_status_slug === 'picked_up' && $request->driver_id == $current_driver_id ) : ?>
+                                        <button class="button <?php echo esc_attr($complete_class); ?>" data-request-id="<?php echo esc_attr( $request->id ); ?>" data-action="complete"><?php esc_html_e('Completar Viaje', 'cachilupi-pet'); ?></button>
+                                        <?php $action_button_shown = true; ?>
+                                    <?php endif; ?>
+
+                                    <?php if ( !$action_button_shown ) : ?>
+                                        <span><?php esc_html_e('--', 'cachilupi-pet'); ?></span>
+                                    <?php endif; ?>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            <?php else : ?>
+                <p><?php esc_html_e('No hay solicitudes activas en este momento.', 'cachilupi-pet'); ?></p>
+            <?php endif; ?>
+        </div>
+
+        <div id="historical-requests" class="tab-content" style="display:none;">
+            <?php if ( !empty($historical_requests) ) : ?>
+                <table class="widefat fixed striped" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th class="manage-column column-columnname" scope="col"><?php esc_html_e('ID', 'cachilupi-pet'); ?></th>
+                            <th class="manage-column column-columnname" scope="col"><?php esc_html_e('Fecha y Hora', 'cachilupi-pet'); ?></th>
+                            <th class="manage-column column-columnname" scope="col"><?php esc_html_e('Origen', 'cachilupi-pet'); ?></th>
+                            <th class="manage-column column-columnname" scope="col"><?php esc_html_e('Cliente', 'cachilupi-pet'); ?></th>
+                            <th class="manage-column column-columnname" scope="col"><?php esc_html_e('Destino', 'cachilupi-pet'); ?></th>
+                            <th class="manage-column column-columnname" scope="col"><?php esc_html_e('Mascota', 'cachilupi-pet'); ?></th>
+                            <th class="manage-column column-columnname" scope="col"><?php esc_html_e('Instrucciones Mascota', 'cachilupi-pet'); ?></th>
+                            <th class="manage-column column-columnname" scope="col"><?php esc_html_e('Notas', 'cachilupi-pet'); ?></th>
+                            <th class="manage-column column-columnname" scope="col"><?php esc_html_e('Estado Final', 'cachilupi-pet'); ?></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ( $historical_requests as $request ) : ?>
+                            <tr data-request-id="<?php echo esc_attr( $request->id ); ?>">
+                                <td class="column-columnname" data-label="<?php esc_attr_e('ID:', 'cachilupi-pet'); ?>"><?php echo esc_html( $request->id ); ?></td>
+                                <td class="column-columnname" data-label="<?php esc_attr_e('Fecha y Hora:', 'cachilupi-pet'); ?>"><?php echo esc_html( date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), strtotime( $request->time ) ) ); ?></td>
+                                <td class="column-columnname" data-label="<?php esc_attr_e('Origen:', 'cachilupi-pet'); ?>"><?php echo esc_html( $request->pickup_address ); ?></td>
+                                <td class="column-columnname" data-label="<?php esc_attr_e('Cliente:', 'cachilupi-pet'); ?>"><?php echo esc_html( $request->client_name ? $request->client_name : __('N/A', 'cachilupi-pet') ); ?></td>
+                                <td class="column-columnname" data-label="<?php esc_attr_e('Destino:', 'cachilupi-pet'); ?>"><?php echo esc_html( $request->dropoff_address ); ?></td>
+                                <td class="column-columnname" data-label="<?php esc_attr_e('Mascota:', 'cachilupi-pet'); ?>"><?php echo esc_html( $request->pet_type ); ?></td>
+                                <td class="column-columnname" data-label="<?php esc_attr_e('Instrucciones Mascota:', 'cachilupi-pet'); ?>"><?php echo esc_html( $request->pet_instructions ? $request->pet_instructions : '--' ); ?></td>
+                                <td class="column-columnname" data-label="<?php esc_attr_e('Notas:', 'cachilupi-pet'); ?>"><?php echo esc_html( $request->notes ? $request->notes : '--'); ?></td>
+                                <td class="column-columnname request-status" data-label="<?php esc_attr_e('Estado Final:', 'cachilupi-pet'); ?>"><?php echo esc_html( cachilupi_pet_translate_status( $request->status ) ); ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            <?php else : ?>
+                <p><?php esc_html_e('No hay solicitudes en el historial.', 'cachilupi-pet'); ?></p>
+            <?php endif; ?>
+        </div>
     </div>
+    <script type="text/javascript">
+        jQuery(document).ready(function($) {
+            // Tab switching
+            $('.nav-tab-wrapper .nav-tab').click(function(e) {
+                e.preventDefault();
+                var tab_id = $(this).attr('href');
+
+                $('.nav-tab-wrapper .nav-tab').removeClass('nav-tab-active');
+                $('.tab-content').hide();
+
+                $(this).addClass('nav-tab-active');
+                $(tab_id).show();
+            });
+        });
+    </script>
     <?php
     return ob_get_clean(); // Return the buffered content
 }
@@ -906,39 +969,44 @@ function cachilupi_pet_shortcode() {
                 echo '<td class="column-columnname" data-label="' . esc_attr__('Mascota:', 'cachilupi-pet') . '">' . esc_html( $request_item->pet_type ) . '</td>';
                 $status_slug_class = 'request-status-' . esc_attr( strtolower( $request_item->status ) );
                 echo '<td class="column-columnname request-status ' . $status_slug_class . '" data-label="' . esc_attr__('Estado:', 'cachilupi-pet') . '"><span>' . esc_html( cachilupi_pet_translate_status( $request_item->status ) ) . '</span></td>';
-                echo '<td class="column-columnname" data-label="' . esc_attr__('Conductor:', 'cachilupi-pet') . '">' . esc_html( $request_item->driver_name ? $request_item->driver_name : __('No asignado', 'cachilupi-pet') ) . '</td>';
+                echo '<td class="column-columnname" data-label="' . esc_attr__('Conductor:', 'cachilupi-pet') . '">' . esc_html( $request_item->driver_name ? $request_item->driver_name : __('No asignado aún', 'cachilupi-pet') ) . '</td>';
                 echo '<td class="column-columnname" data-label="' . esc_attr__('Seguimiento:', 'cachilupi-pet') . '">';
-                switch ( $request_item->status ) {
-                    case 'on_the_way':
-                        if ( $request_item->driver_id ) {
-                            echo '<button class="button cachilupi-follow-driver-btn" data-request-id="' . esc_attr( $request_item->id ) . '">' . esc_html__('Seguir Viaje', 'cachilupi-pet') . '</button>';
-                        } else {
-                            // Caso improbable: en camino pero sin driver_id? Mostrar un estado genérico.
-                            echo esc_html__('Información no disponible', 'cachilupi-pet');
-                        }
-                        break;
+                switch ( strtolower($request_item->status) ) { // Ensure consistent comparison with lowercased status
                     case 'pending':
-                        echo esc_html__('Disponible cuando se acepte el viaje', 'cachilupi-pet');
+                        echo esc_html__('Seguimiento disponible una vez que el conductor acepte e inicie el viaje.', 'cachilupi-pet');
                         break;
                     case 'accepted':
-                        echo esc_html__('Disponible cuando el viaje inicie', 'cachilupi-pet');
+                        echo esc_html__('Seguimiento disponible cuando el conductor inicie el viaje.', 'cachilupi-pet');
+                        break;
+                    case 'on_the_way':
+                        if ( $request_item->driver_id ) {
+                            echo '<button class="button cachilupi-follow-driver-btn" data-request-id="' . esc_attr( $request_item->id ) . '">' . esc_html__('Seguir Viaje en Tiempo Real', 'cachilupi-pet') . '</button>';
+                        } else {
+                            // This case should ideally not happen if status is 'on_the_way'
+                            echo esc_html__('Información de seguimiento no disponible en este momento.', 'cachilupi-pet');
+                        }
                         break;
                     case 'arrived':
-                        echo esc_html__('Conductor en origen, esperando recogida', 'cachilupi-pet');
+                        echo esc_html__('El conductor ha llegado al punto de recogida. Seguimiento no activo.', 'cachilupi-pet');
                         break;
                     case 'picked_up':
-                        echo esc_html__('Mascota recogida, viaje en curso', 'cachilupi-pet');
-                        // Based on current logic, follow button is only for 'on_the_way'.
-                        // If cachilupi_get_driver_location is updated for 'picked_up', this could change.
+                        // Assuming tracking might still be active or could be reactivated if the client map supports it.
+                        // For now, let's assume 'on_the_way' is the primary state for live tracking button.
+                        // If client can also track during 'picked_up', the JS and AJAX for get_driver_location would need to allow it.
+                        echo esc_html__('Mascota recogida. Viaje en progreso. Seguimiento en tiempo real si está activo.', 'cachilupi-pet');
+                        // Optionally, re-add button if tracking is intended for 'picked_up' as well:
+                        // if ( $request_item->driver_id ) {
+                        //     echo '<button class="button cachilupi-follow-driver-btn" data-request-id="' . esc_attr( $request_item->id ) . '">' . esc_html__('Seguir Viaje en Tiempo Real', 'cachilupi-pet') . '</button>';
+                        // }
                         break;
                     case 'completed':
-                        echo esc_html__('Viaje finalizado', 'cachilupi-pet');
+                        echo esc_html__('Viaje finalizado. No hay seguimiento activo.', 'cachilupi-pet');
                         break;
                     case 'rejected':
-                        echo esc_html__('Viaje rechazado', 'cachilupi-pet');
+                        echo esc_html__('Viaje rechazado. No hay seguimiento disponible.', 'cachilupi-pet');
                         break;
                     default:
-                        echo esc_html__('--', 'cachilupi-pet'); // Fallback para estados desconocidos
+                        echo esc_html__('Estado de seguimiento desconocido.', 'cachilupi-pet'); // Fallback for any other statuses
                         break;
                 }
                 echo '</td>';
