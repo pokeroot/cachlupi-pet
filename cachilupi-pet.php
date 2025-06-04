@@ -934,21 +934,44 @@ function cachilupi_pet_shortcode() {
         $requests_table_name = $wpdb->prefix . 'cachilupi_requests';
         $client_id = $user->ID;
 
-        $client_requests = $wpdb->get_results(
+        $all_client_requests = $wpdb->get_results(
             $wpdb->prepare(
                 "SELECT r.*, u.display_name as driver_name 
                  FROM {$requests_table_name} r 
                  LEFT JOIN {$wpdb->users} u ON r.driver_id = u.ID 
-                 WHERE r.client_user_id = %d ORDER BY r.created_at DESC",
+                 WHERE r.client_user_id = %d ORDER BY r.time DESC, r.created_at DESC", // Order by time primarily
                 $client_id
             )
         );
 
+        $active_client_requests = [];
+        $historical_client_requests = [];
+        $active_statuses = ['pending', 'accepted', 'on_the_way', 'arrived', 'picked_up'];
+        $historical_statuses = ['completed', 'rejected'];
+
+        if ($all_client_requests) {
+            foreach ($all_client_requests as $request_item) {
+                if (in_array(strtolower($request_item->status), $historical_statuses)) {
+                    $historical_client_requests[] = $request_item;
+                } else {
+                    $active_client_requests[] = $request_item;
+                }
+            }
+        }
+
         echo '<div class="cachilupi-client-requests-panel">';
         echo '<h2>' . esc_html__('Mis Solicitudes de Servicio', 'cachilupi-pet') . '</h2>';
 
-        if ( $client_requests ) {
-            echo '<table class="widefat fixed" cellspacing="0">';
+        // Tab Navigation
+        echo '<h2 class="nav-tab-wrapper">'; // WordPress uses h2 for nav-tab-wrapper
+        echo '<a href="#client-active-requests" class="nav-tab nav-tab-active">' . esc_html__('Solicitudes Activas', 'cachilupi-pet') . '</a>';
+        echo '<a href="#client-historical-requests" class="nav-tab">' . esc_html__('Historial de Solicitudes', 'cachilupi-pet') . '</a>';
+        echo '</h2>';
+
+        // Tab Content for Active Requests
+        echo '<div id="client-active-requests" class="tab-content">';
+        if ( !empty($active_client_requests) ) {
+            echo '<table class="widefat fixed striped" cellspacing="0">'; // Added striped for consistency
             echo '<thead><tr>';
             echo '<th class="manage-column column-columnname" scope="col">' . esc_html__('ID', 'cachilupi-pet') . '</th>';
             echo '<th class="manage-column column-columnname" scope="col">' . esc_html__('Fecha Programada', 'cachilupi-pet') . '</th>';
@@ -960,7 +983,7 @@ function cachilupi_pet_shortcode() {
             echo '<th class="manage-column column-columnname" scope="col">' . esc_html__('Seguimiento', 'cachilupi-pet') . '</th>';
             echo '</tr></thead><tbody>';
 
-            foreach ( $client_requests as $request_idx => $request_item ) {
+            foreach ( $active_client_requests as $request_item ) { // Iterate over active requests
                 echo '<tr data-request-id="' . esc_attr( $request_item->id ) . '">';
                 echo '<td class="column-columnname" data-label="' . esc_attr__('ID:', 'cachilupi-pet') . '">' . esc_html( $request_item->id ) . '</td>';
                 echo '<td class="column-columnname" data-label="' . esc_attr__('Fecha Programada:', 'cachilupi-pet') . '">' . esc_html( date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), strtotime( $request_item->time ) ) ) . '</td>';
@@ -971,7 +994,8 @@ function cachilupi_pet_shortcode() {
                 echo '<td class="column-columnname request-status ' . $status_slug_class . '" data-label="' . esc_attr__('Estado:', 'cachilupi-pet') . '"><span>' . esc_html( cachilupi_pet_translate_status( $request_item->status ) ) . '</span></td>';
                 echo '<td class="column-columnname" data-label="' . esc_attr__('Conductor:', 'cachilupi-pet') . '">' . esc_html( $request_item->driver_name ? $request_item->driver_name : __('No asignado aún', 'cachilupi-pet') ) . '</td>';
                 echo '<td class="column-columnname" data-label="' . esc_attr__('Seguimiento:', 'cachilupi-pet') . '">';
-                switch ( strtolower($request_item->status) ) { // Ensure consistent comparison with lowercased status
+                // Logic for active requests' tracking column
+                switch ( strtolower($request_item->status) ) {
                     case 'pending':
                         echo esc_html__('Seguimiento disponible una vez que el conductor acepte e inicie el viaje.', 'cachilupi-pet');
                         break;
@@ -982,7 +1006,6 @@ function cachilupi_pet_shortcode() {
                         if ( $request_item->driver_id ) {
                             echo '<button class="button cachilupi-follow-driver-btn" data-request-id="' . esc_attr( $request_item->id ) . '">' . esc_html__('Seguir Viaje en Tiempo Real', 'cachilupi-pet') . '</button>';
                         } else {
-                            // This case should ideally not happen if status is 'on_the_way'
                             echo esc_html__('Información de seguimiento no disponible en este momento.', 'cachilupi-pet');
                         }
                         break;
@@ -990,23 +1013,11 @@ function cachilupi_pet_shortcode() {
                         echo esc_html__('El conductor ha llegado al punto de recogida. Seguimiento no activo.', 'cachilupi-pet');
                         break;
                     case 'picked_up':
-                        // Assuming tracking might still be active or could be reactivated if the client map supports it.
-                        // For now, let's assume 'on_the_way' is the primary state for live tracking button.
-                        // If client can also track during 'picked_up', the JS and AJAX for get_driver_location would need to allow it.
                         echo esc_html__('Mascota recogida. Viaje en progreso. Seguimiento en tiempo real si está activo.', 'cachilupi-pet');
-                        // Optionally, re-add button if tracking is intended for 'picked_up' as well:
-                        // if ( $request_item->driver_id ) {
-                        //     echo '<button class="button cachilupi-follow-driver-btn" data-request-id="' . esc_attr( $request_item->id ) . '">' . esc_html__('Seguir Viaje en Tiempo Real', 'cachilupi-pet') . '</button>';
-                        // }
+                        // Optionally, re-add button if tracking is intended for 'picked_up' as well
                         break;
-                    case 'completed':
-                        echo esc_html__('Viaje finalizado. No hay seguimiento activo.', 'cachilupi-pet');
-                        break;
-                    case 'rejected':
-                        echo esc_html__('Viaje rechazado. No hay seguimiento disponible.', 'cachilupi-pet');
-                        break;
-                    default:
-                        echo esc_html__('Estado de seguimiento desconocido.', 'cachilupi-pet'); // Fallback for any other statuses
+                    default: // Should not happen for active statuses based on filtering
+                        echo esc_html( cachilupi_pet_translate_status( $request_item->status ) );
                         break;
                 }
                 echo '</td>';
@@ -1014,10 +1025,60 @@ function cachilupi_pet_shortcode() {
             }
             echo '</tbody></table>';
         } else {
-            echo '<p>' . esc_html__('No has realizado ninguna solicitud de servicio todavía.', 'cachilupi-pet') . '</p>';
+            echo '<p>' . esc_html__('No tienes solicitudes activas en este momento.', 'cachilupi-pet') . '</p>';
         }
-        echo '</div>';
-        // Modal
+        echo '</div>'; // End #client-active-requests
+
+        // Tab Content for Historical Requests
+        echo '<div id="client-historical-requests" class="tab-content" style="display:none;">';
+        if ( !empty($historical_client_requests) ) {
+            echo '<table class="widefat fixed striped" cellspacing="0">'; // Added striped for consistency
+            echo '<thead><tr>';
+            echo '<th class="manage-column column-columnname" scope="col">' . esc_html__('ID', 'cachilupi-pet') . '</th>';
+            echo '<th class="manage-column column-columnname" scope="col">' . esc_html__('Fecha Programada', 'cachilupi-pet') . '</th>';
+            echo '<th class="manage-column column-columnname" scope="col">' . esc_html__('Origen', 'cachilupi-pet') . '</th>';
+            echo '<th class="manage-column column-columnname" scope="col">' . esc_html__('Destino', 'cachilupi-pet') . '</th>';
+            echo '<th class="manage-column column-columnname" scope="col">' . esc_html__('Mascota', 'cachilupi-pet') . '</th>';
+            echo '<th class="manage-column column-columnname" scope="col">' . esc_html__('Estado Final', 'cachilupi-pet') . '</th>'; // Changed from 'Estado'
+            echo '<th class="manage-column column-columnname" scope="col">' . esc_html__('Conductor', 'cachilupi-pet') . '</th>';
+            echo '<th class="manage-column column-columnname" scope="col">' . esc_html__('Detalles del Viaje', 'cachilupi-pet') . '</th>'; // Changed from 'Seguimiento'
+            echo '</tr></thead><tbody>';
+
+            foreach ( $historical_client_requests as $request_item ) { // Iterate over historical requests
+                echo '<tr data-request-id="' . esc_attr( $request_item->id ) . '">';
+                echo '<td class="column-columnname" data-label="' . esc_attr__('ID:', 'cachilupi-pet') . '">' . esc_html( $request_item->id ) . '</td>';
+                echo '<td class="column-columnname" data-label="' . esc_attr__('Fecha Programada:', 'cachilupi-pet') . '">' . esc_html( date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), strtotime( $request_item->time ) ) ) . '</td>';
+                echo '<td class="column-columnname" data-label="' . esc_attr__('Origen:', 'cachilupi-pet') . '">' . esc_html( $request_item->pickup_address ) . '</td>';
+                echo '<td class="column-columnname" data-label="' . esc_attr__('Destino:', 'cachilupi-pet') . '">' . esc_html( $request_item->dropoff_address ) . '</td>';
+                echo '<td class="column-columnname" data-label="' . esc_attr__('Mascota:', 'cachilupi-pet') . '">' . esc_html( $request_item->pet_type ) . '</td>';
+                $status_slug_class = 'request-status-' . esc_attr( strtolower( $request_item->status ) );
+                echo '<td class="column-columnname request-status ' . $status_slug_class . '" data-label="' . esc_attr__('Estado Final:', 'cachilupi-pet') . '"><span>' . esc_html( cachilupi_pet_translate_status( $request_item->status ) ) . '</span></td>';
+                echo '<td class="column-columnname" data-label="' . esc_attr__('Conductor:', 'cachilupi-pet') . '">' . esc_html( $request_item->driver_name ? $request_item->driver_name : __('No asignado', 'cachilupi-pet') ) . '</td>';
+                echo '<td class="column-columnname" data-label="' . esc_attr__('Detalles del Viaje:', 'cachilupi-pet') . '">';
+                // Logic for historical requests' tracking/details column
+                switch ( strtolower($request_item->status) ) {
+                    case 'completed':
+                        echo esc_html__('Viaje finalizado con éxito.', 'cachilupi-pet');
+                        break;
+                    case 'rejected':
+                        echo esc_html__('Solicitud rechazada por el conductor o sistema.', 'cachilupi-pet');
+                        break;
+                    default: // Should not happen for historical statuses based on filtering
+                        echo esc_html( cachilupi_pet_translate_status( $request_item->status ) );
+                        break;
+                }
+                echo '</td>';
+                echo '</tr>';
+            }
+            echo '</tbody></table>';
+        } else {
+            echo '<p>' . esc_html__('No tienes solicitudes en el historial.', 'cachilupi-pet') . '</p>';
+        }
+        echo '</div>'; // End #client-historical-requests
+
+        echo '</div>'; // End .cachilupi-client-requests-panel (this was the main wrapper)
+
+        // Modal (remains unchanged, outside the tab content)
         echo '<div id="cachilupi-follow-modal" style="display:none; position:fixed; top:0;left:0;width:100%;height:100%;background-color:rgba(0,0,0,0.5);z-index:10000;"><div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:80%;max-width:700px;height:70%;background-color:white;padding:20px;border-radius:8px;"><h3 id="cachilupi-follow-modal-title">' . esc_html__('Siguiendo Viaje', 'cachilupi-pet') . '</h3><div id="cachilupi-client-follow-map" style="width:100%;height:80%;"></div><button id="cachilupi-close-follow-modal" style="margin-top:10px;">' . esc_html__('Cerrar', 'cachilupi-pet') . '</button></div></div>';
     }
     // --- FIN: Sección para Mostrar las Solicitudes del Cliente ---

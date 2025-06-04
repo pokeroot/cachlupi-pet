@@ -394,17 +394,73 @@
     box-shadow: var(--shadow-medium, 0 2px 4px rgba(0,0,0,0.05));
 }
 
-.cachilupi-client-requests-panel h2 {
+.cachilupi-client-requests-panel h2 { /* This targets the main panel title */
     font-size: var(--font-size-xlarge, 1.8em);
     margin-bottom: var(--margin-large, 20px);
     color: var(--text-color-dark, #333);
     text-align: left; /* Alineación a la izquierda para el título */
 }
 
+/* Tab Navigation for Client Panel */
+.cachilupi-client-requests-panel .nav-tab-wrapper {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: 1px solid var(--border-color-standard, #ccc);
+    font-size: 1em; /* Reset font size if WP uses h2 for this wrapper */
+    line-height: normal;
+}
+
+.cachilupi-client-requests-panel .nav-tab {
+    padding: 10px 15px;
+    text-decoration: none;
+    background-color: #f0f0f0; /* Match driver panel */
+    border: 1px solid var(--border-color-standard, #ccc);
+    border-bottom: none;
+    margin-right: 5px;
+    border-radius: 4px 4px 0 0;
+    color: #555; /* Match driver panel */
+    font-weight: 600; /* Match driver panel */
+    display: inline-block;
+    line-height: normal;
+}
+
+.cachilupi-client-requests-panel .nav-tab.nav-tab-active {
+    background-color: var(--background-color-light, #fff); /* Match driver panel */
+    border-color: var(--border-color-standard, #ccc);
+    border-bottom: 1px solid var(--background-color-light, #fff); /* Match driver panel */
+    color: #000; /* Match driver panel */
+    position: relative;
+    margin-bottom: -1px; /* Match driver panel */
+    font-weight: bold; /* Match driver panel */
+}
+
+.cachilupi-client-requests-panel .nav-tab:hover:not(.nav-tab-active) {
+    background-color: #e0e0e0; /* Match driver panel */
+    color: #000;
+}
+
+/* Tab Content for Client Panel */
+.cachilupi-client-requests-panel .tab-content {
+    padding: var(--padding-xlarge, 20px);
+    border: 1px solid var(--border-color-standard, #ccc);
+    border-top: none;
+    background-color: var(--background-color-light, #fff);
+    border-radius: 0 0 var(--border-radius-standard, 4px) var(--border-radius-standard, 4px);
+    margin-bottom: var(--margin-large, 20px);
+}
+
+.cachilupi-client-requests-panel .tab-content h3 { /* Titles within tab content, if any */
+    margin-top: 0;
+    margin-bottom: var(--margin-medium, 15px);
+    font-size: var(--font-size-large, 1.5em);
+    color: var(--text-color-dark, #333);
+}
+
+
 .cachilupi-client-requests-panel table.widefat {
     width: 100%;
     border-collapse: collapse;
-    margin-top: var(--margin-standard, 10px); /* Espacio sobre la tabla */
+    margin-top: 0; /* Tables are now inside tab-content which has padding */
 }
 
 .cachilupi-client-requests-panel table.widefat th,
@@ -622,6 +678,18 @@
     .cachilupi-client-requests-panel table.widefat td[data-label="Seguimiento:"] .button {
         display: inline-block; /* Allow button to sit naturally with text-align:right */
         width: auto;
+    }
+
+    /* Responsive tabs for Client Panel */
+    .cachilupi-client-requests-panel .nav-tab {
+        display: block;
+        width: auto;
+        text-align: center;
+        margin-bottom: 2px;
+        border-radius: var(--border-radius-standard, 4px);
+    }
+    .cachilupi-client-requests-panel .nav-tab.nav-tab-active {
+        border-bottom: 1px solid var(--border-color-standard, #ccc);
     }
 }
 

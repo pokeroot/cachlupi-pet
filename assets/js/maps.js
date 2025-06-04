@@ -8,6 +8,36 @@
     }
 
     jQuery(document).ready(($) => { // Arrow function for ready callback
+
+        // Tab Switching Logic for Client Panel Requests List
+        // Check if the client request panel and tabs are present
+        if ($('.cachilupi-client-requests-panel .nav-tab-wrapper').length > 0) {
+            // PHP should already set the first tab as active and its content visible.
+            // This JS handles subsequent clicks.
+
+            $(document).on('click', '.cachilupi-client-requests-panel .nav-tab-wrapper a.nav-tab', function(e) {
+                e.preventDefault();
+
+                var $thisClickedTab = $(this);
+                var $tabWrapper = $thisClickedTab.closest('.nav-tab-wrapper');
+                var $panel = $thisClickedTab.closest('.cachilupi-client-requests-panel');
+
+                // Remove active class from sibling tabs and hide all tab content within this panel
+                $tabWrapper.find('a.nav-tab').removeClass('nav-tab-active');
+                $panel.find('.tab-content').hide(); // Hide all tab content sections within this specific panel
+
+                // Add active class to the clicked tab and show its corresponding content
+                $thisClickedTab.addClass('nav-tab-active');
+                var activeContentID = $thisClickedTab.attr('href');
+
+                if ($(activeContentID).length) {
+                    $(activeContentID).show();
+                } else {
+                    console.error("Client panel tab content not found for ID: " + activeContentID);
+                }
+            });
+        }
+
         const mapElement = document.getElementById('cachilupi-pet-map');
 
         // --- Declare variables ---
