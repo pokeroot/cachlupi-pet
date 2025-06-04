@@ -8,10 +8,11 @@
     --text-color-light: #fff;
     --text-color-dark: #333;
     --text-color-medium: #555;
-    --text-color-error: #ff0000; /* Standard red for errors */
+    --text-color-error: #dc3545; /* Consistent error red */
     --border-color-standard: #ccc;
     --border-color-light: #ddd; /* Lighter border for internal table cells */
     --border-color-focus: var(--primary-color); /* Use primary color for focus border */
+    --border-color-error: #dc3545; /* Error border color */
     --border-radius-standard: 4px;
     --border-radius-large: 8px; /* For larger containers */
 
@@ -47,7 +48,7 @@
     --shadow-modal: 0 5px 15px rgba(0,0,0,0.3);
     --focus-outline: 2px solid var(--primary-color);
     --focus-outline-offset: 2px;
-    --focus-shadow-color: rgba(0, 115, 170, 0.3); /* Kept for form-control, can be unified */
+    --focus-shadow-color: rgba(0, 115, 170, 0.3);
 
     /* Feedback Message Colors */
     --feedback-success-bg: #d4edda;
@@ -60,7 +61,7 @@
     --feedback-info-border: #bee5eb;
     --feedback-info-text: #0c5460;
 
-    /* Status Badge Colors (Updated based on request) */
+    /* Status Badge Colors */
     --status-pending-bg: #ffebcc;
     --status-pending-text: #996515;
     --status-pending-border: #f0ad4e;
@@ -77,7 +78,7 @@
     --status-arrived-text: #00796b;
     --status-arrived-border: #00bcd4;
 
-    --status-picked_up-bg: #d1e7dd; /* Same as on_the_way for active travel */
+    --status-picked_up-bg: #d1e7dd;
     --status-picked_up-text: #0f5132;
     --status-picked_up-border: #198754;
 
@@ -94,10 +95,10 @@
     --status-default-border: #ccc;
 }
 
-/* Feedback Messages (Standardized) */
+/* Feedback Messages (Standardized) - These are for inline feedback */
 .cachilupi-feedback {
     padding: var(--padding-standard, 10px);
-    margin-top: var(--margin-large, 20px); /* Or margin-bottom if placed below an element */
+    margin-top: var(--margin-large, 20px);
     margin-bottom: var(--margin-large, 20px);
     border: 1px solid transparent;
     border-radius: var(--border-radius-standard, 4px);
@@ -122,13 +123,47 @@
     color: var(--feedback-info-text, #0c5460);
 }
 
+/* Toast Notifications */
+.cachilupi-toast-notification {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 15px 20px;
+    border-radius: var(--border-radius-standard, 5px);
+    box-shadow: var(--shadow-standard, 0 2px 10px rgba(0,0,0,0.2));
+    z-index: 10000;
+    font-size: 0.95em;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.cachilupi-toast-notification.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+.cachilupi-toast-notification.success {
+    background-color: var(--feedback-success-bg, #d4edda);
+    color: var(--feedback-success-text, #155724);
+    border: 1px solid var(--feedback-success-border, #c3e6cb);
+}
+.cachilupi-toast-notification.error {
+    background-color: var(--feedback-error-bg, #f8d7da);
+    color: var(--feedback-error-text, #721c24);
+    border: 1px solid var(--feedback-error-border, #f5c6cb);
+}
+.cachilupi-toast-notification.info { /* Added for general info toasts */
+    background-color: var(--feedback-info-bg, #d1ecf1);
+    color: var(--feedback-info-text, #0c5460);
+    border: 1px solid var(--feedback-info-border, #bee5eb);
+}
+
 
 /* Estilos Generales del Contenedor de Reserva y Mapa */
 .cachilupi-booking-container {
     display: flex;
     flex-wrap: wrap;
     gap: var(--margin-xlarge, 30px);
-    max-width: 1200px; /* Consider if this should be a variable */
+    max-width: 1200px;
     margin: var(--margin-large, 20px) auto;
     padding: var(--padding-xlarge, 20px);
     background-color: var(--background-color-light, #fff);
@@ -138,92 +173,214 @@
 
 /* Panel de Reserva (Formulario) */
 .cachilupi-booking-panel {
-    font-family: 'Arial', sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif; /* System font stack */
     flex: 1 1 450px;
+    min-width: 300px; /* Ensure form has a minimum width before wrapping */
+    padding-right: var(--margin-medium, 15px); /* Gutter for side-by-side with map */
+    box-sizing: border-box;
+}
+#cachilupi-pet-map {
+    flex: 1 1 450px; /* Allow map to take remaining space */
+    min-width: 300px; /* Minimum width for map */
+    min-height: 350px; /* Ensure map has a decent height */
 }
 
-.cachilupi-booking-form h1 { /* Targeting h1 inside the form specifically */
+
+.cachilupi-booking-form h1 {
     text-align: center;
     color: var(--text-color-dark, #333);
     margin-bottom: var(--margin-xlarge, 30px);
     font-size: var(--font-size-xxlarge, 2em);
 }
 
-
-/* Sección dentro del formulario */
-.form-section {
-    background-color: var(--background-color-light, #fff);
+/* Fieldset Styling */
+.cachilupi-booking-form fieldset {
+    border: 1px solid var(--border-color-light, #ddd);
     padding: var(--padding-xlarge, 20px);
-    border-radius: var(--border-radius-standard, 6px);
-    margin-bottom: var(--margin-large, 20px);
-    box-shadow: var(--shadow-light, 0 1px 3px rgba(0, 0, 0, 0.08));
+    margin-bottom: var(--margin-xlarge, 25px);
+    border-radius: var(--border-radius-standard, 4px);
+    background-color: var(--background-color-medium, #f9f9f9);
 }
+
+.cachilupi-booking-form fieldset legend {
+    font-weight: bold;
+    font-size: var(--font-size-large, 1.2em);
+    margin-bottom: var(--margin-large, 15px);
+    color: var(--text-color-dark, #333);
+    padding: 0 var(--padding-small, 5px);
+    background-color: var(--background-color-medium, #f9f9f9);
+    width: auto;
+    border: none;
+}
+
 
 /* Grupo de Formulario */
 .form-group {
     margin-bottom: var(--margin-large, 20px);
+    position: relative;
 }
 
+.cachilupi-booking-form fieldset .form-group:last-of-type {
+    margin-bottom: var(--margin-standard, 10px);
+}
+.cachilupi-booking-form fieldset#cachilupi-trip-info-section .distance-display:last-child {
+     margin-bottom: 0;
+}
+
+
 .form-group label {
-    display: block;
-    margin-bottom: var(--margin-small, 8px); /* Adjusted from 8px to variable */
+    display: flex; /* Use flex for icon alignment */
+    align-items: center; /* Vertically align icon with text */
+    margin-bottom: var(--margin-small, 8px);
     font-weight: bold;
     color: var(--text-color-medium, #555);
 }
+.form-group label.label-error {
+    color: var(--text-color-error);
+}
+
+/* Form Field Icons */
+.form-group label::before {
+    display: inline-block;
+    margin-right: 8px;
+    font-family: 'Arial', sans-serif; /* Fallback, ensure good Unicode support */
+    color: var(--text-color-medium, #555);
+    font-size: 1.1em; /* Slightly larger for icons */
+    line-height: 1; /* Prevent extra spacing */
+}
+
+label[for="pickup-location-input"]::before,
+label[for="dropoff-location-input"]::before { /* Targeting by specific label ID from PHP */
+    content: "\1F4CD"; /* 📍 Round Pushpin */
+}
+label[for="service-date"]::before {
+    content: "\1F4C5"; /* 📅 Calendar */
+}
+label[for="service-time"]::before {
+    content: "\1F551"; /* 🕑 Clock face two o'clock */
+}
+label[for="cachilupi-pet-pet-type"]::before {
+    content: "\1F43E"; /* 🐾 Paw Prints */
+}
+/* Optional: For textareas if needed, but might be too much.
+label[for="cachilupi-pet-instructions"]::before { content: "\1F4DD"; } // 📝 Memo
+label[for="cachilupi-pet-notes"]::before { content: "\1F4AC"; } // 💬 Speech balloon
+*/
+
 
 /* Control de Formulario (Inputs, Selects, Textareas) */
-.form-control {
+.form-control, .flatpickr-input { /* Added .flatpickr-input */
     width: 100%;
     padding: var(--padding-standard, 10px);
     border: 1px solid var(--border-color-standard, #ccc);
     border-radius: var(--border-radius-standard, 4px);
     box-sizing: border-box;
     font-size: var(--font-size-standard, 1em);
+    background-color: var(--background-color-light, #fff);
+    transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out; /* Unified transition */
+}
+/* Ensure Flatpickr alternate input also gets similar styling if it's separate */
+input.flatpickr-input.form-control { /* Flatpickr might add its own class to the original input */
+    /* Styles here if needed, but above should cover it */
 }
 
-.form-control:focus {
+
+.form-control:focus, .flatpickr-input:focus { /* Added .flatpickr-input */
     border-color: var(--border-color-focus, var(--primary-color, #0073aa));
-    box-shadow: 0 0 5px var(--focus-shadow-color, rgba(0, 115, 170, 0.3));
+    box-shadow: 0 0 0 0.2rem var(--focus-shadow-color);
     outline: none;
 }
+
+/* Input Error Styling */
+.form-control.input-error, .flatpickr-input.input-error { /* Added .flatpickr-input */
+    border-color: var(--border-color-error) !important; /* Ensure error border overrides focus */
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important; /* Red shadow for error */
+    /* background-image for icon can be added here if preferred over label::after */
+}
+/* Remove background icon for error if using label::after for consistency or to avoid overlap */
+.form-control.input-error {
+    background-image: none; /* Remove if previously set, and using label::after for icon */
+    padding-right: var(--padding-standard, 10px); /* Reset padding if icon removed */
+}
+
+/* Styling for error icon next to label (alternative to background-image on input) */
+.form-group label.label-error::after {
+    content: " \26A0"; /* Unicode warning sign U+26A0 */
+    color: var(--text-color-error);
+    font-weight: bold;
+    display: inline-block;
+    margin-left: 5px;
+}
+
 
 /* Contenedor del Geocoder */
 .geocoder-container {
     margin-bottom: var(--padding-standard, 10px);
+    position: relative;
 }
+.mapboxgl-ctrl-geocoder--input.input-error {
+    border-color: var(--border-color-error) !important;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important; /* Ensure error shadow */
+}
+.geocoder-container.input-error .mapboxgl-ctrl-geocoder--input {
+    border-color: var(--border-color-error) !important;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+}
+
 
 /* Botones Generales del Formulario */
 .button {
     display: inline-block;
-    padding: var(--padding-standard, 10px) var(--padding-large, 20px); /* Adjusted for consistency */
+    padding: var(--padding-standard, 10px) var(--padding-large, 20px);
     font-size: var(--font-size-standard, 1em);
     cursor: pointer;
     border: none;
     border-radius: var(--border-radius-standard, 4px);
     text-align: center;
     text-decoration: none;
-    transition: background-color 0.3s ease;
+    transition: background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, opacity 0.2s ease-in-out;
 }
 .button:focus {
     outline: var(--focus-outline);
     outline-offset: var(--focus-outline-offset);
-    box-shadow: 0 0 0 var(--focus-outline-offset) var(--focus-shadow-color); /* Alternative focus */
+    box-shadow: 0 0 0 var(--focus-outline-offset) var(--focus-shadow-color);
 }
 
 .button:disabled,
-.button.cachilupi-button--loading { /* Standardized loading/disabled class */
+.button.cachilupi-button--loading {
     opacity: 0.7;
     cursor: not-allowed;
     pointer-events: none;
 }
 
-.button.cachilupi-button--loading { /* Specific to loading if different from general disabled */
+/* Loading state for buttons (general) */
+.button.loading,
+#submit-service-request.loading {
+    position: relative;
+    color: transparent !important;
 }
 
-.button.cachilupi-button--loading::after {
-    content: ' ...';
-    display: inline-block;
-    margin-left: var(--margin-small, 5px);
+.button.loading::after,
+#submit-service-request.loading::after {
+    content: "";
+    display: block;
+    width: 16px;
+    height: 16px;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    margin-left: -8px;
+    margin-top: -8px;
+    border: 2px solid var(--text-color-light, #fff);
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: cachilupi-form-spinner 0.6s linear infinite;
+}
+
+@keyframes cachilupi-form-spinner {
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 
@@ -249,23 +406,48 @@
 .button-secondary:focus {
     background-color: var(--secondary-button-hover-bg, #d5d5d5);
 }
-.button-secondary:focus { /* More specific focus for secondary if needed */
-    border-color: var(--secondary-button-focus-border, #b0b0b0); /* Example, if it had a border */
-    box-shadow: 0 0 5px rgba(150, 150, 150, 0.5); /* Example shadow */
+.button-secondary:focus {
+    border-color: var(--secondary-button-focus-border, #b0b0b0);
+    box-shadow: 0 0 5px rgba(150, 150, 150, 0.5);
 }
 
 
 /* Botón de Envío Específico */
-#submit-service-request.button-primary { /* More specific selector for the submit button */
+#submit-service-request {
+    background-color: var(--primary-color, #0073aa);
+    color: var(--text-color-light, #fff);
+    padding: 12px 20px;
+    font-size: 1.1em;
+    border: none;
+    border-radius: var(--border-radius-standard, 4px);
+    cursor: pointer;
     display: block;
     width: 100%;
-    margin-top: var(--margin-large, 20px);
-    padding: var(--padding-medium, 12px); /* Specific padding */
-    font-size: var(--font-size-medium, 1.2em); /* Specific font size */
+    margin-top: var(--margin-xlarge, 30px);
+    text-align: center;
+    transition: background-color 0.3s ease, opacity 0.3s ease, box-shadow 0.2s ease-in-out;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
+#submit-service-request:hover:not(:disabled) {
+    background-color: var(--primary-color-hover, #005a87);
+    box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+}
+#submit-service-request:focus {
+    background-color: var(--primary-color-hover, #005a87);
+    box-shadow: 0 0 0 0.2rem var(--focus-shadow-color);
+    outline: none;
+}
+#submit-service-request:disabled,
+#submit-service-request.loading {
+    background-color: var(--primary-color, #0073aa);
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+
+
 /* Información de Distancia */
-.distance-display { /* Renamed from .distance-info to match HTML */
+.distance-display {
     margin-top: var(--margin-medium, 15px);
     padding: var(--padding-standard, 10px);
     background-color: var(--background-color-dark, #e9e9e9);
@@ -281,12 +463,12 @@
 
 /* Indicador de campo requerido */
 .required-field-indicator {
-    color: var(--text-color-error, red);
+    color: var(--text-color-error);
     margin-left: var(--margin-small, 5px);
 }
 .form-group label.required-field-label::after {
     content: " *";
-    color: var(--text-color-error, red);
+    color: var(--text-color-error);
     font-weight: normal;
 }
 
@@ -306,17 +488,19 @@
         gap: var(--margin-medium, 15px);
         padding: var(--padding-large, 15px);
     }
-    .cachilupi-booking-form { /* Target the form container */
+    .cachilupi-booking-form {
         order: 1;
-        flex-basis: auto;
-        margin-bottom: 0;
+        flex-basis: 100%; /* Full width when stacked */
+        padding-right: 0; /* Remove gutter */
+        margin-bottom: var(--margin-large, 20px); /* Space when stacked above map */
     }
     #cachilupi-pet-map {
-        height: 350px;
         order: 2;
+        flex-basis: 100%; /* Full width when stacked */
+        height: 350px;
         margin-top: 0;
     }
-    .form-section {
+    .cachilupi-booking-form fieldset {
         padding: var(--padding-large, 15px);
     }
 }
@@ -326,22 +510,26 @@
     width: 100%;
     margin-bottom: var(--margin-standard, 10px);
     max-width: none !important;
+    transition: box-shadow 0.2s ease-in-out; /* Add transition */
+}
+.mapboxgl-ctrl-geocoder.mapboxgl-ctrl-geocoder--focused { /* When geocoder is focused */
+    box-shadow: 0 0 0 0.2rem var(--focus-shadow-color) !important;
 }
 
-.mapboxgl-ctrl-geocoder .suggestions { position: absolute; z-index: 2000; } /* Added z-index */
+
+.mapboxgl-ctrl-geocoder .suggestions { position: absolute; z-index: 2000; }
 
 .mapboxgl-ctrl-geocoder--results {
     position: absolute;
     z-index: 2000;
     width: 100%;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Consider var(--shadow-light) or similar */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .mapboxgl-ctrl-geocoder ul {
     width: 100%;
 }
 
-/* Styling for Mapbox Geocoder input field */
 .mapboxgl-ctrl-geocoder--input {
     width: 100% !important;
     height: auto !important;
@@ -350,17 +538,21 @@
     box-sizing: border-box !important;
     border: 1px solid var(--border-color-standard, #ccc) !important;
     border-radius: var(--border-radius-standard, 4px) !important;
-    font-size: var(--font-size-standard, 1em); /* Corrected to use standard or a specific var */
+    font-size: var(--font-size-standard, 1em);
     line-height: 1.5;
     color: var(--text-color-dark, #333);
     background-color: var(--background-color-light, #fff);
     background-clip: padding-box;
     transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
-.mapboxgl-ctrl-geocoder--input:focus {
+.mapboxgl-ctrl-geocoder--input:focus { /* This specific focus might be overridden by library's direct focus on the control itself */
     border-color: var(--border-color-focus, var(--primary-color, #0073aa)) !important;
-    box-shadow: 0 0 5px var(--focus-shadow-color, rgba(0, 115, 170, 0.3)) !important;
+    /* box-shadow: 0 0 0 0.2rem var(--focus-shadow-color) !important;  Let the parent .mapboxgl-ctrl-geocoder handle shadow */
     outline: none !important;
+}
+.mapboxgl-ctrl-geocoder--input.input-error {
+    border-color: var(--border-color-error) !important;
+    /* box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important; */
 }
 
 
@@ -373,11 +565,10 @@
     color: var(--text-color-medium, #555) !important;
 }
 
-/* Etiquetas para los campos de geocodificador - Not needed as they are part of .form-group label */
 
 /* Estilos para mensajes de error (field specific validation messages) */
 .error-message {
-    color: var(--text-color-error, red); /* This is fine, uses a variable */
+    color: var(--text-color-error);
     font-size: var(--font-size-small, 0.8em);
     display: block;
     margin-top: var(--margin-small, 5px);
@@ -386,19 +577,19 @@
 
 /* === Estilos para la tabla de solicitudes del cliente === */
 .cachilupi-client-requests-panel {
-    flex-basis: 100%; /* Ocupa todo el ancho si el contenedor es flex */
+    flex-basis: 100%;
     margin-top: var(--margin-xlarge, 30px);
     padding: var(--padding-xlarge, 20px);
-    background-color: var(--background-color-light, #fff); /* Fondo más claro */
+    background-color: var(--background-color-light, #fff);
     border-radius: var(--border-radius-large, 8px);
     box-shadow: var(--shadow-medium, 0 2px 4px rgba(0,0,0,0.05));
 }
 
-.cachilupi-client-requests-panel h2 { /* This targets the main panel title */
+.cachilupi-client-requests-panel h2 {
     font-size: var(--font-size-xlarge, 1.8em);
     margin-bottom: var(--margin-large, 20px);
     color: var(--text-color-dark, #333);
-    text-align: left; /* Alineación a la izquierda para el título */
+    text-align: left;
 }
 
 /* Tab Navigation for Client Panel */
@@ -406,36 +597,37 @@
     margin-bottom: 0;
     padding-bottom: 0;
     border-bottom: 1px solid var(--border-color-standard, #ccc);
-    font-size: 1em; /* Reset font size if WP uses h2 for this wrapper */
+    font-size: 1em;
     line-height: normal;
 }
 
 .cachilupi-client-requests-panel .nav-tab {
     padding: 10px 15px;
     text-decoration: none;
-    background-color: #f0f0f0; /* Match driver panel */
+    background-color: #f0f0f0;
     border: 1px solid var(--border-color-standard, #ccc);
     border-bottom: none;
     margin-right: 5px;
     border-radius: 4px 4px 0 0;
-    color: #555; /* Match driver panel */
-    font-weight: 600; /* Match driver panel */
+    color: #555;
+    font-weight: 600;
     display: inline-block;
     line-height: normal;
+    transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
 }
 
 .cachilupi-client-requests-panel .nav-tab.nav-tab-active {
-    background-color: var(--background-color-light, #fff); /* Match driver panel */
+    background-color: var(--background-color-light, #fff);
     border-color: var(--border-color-standard, #ccc);
-    border-bottom: 1px solid var(--background-color-light, #fff); /* Match driver panel */
-    color: #000; /* Match driver panel */
+    border-bottom: 1px solid var(--background-color-light, #fff);
+    color: #000;
     position: relative;
-    margin-bottom: -1px; /* Match driver panel */
-    font-weight: bold; /* Match driver panel */
+    margin-bottom: -1px;
+    font-weight: bold;
 }
 
 .cachilupi-client-requests-panel .nav-tab:hover:not(.nav-tab-active) {
-    background-color: #e0e0e0; /* Match driver panel */
+    background-color: #e0e0e0;
     color: #000;
 }
 
@@ -449,7 +641,7 @@
     margin-bottom: var(--margin-large, 20px);
 }
 
-.cachilupi-client-requests-panel .tab-content h3 { /* Titles within tab content, if any */
+.cachilupi-client-requests-panel .tab-content h3 {
     margin-top: 0;
     margin-bottom: var(--margin-medium, 15px);
     font-size: var(--font-size-large, 1.5em);
@@ -460,42 +652,42 @@
 .cachilupi-client-requests-panel table.widefat {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 0; /* Tables are now inside tab-content which has padding */
+    margin-top: 0;
 }
 
 .cachilupi-client-requests-panel table.widefat th,
 .cachilupi-client-requests-panel table.widefat td {
-    padding: var(--padding-medium, 12px) var(--padding-large, 15px); /* Más padding */
+    padding: var(--padding-medium, 12px) var(--padding-large, 15px);
     text-align: left;
-    border-bottom: 1px solid var(--border-color-light, #ddd); /* Borde sutil entre filas */
+    border-bottom: 1px solid var(--border-color-light, #ddd);
 }
 
 .cachilupi-client-requests-panel table.widefat th {
     background-color: var(--background-color-thead, #f0f0f0);
-    font-weight: 600; /* Texto más bold para cabeceras */
+    font-weight: 600;
     color: var(--text-color-dark, #333);
     text-transform: uppercase;
-    font-size: 0.9em; /* Ligeramente más pequeño */
+    font-size: 0.9em;
     letter-spacing: 0.5px;
 }
 .cachilupi-client-requests-panel table.widefat tbody tr:hover {
-    background-color: var(--background-color-medium, #f9f9f9); /* Hover sutil */
+    background-color: var(--background-color-medium, #f9f9f9);
 }
 
 
 /* Estilos para los badges de estado */
-.cachilupi-client-requests-panel .request-status span { /* Target the span inside */
+.cachilupi-client-requests-panel .request-status span {
     font-weight: bold;
-    padding: 5px 10px; /* Adjusted from example */
-    border-radius: 15px; /* Pill shape from example */
+    padding: 5px 10px;
+    border-radius: 15px;
     text-align: center;
     display: inline-block;
-    min-width: 110px; /* Ancho mínimo para consistencia */
-    font-size: 0.85em; /* Adjusted from example */
+    min-width: 110px;
+    font-size: 0.85em;
     line-height: 1.4;
-    text-transform: uppercase; /* From example */
-    border-width: 1px; /* Adding border width */
-    border-style: solid; /* Adding border style */
+    text-transform: uppercase;
+    border-width: 1px;
+    border-style: solid;
 }
 
 .cachilupi-client-requests-panel .request-status-pending span {
@@ -509,7 +701,7 @@
     border-color: var(--status-accepted-border);
 }
 .cachilupi-client-requests-panel .request-status-on_the_way span,
-.cachilupi-client-requests-panel .request-status-picked_up span { /* Grouped picked_up with on_the_way */
+.cachilupi-client-requests-panel .request-status-picked_up span {
     background-color: var(--status-on_the_way-bg);
     color: var(--status-on_the_way-text);
     border-color: var(--status-on_the_way-border);
@@ -529,7 +721,6 @@
     color: var(--status-rejected-text);
     border-color: var(--status-rejected-border);
 }
-/* Fallback for any other status not explicitly defined */
 .cachilupi-client-requests-panel .request-status span:not([class*='request-status-']) {
     background-color: var(--status-default-bg);
     color: var(--status-default-text);
@@ -539,11 +730,11 @@
 
 /* Botón de seguimiento */
 .cachilupi-client-requests-panel .cachilupi-follow-driver-btn {
-    padding: 6px 12px; /* From example */
-    font-size: 0.9em; /* From example */
+    padding: 6px 12px;
+    font-size: 0.9em;
     cursor: pointer;
-    background-color: var(--primary-color); /* WordPress blue from example */
-    border-color: var(--primary-color-hover); /* Darker shade for border */
+    background-color: var(--primary-color);
+    border-color: var(--primary-color-hover);
     color: var(--text-color-light);
     border-radius: var(--border-radius-standard);
     text-decoration: none;
@@ -553,37 +744,36 @@
 }
 .cachilupi-client-requests-panel .cachilupi-follow-driver-btn:hover,
 .cachilupi-client-requests-panel .cachilupi-follow-driver-btn:focus {
-    background-color: var(--primary-color-hover); /* From example */
+    background-color: var(--primary-color-hover);
 }
 
 
 /* Modal de seguimiento del conductor para el cliente */
 #cachilupi-follow-modal {
-    display: none; /* Hidden by default */
+    display: none;
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
     background-color: var(--background-color-overlay, rgba(0, 0, 0, 0.6));
-    z-index: 10000; /* Ensure it's on top */
-    display: flex; /* Use flex to center content */
+    z-index: 10000;
+    display: flex;
     align-items: center;
     justify-content: center;
 }
 
-/* Contenido del modal de seguimiento */
-#cachilupi-follow-modal > div { /* Direct child which is the modal content */
+#cachilupi-follow-modal > div {
     width: 90%;
     max-width: 700px;
-    max-height: 85vh; /* Max height */
+    max-height: 85vh;
     background-color: var(--background-color-light, white);
     padding: var(--padding-xlarge, 20px);
     border-radius: var(--border-radius-large, 8px);
     box-shadow: var(--shadow-modal, 0 5px 15px rgba(0,0,0,0.3));
     display: flex;
     flex-direction: column;
-    overflow: hidden; /* Prevent map from overflowing rounded corners initially */
+    overflow: hidden;
 }
 
 #cachilupi-follow-modal-title {
@@ -596,8 +786,8 @@
 
 #cachilupi-client-follow-map {
     width: 100%;
-    height: 60vh; /* Responsive height */
-    min-height: 300px; /* Minimum height */
+    height: 60vh;
+    min-height: 300px;
     margin-bottom: var(--margin-medium, 15px);
     border: 1px solid var(--border-color-standard, #ccc);
     border-radius: var(--border-radius-standard, 4px);
@@ -610,7 +800,7 @@
     border: none;
     border-radius: var(--border-radius-standard, 4px);
     cursor: pointer;
-    align-self: center; /* Center button */
+    align-self: center;
     margin-top: var(--margin-standard, 10px);
     transition: background-color 0.2s ease;
 }
@@ -631,16 +821,16 @@
         margin-bottom: var(--margin-medium, 15px);
         border: 1px solid var(--border-color-light, #ddd);
         padding: var(--padding-standard, 10px);
-        border-radius: var(--border-radius-standard, 5px); /* Softer radius for cards */
-        background-color: var(--background-color-light, #fff); /* Ensure cards have background */
+        border-radius: var(--border-radius-standard, 5px);
+        background-color: var(--background-color-light, #fff);
     }
 
     .cachilupi-client-requests-panel table.widefat td {
         display: block;
         text-align: right;
-        padding-left: 50%; /* Create space for the label */
+        padding-left: 50%;
         position: relative;
-        border-bottom: 1px solid var(--border-color-light, #eee); /* Light separator inside card */
+        border-bottom: 1px solid var(--border-color-light, #eee);
         padding-top: var(--padding-standard, 10px);
         padding-bottom: var(--padding-standard, 10px);
     }
@@ -651,10 +841,10 @@
     .cachilupi-client-requests-panel table.widefat td::before {
         content: attr(data-label);
         position: absolute;
-        left: var(--padding-standard, 10px); /* Align with cell padding */
+        left: var(--padding-standard, 10px);
         top: 50%;
         transform: translateY(-50%);
-        width: calc(50% - 2*var(--padding-standard, 10px)); /* Adjust width based on padding */
+        width: calc(50% - 2*var(--padding-standard, 10px));
         padding-right: var(--padding-standard, 10px);
         white-space: nowrap;
         text-align: left;
@@ -662,25 +852,21 @@
         color: var(--text-color-dark, #333);
     }
 
-    /* Specific adjustments for status and buttons in card view */
     .cachilupi-client-requests-panel table.widefat td.request-status {
-        text-align: right; /* Align the badge itself to the right if text-align on td is right */
+        text-align: right;
     }
      .cachilupi-client-requests-panel table.widefat td.request-status span {
-        /* The span is already inline-block, so it will respect text-align of parent td */
-         margin-top: 0; /* Reset any top margin if needed */
-         /* From example: Ensure it fits well in the data-label layout */
-        display: inline; /* Might be better than inline-block for flow with data-label */
+         margin-top: 0;
+        display: inline;
         padding: 3px 6px;
         font-size: 0.8em;
         min-width: auto;
     }
     .cachilupi-client-requests-panel table.widefat td[data-label="Seguimiento:"] .button {
-        display: inline-block; /* Allow button to sit naturally with text-align:right */
+        display: inline-block;
         width: auto;
     }
 
-    /* Responsive tabs for Client Panel */
     .cachilupi-client-requests-panel .nav-tab {
         display: block;
         width: auto;
@@ -695,31 +881,28 @@
 
 @media (max-width: 480px) {
     .cachilupi-client-requests-panel table.widefat td {
-        padding-left: var(--padding-standard, 10px); /* Remove 50% padding */
-        text-align: left; /* Align content to left */
+        padding-left: var(--padding-standard, 10px);
+        text-align: left;
     }
     .cachilupi-client-requests-panel table.widefat td::before {
-        position: static; /* Let label flow naturally */
+        position: static;
         display: block;
         width: auto;
-        transform: none; /* Reset transform */
+        transform: none;
         margin-bottom: var(--margin-small, 5px);
-        font-size: 0.85em; /* Smaller label */
+        font-size: 0.85em;
         color: var(--text-color-medium);
     }
     .cachilupi-client-requests-panel table.widefat td.request-status {
         text-align: left;
     }
     .cachilupi-client-requests-panel table.widefat td.request-status span {
-        /* From example: Make status take its own line under the label */
         display: block;
-        width: fit-content; /* Adjust width */
-        /* margin-left: auto; If text-align: right on td */
-        /* margin-right: auto; If text-align: center on td */
+        width: fit-content;
     }
 
     .cachilupi-client-requests-panel table.widefat td[data-label="Seguimiento:"] .button {
-        width: 100%; /* Make button full width for easier tapping */
+        width: 100%;
         margin-top: var(--margin-small, 5px);
     }
 }

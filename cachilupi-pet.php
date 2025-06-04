@@ -832,6 +832,8 @@ function cachilupi_pet_enqueue_scripts() {
             'mapbox_access_token' => $mapbox_token,
             'text_follow_driver' => __('Seguir Conductor', 'cachilupi-pet'),
             'text_driver_location_not_available' => __('Ubicación del conductor no disponible en este momento.', 'cachilupi-pet'),
+            'text_pickup_placeholder' => __('Dirección de recogida...', 'cachilupi-pet'),
+            'text_dropoff_placeholder' => __('Dirección de destino...', 'cachilupi-pet'),
         ) );
     }
 
@@ -880,47 +882,55 @@ function cachilupi_pet_shortcode() {
         <div class="cachilupi-booking-form">
             <h1><?php esc_html_e('Solicitar Servicio', 'cachilupi-pet'); ?></h1>
 
-            <div class="form-group">
-                <label for="pickup-location-input" class="required-field-label"><?php esc_html_e('Lugar de Recogida:', 'cachilupi-pet'); ?></label>
-                <div id="pickup-geocoder-container" class="geocoder-container"></div>
-            </div>
+            <fieldset id="cachilupi-trip-info-section">
+                <legend><?php esc_html_e('Información del Viaje', 'cachilupi-pet'); ?></legend>
 
-            <div class="form-group">
-                <label for="dropoff-location-input" class="required-field-label"><?php esc_html_e('Lugar de Destino:', 'cachilupi-pet'); ?></label>
-                <div id="dropoff-geocoder-container" class="geocoder-container"></div>
-            </div>
+                <div class="form-group">
+                    <label id="pickup-location-label" for="pickup-location-input" class="required-field-label"><?php esc_html_e('Lugar de Recogida:', 'cachilupi-pet'); ?></label>
+                    <div id="pickup-geocoder-container" class="geocoder-container"></div>
+                </div>
 
-            <div class="form-group">
-                <label for="service-date" class="required-field-label"><?php esc_html_e('Fecha de Servicio:', 'cachilupi-pet'); ?></label>
-                <input type="date" id="service-date" class="required-field form-control">
-            </div>
+                <div class="form-group">
+                    <label id="dropoff-location-label" for="dropoff-location-input" class="required-field-label"><?php esc_html_e('Lugar de Destino:', 'cachilupi-pet'); ?></label>
+                    <div id="dropoff-geocoder-container" class="geocoder-container"></div>
+                </div>
 
-            <div class="form-group">
-                <label for="service-time" class="required-field-label"><?php esc_html_e('Hora de Servicio:', 'cachilupi-pet'); ?></label>
-                <input type="time" id="service-time" class="required-field form-control">
-            </div>
+                <div class="form-group">
+                    <label for="service-date" class="required-field-label"><?php esc_html_e('Fecha de Servicio:', 'cachilupi-pet'); ?></label>
+                    <input type="date" id="service-date" class="required-field form-control">
+                </div>
 
-             <div id="cachilupi-pet-distance" class="distance-display"></div>
+                <div class="form-group">
+                    <label for="service-time" class="required-field-label"><?php esc_html_e('Hora de Servicio:', 'cachilupi-pet'); ?></label>
+                    <input type="time" id="service-time" class="required-field form-control">
+                </div>
 
-            <div class="form-group">
-                <label for="cachilupi-pet-pet-type" class="required-field-label"><?php esc_html_e('Tipo de Mascota:', 'cachilupi-pet'); ?></label>
-                <select id="cachilupi-pet-pet-type" class="required-field form-control">
+                 <div id="cachilupi-pet-distance" class="distance-display"></div>
+            </fieldset>
+
+            <fieldset id="cachilupi-pet-details-section">
+                <legend><?php esc_html_e('Detalles de la Mascota', 'cachilupi-pet'); ?></legend>
+
+                <div class="form-group">
+                    <label for="cachilupi-pet-pet-type" class="required-field-label"><?php esc_html_e('Tipo de Mascota:', 'cachilupi-pet'); ?></label>
+                    <select id="cachilupi-pet-pet-type" class="required-field form-control">
                     <option value=""><?php esc_html_e('-- Selecciona una opción --', 'cachilupi-pet'); ?></option>
                     <option value="perro"><?php esc_html_e('Perro', 'cachilupi-pet'); ?></option>
                     <option value="gato"><?php esc_html_e('Gato', 'cachilupi-pet'); ?></option>
                     <option value="otro"><?php esc_html_e('Otro', 'cachilupi-pet'); ?></option>
                 </select>
-            </div>
+                </div>
 
-            <div class="form-group">
-                <label for="cachilupi-pet-instructions"><?php esc_html_e('Instrucciones Específicas para la Mascota:', 'cachilupi-pet'); ?></label>
-                <textarea id="cachilupi-pet-instructions" class="form-control"></textarea>
-            </div>
+                <div class="form-group">
+                    <label for="cachilupi-pet-instructions"><?php esc_html_e('Instrucciones Específicas para la Mascota:', 'cachilupi-pet'); ?></label>
+                    <textarea id="cachilupi-pet-instructions" class="form-control" placeholder="<?php esc_attr_e('Ej: Alergias, medicación, comportamiento con extraños, etc.', 'cachilupi-pet'); ?>"></textarea>
+                </div>
 
-            <div class="form-group">
-                <label for="cachilupi-pet-notes"><?php esc_html_e('Notas Adicionales:', 'cachilupi-pet'); ?></label>
-                <textarea id="cachilupi-pet-notes" class="form-control"></textarea>
-            </div>
+                <div class="form-group">
+                    <label for="cachilupi-pet-notes"><?php esc_html_e('Notas Adicionales:', 'cachilupi-pet'); ?></label>
+                    <textarea id="cachilupi-pet-notes" class="form-control" placeholder="<?php esc_attr_e('Ej: Referencias de la dirección, consideraciones especiales para el transporte, etc.', 'cachilupi-pet'); ?>"></textarea>
+                </div>
+            </fieldset>
 
             <button id="submit-service-request" type="button" class="button-primary"><?php esc_html_e('Solicitar Servicio', 'cachilupi-pet'); ?></button>
 

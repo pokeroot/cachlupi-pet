@@ -65,14 +65,71 @@
         let clientRequestsStatusInterval = null;
         // --- End variable declarations ---
 
+        // Initialize Flatpickr for Date Input
+        if (document.getElementById('service-date')) {
+            flatpickr("#service-date", {
+                dateFormat: "Y-m-d",
+                altInput: true,
+                altFormat: "F j, Y", // Example: August 10, 2024
+                minDate: "today",
+                locale: 'es', // Assuming Spanish locale is enqueued
+                onChange: function(selectedDates, dateStr, instance) {
+                    validateForm(mapElement && mapboxgl && mapboxgl.accessToken); // Re-validate on change
+                }
+            });
+        }
+
+        // Initialize Flatpickr for Time Input
+        if (document.getElementById('service-time')) {
+            flatpickr("#service-time", {
+                enableTime: true,
+                noCalendar: true,
+                dateFormat: "H:i",
+                altInput: true,
+                altFormat: "h:i K", // Example: 03:30 PM
+                time_24hr: false,
+                minuteIncrement: 15,
+                locale: 'es', // Assuming Spanish locale is enqueued
+                // minTime: "08:00", // Optional: if service hours are fixed
+                // maxTime: "21:45",
+                onChange: function(selectedDates, dateStr, instance) {
+                    validateForm(mapElement && mapboxgl && mapboxgl.accessToken); // Re-validate on change
+                }
+            });
+        }
+
+
         if (mapElement) {
             if (typeof mapboxgl !== 'undefined' && mapboxgl.accessToken) {
+                const defaultCenter = [-70.6693, -33.4489]; // Santiago, Chile
+                const defaultZoom = 10;
+
                 map = new mapboxgl.Map({
                     container: 'cachilupi-pet-map',
                     style: 'mapbox://styles/mapbox/streets-v11',
-                    center: [-70.6693, -33.4489],
-                    zoom: 10
+                    center: defaultCenter,
+                    zoom: defaultZoom
                 });
+
+                // Attempt to geolocate user for initial map centering
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                            if (map) { // Check if map is initialized
+                                map.setCenter([position.coords.longitude, position.coords.latitude]);
+                                map.setZoom(12); // Zoom in a bit more if location is found
+                            }
+                        },
+                        (error) => {
+                            console.warn(`Error getting user location: ${error.message}. Using default center.`);
+                            // Map already initialized with default center, so no action needed here for error
+                        },
+                        { timeout: 5000 } // Optional: timeout for geolocation
+                    );
+                } else {
+                    console.warn('Geolocation is not supported by this browser. Using default center.');
+                }
+
 
                 window.addEventListener('resize', () => {
                     if (map) map.resize();
@@ -198,22 +255,35 @@
                 };
 
                 loadMapboxGeocoder(() => {
+                    const pickupPlaceholder = (typeof cachilupi_pet_vars !== 'undefined' && cachilupi_pet_vars.text_pickup_placeholder) ? cachilupi_pet_vars.text_pickup_placeholder : 'Ingrese dirección de recogida';
+                    const dropoffPlaceholder = (typeof cachilupi_pet_vars !== 'undefined' && cachilupi_pet_vars.text_dropoff_placeholder) ? cachilupi_pet_vars.text_dropoff_placeholder : 'Ingrese dirección de destino';
+
                     if (pickupGeocoderContainer) {
                         pickupGeocoder = new MapboxGeocoder({
                             accessToken: mapboxgl.accessToken,
-                            placeholder: 'Buscar Lugar de Recogida',
+                            placeholder: pickupPlaceholder,
                             mapboxgl: mapboxgl,
-                            bbox: [-75.6, -55.9, -66.4, -17.5],
+                            bbox: [-75.6, -55.9, -66.4, -17.5], // Limit to Chile
                             country: 'cl',
                             limit: 5
                         });
                         pickupGeocoder.addTo(pickupGeocoderContainer);
+                        // pickupGeocoderInput is assigned here, used later for aria-labelledby
                         pickupGeocoderInput = pickupGeocoderContainer.querySelector('.mapboxgl-ctrl-geocoder--input');
                         if (pickupGeocoderInput) {
-                            pickupGeocoderInput.id = 'pickup-location-input';
-                            pickupGeocoderInput.classList.add('form-control');
+                            // The ID 'pickup-location-input' is used by the label's 'for' attribute in PHP.
+                            // Mapbox geocoder creates its own input, so we assign the ID here if possible,
+                            // or rely solely on aria-labelledby if ID assignment is problematic.
+                            // For now, we assume the label's `for` might not directly work.
+                            // pickupGeocoderInput.id = 'pickup-location-input'; // This might be overwritten or cause issues.
+                            pickupGeocoderInput.classList.add('form-control'); // For styling consistency
                             pickupGeocoderInput.addEventListener('input', () => validateForm(true));
                             pickupGeocoderInput.addEventListener('blur', () => validateForm(true));
+
+                            // Set aria-labelledby
+                            if (document.getElementById('pickup-location-label')) {
+                                pickupGeocoderInput.setAttribute('aria-labelledby', 'pickup-location-label');
+                            }
                         }
 
                         pickupGeocoder.on('result', (event) => {
@@ -239,18 +309,24 @@
                         dropoffGeocoder = new MapboxGeocoder({
                             accessToken: mapboxgl.accessToken,
                             mapboxgl: mapboxgl,
-                            placeholder: 'Buscar Lugar de Destino',
-                            bbox: [-75.6, -55.9, -66.4, -17.5],
+                            placeholder: dropoffPlaceholder,
+                            bbox: [-75.6, -55.9, -66.4, -17.5], // Limit to Chile
                             country: 'cl',
                             limit: 5
                         });
                         dropoffGeocoder.addTo(dropoffGeocoderContainer);
+                        // dropoffGeocoderInput is assigned here
                         dropoffGeocoderInput = dropoffGeocoderContainer.querySelector('.mapboxgl-ctrl-geocoder--input');
                         if (dropoffGeocoderInput) {
-                            dropoffGeocoderInput.id = 'dropoff-location-input';
+                            // dropoffGeocoderInput.id = 'dropoff-location-input'; // Similar to pickup, ID might be tricky.
                             dropoffGeocoderInput.classList.add('form-control');
                             dropoffGeocoderInput.addEventListener('input', () => validateForm(true));
                             dropoffGeocoderInput.addEventListener('blur', () => validateForm(true));
+
+                            // Set aria-labelledby
+                            if (document.getElementById('dropoff-location-label')) {
+                                dropoffGeocoderInput.setAttribute('aria-labelledby', 'dropoff-location-label');
+                            }
                         }
 
                         dropoffGeocoder.on('result', (event) => {
@@ -311,18 +387,24 @@
                     let formGroup = $(fieldElement).closest('.form-group');
                     if (!formGroup.length) formGroup = $(fieldElement).parent();
                     let targetElement = fieldElement;
+                    // Special handling for geocoder containers to target the actual input within them
                     if ($(fieldElement).hasClass('geocoder-container')) {
                         targetElement = $(fieldElement).find('.mapboxgl-ctrl-geocoder--input').get(0) || fieldElement;
                     }
                     let existingError = formGroup.find('.error-message');
                     if (!existingError.length) {
                         const errorSpan = $('<span>').addClass('error-message').text(message);
-                        $(targetElement).after(errorSpan);
+                        // Insert after the geocoder container, not inside it, or after the input itself
+                        if ($(fieldElement).hasClass('geocoder-container')) {
+                            $(fieldElement).after(errorSpan);
+                        } else {
+                            $(targetElement).after(errorSpan);
+                        }
                     } else {
                         existingError.text(message);
                     }
-                    $(targetElement).addClass('input-error');
-                    formGroup.find('label').addClass('label-error');
+                    $(targetElement).addClass('input-error'); // Add error class to the input
+                    formGroup.find('label').addClass('label-error'); // Add error class to the label
                 };
 
                 const hideError = (fieldElement) => {
@@ -332,10 +414,43 @@
                     if ($(fieldElement).hasClass('geocoder-container')) {
                         targetElement = $(fieldElement).find('.mapboxgl-ctrl-geocoder--input').get(0) || fieldElement;
                     }
+                    // Remove error message associated with the form group
                     formGroup.find('.error-message').remove();
+                    // If error message was directly after geocoder container, remove it
+                    if ($(fieldElement).hasClass('geocoder-container')) {
+                        $(fieldElement).next('.error-message').remove();
+                    }
                     $(targetElement).removeClass('input-error');
                     formGroup.find('label').removeClass('label-error');
                 };
+
+                const showCachilupiToast = (message, type = 'success', duration = 4000) => {
+                    // Remove any existing toasts
+                    $('.cachilupi-toast-notification').remove();
+
+                    const toast = $('<div></div>')
+                        .addClass('cachilupi-toast-notification')
+                        .addClass(type) // 'success' or 'error' or 'info'
+                        .text(message);
+
+                    $('body').append(toast);
+
+                    // Trigger the animation
+                    setTimeout(() => {
+                        toast.addClass('show');
+                    }, 100); // Small delay to allow CSS transition
+
+                    // Auto-dismiss
+                    if (duration > 0) {
+                        setTimeout(() => {
+                            toast.removeClass('show');
+                            setTimeout(() => {
+                                toast.remove();
+                            }, 300); // Wait for fade out animation
+                        }, duration);
+                    }
+                }
+
 
                 const validateForm = (isMapContext = true) => {
                     let isValid = true;
@@ -405,11 +520,16 @@
                 if (submitButton) {
                     submitButton.addEventListener('click', async (event) => { 
                         event.preventDefault();
-                        if (!validateForm(true)) return;
+                        if (!validateForm(true)) {
+                            showCachilupiToast('Por favor, corrige los errores en el formulario.', 'error');
+                            return;
+                        }
 
-                        submitButton.disabled = true;
-                        submitButton.textContent = 'Enviando Solicitud...';
-                        submitButton.classList.add('cachilupi-button--loading');
+                        const $button = $(submitButton); // Use jQuery object for consistency
+                        const originalButtonText = $button.text();
+                        $button.prop('disabled', true).text('Enviando Solicitud...').addClass('loading');
+
+                        // Remove old inline feedback if any, toasts will be used for submission feedback
                         $('.cachilupi-feedback').remove();
 
                         const pickupAddress = pickupGeocoderInput ? pickupGeocoderInput.value : '';
@@ -465,58 +585,59 @@
                                     const errorText = await fetchResponse.text();
                                     console.error("Raw error response from server (Map Context):", errorText);
                                     try {
-                                        const errorData = JSON.parse(errorText);
-                                        errorMsg = errorData.data && errorData.data.message ? errorData.data.message : errorMsg;
-                                    } catch (e) {
-                                        errorMsg = `Server error: ${fetchResponse.statusText}. Check console for raw response.`;
+                                        const errorData = JSON.parse(errorText); // Try to parse as JSON
+                                        errorMsg = errorData.data && errorData.data.message ? errorData.data.message : `Error del servidor: ${errorText.substring(0,100)}`;
+                                    } catch (e) { // If not JSON
+                                        errorMsg = `Error del servidor: ${errorText.substring(0,100)}`;
                                     }
-                                } catch (e) {  }
+                                } catch (e) { /* Ignore if reading text also fails */ }
                                 throw new Error(errorMsg);
                             }
 
                             const responseData = await fetchResponse.json(); 
 
                             if (responseData.success) {
-                                showFeedbackMessage('Solicitud enviada con éxito.', 'success');
+                                showCachilupiToast(responseData.data.message || 'Solicitud enviada con éxito.', 'success');
+                                // Reset form fields
+                                if (pickupGeocoder) pickupGeocoder.clear(); // Clear Mapbox geocoder
+                                if (dropoffGeocoder) dropoffGeocoder.clear(); // Clear Mapbox geocoder
+                                // For Flatpickr instances, use their clear method
+                                if (window.flatpickr && serviceDateInput._flatpickr) serviceDateInput._flatpickr.clear();
+                                if (window.flatpickr && serviceTimeInput._flatpickr) serviceTimeInput._flatpickr.clear();
+
+                                // Fallback if Flatpickr instance not available on element, or for other fields
                                 if (pickupGeocoderInput) pickupGeocoderInput.value = '';
                                 if (dropoffGeocoderInput) dropoffGeocoderInput.value = '';
-                                if (serviceDateInput) serviceDateInput.value = '';
+                                if (serviceDateInput && !serviceDateInput._flatpickr) serviceDateInput.value = '';
                                 if (serviceTimeInput) serviceTimeInput.value = '';
                                 if (petTypeSelect) petTypeSelect.value = '';
+                                if (serviceTimeInput && !serviceTimeInput._flatpickr) serviceTimeInput.value = '';
+                                if (petTypeSelect) petTypeSelect.value = ''; // Reset select
                                 if (notesTextArea) notesTextArea.value = '';
                                 if (petInstructionsTextArea) petInstructionsTextArea.value = '';
+
+                                // Clear map markers and route
                                 if (pickupMarker) pickupMarker.remove();
                                 if (dropoffMarker) dropoffMarker.remove();
-                                if (map && map.getLayer('route')) map.removeLayer('route');
-                                if (map && map.getSource('route')) map.removeSource('route');
-                                pickupCoords = null; dropoffCoords = null;
+                                if (map && map.getSource('route')) {
+                                    map.removeLayer('route');
+                                    map.removeSource('route');
+                                }
+                                pickupCoords = null;
+                                dropoffCoords = null;
                                 if (distanceElement) distanceElement.textContent = '';
-                                validateForm(true);
+
+                                validateForm(true); // Re-validate to update button state (should be disabled)
                             } else {
                                 const errorMessage = responseData.data && responseData.data.message ? responseData.data.message : 'Ocurrió un error al guardar la solicitud.';
-                                showFeedbackMessage(errorMessage, 'error');
+                                showCachilupiToast(errorMessage, 'error');
                             }
                         } catch (error) {
-                            console.error('Fetch Error (Map Context):', error); 
-
-                            if (error instanceof SyntaxError && fetchResponse) { 
-                                fetchResponse.text().then(text => {
-                                    console.error("Raw non-JSON response from server (Map Context):", text);
-                                    showFeedbackMessage(`Error del servidor: Formato de respuesta inesperado. Revise la consola para más detalles.`, 'error');
-                                }).catch(textError => {
-                                    console.error("Error trying to read raw response text (Map Context):", textError);
-                                    showFeedbackMessage(`Error de comunicación: ${error.message}. Además, la respuesta del servidor no pudo ser leída como texto.`, 'error');
-                                });
-                            } else if (!fetchResponse) {
-                                showFeedbackMessage(`Error de red o comunicación: ${error.message}. No se recibió respuesta del servidor.`, 'error');
-                            } else {
-                                showFeedbackMessage(`Error de comunicación: ${error.message}`, 'error');
-                            }
+                            console.error('Fetch Error (Map Context):', error);
+                            showCachilupiToast(`Error de comunicación: ${error.message}`, 'error');
                         } finally {
-                            if (submitButton) {
-                                submitButton.classList.remove('cachilupi-button--loading');
-                                submitButton.disabled = false;
-                                submitButton.textContent = 'Solicitar Servicio';
+                            if ($button) {
+                                $button.removeClass('loading').text(originalButtonText).prop('disabled', false);
                             }
                         }
                     });
@@ -586,11 +707,12 @@
             if (submitButton) {
                 submitButton.addEventListener('click', async (event) => { 
                     event.preventDefault();
-                    if (validateForm(false)) {
-                        submitButton.disabled = true;
-                        submitButton.textContent = 'Enviando Solicitud...';
-                        submitButton.classList.add('cachilupi-button--loading');
-                        $('.cachilupi-feedback').remove();
+                        if (validateForm(false)) { // Pass false as it's not map context
+                            const $button = $(submitButton);
+                            const originalButtonText = $button.text();
+                            $button.prop('disabled', true).text('Enviando Solicitud...').addClass('loading');
+
+                            $('.cachilupi-feedback').remove(); // Remove old inline feedback
 
                         const pickupAddress = pickupGeocoderInput ? pickupGeocoderInput.value : '';
                         const dropoffAddress = dropoffGeocoderInput ? dropoffGeocoderInput.value : '';
@@ -646,43 +768,40 @@
                                 if (serviceDateInput) serviceDateInput.value = '';
                                 if (serviceTimeInput) serviceTimeInput.value = '';
                                 if (petTypeSelect) petTypeSelect.value = '';
+                                if (serviceDateInput && !serviceDateInput._flatpickr) serviceDateInput.value = '';
+                                if (serviceTimeInput && !serviceTimeInput._flatpickr) serviceTimeInput.value = '';
+                                if (petTypeSelect) petTypeSelect.value = '';
                                 if (notesTextArea) notesTextArea.value = '';
                                 if (petInstructionsTextArea) petInstructionsTextArea.value = '';
                                 if (distanceElement) distanceElement.textContent = '';
-                                validateForm(false);
+                                validateForm(false); // Re-validate
                             } else {
                                 const errorMessage = responseData.data && responseData.data.message ? responseData.data.message : 'Ocurrió un error al guardar la solicitud.';
-                                showFeedbackMessage(errorMessage, 'error');
+                                showCachilupiToast(errorMessage, 'error');
                             }
                         } catch (error) {
-                            console.error('Fetch Error (Non-Map Context):', error); 
-
-                            if (error instanceof SyntaxError && fetchResponse) {
-                                fetchResponse.text().then(text => {
-                                    console.error("Raw non-JSON response from server (Non-Map Context):", text);
-                                    showFeedbackMessage(`Error del servidor: Formato de respuesta inesperado. Revise la consola para más detalles.`, 'error');
-                                }).catch(textError => {
-                                    console.error("Error trying to read raw response text (Non-Map Context):", textError);
-                                    showFeedbackMessage(`Error de comunicación: ${error.message}. Además, la respuesta del servidor no pudo ser leída como texto.`, 'error');
-                                });
-                            } else if (!fetchResponse) {
-                                showFeedbackMessage(`Error de red o comunicación: ${error.message}. No se recibió respuesta del servidor.`, 'error');
-                            } else {
-                                showFeedbackMessage(`Error de comunicación: ${error.message}`, 'error');
-                            }
+                            console.error('Fetch Error (Non-Map Context):', error);
+                            showCachilupiToast(`Error de comunicación: ${error.message}`, 'error');
                         } finally {
-                            if (submitButton) {
-                                submitButton.classList.remove('cachilupi-button--loading');
-                                submitButton.disabled = false;
-                                submitButton.textContent = 'Solicitar Servicio';
+                           if ($button) {
+                                $button.removeClass('loading').text(originalButtonText).prop('disabled', false);
                             }
                         }
+                    } else {
+                         showCachilupiToast('Por favor, corrige los errores en el formulario.', 'error');
                     }
                 });
             }
-            validateForm(false);
+            validateForm(false); // Initial validation for non-map context
         };
         // --- End handleFormWithoutMap ---
+
+        // Initialize form validation (call once to set initial button state)
+        // This needs to be called after all input elements are potentially defined (Mapbox geocoder inputs specifically)
+        // The `loadMapboxGeocoder` callback or a timeout could be a place for this.
+        // For now, validateForm is called within event listeners and before submission.
+        // If Flatpickr is present, its onChange also calls validateForm.
+        // If no Mapbox, handleFormWithoutMap calls validateForm.
 
         // --- Seguimiento del Conductor para el Cliente ---
         let clientFollowMap = null;
