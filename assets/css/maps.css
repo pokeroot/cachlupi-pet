@@ -626,37 +626,37 @@ input.flatpickr-input.form-control { /* Flatpickr might add its own class to the
 
 /* Tab Navigation for Client Panel */
 .cachilupi-client-requests-panel .nav-tab-wrapper {
-    margin-bottom: 0;
-    padding-bottom: 0;
-    border-bottom: 1px solid var(--border-color-standard, #ccc);
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+    border-bottom: 1px solid var(--border-color-standard, #ccc) !important;
     font-size: 1em;
     line-height: normal;
 }
 
 .cachilupi-client-requests-panel .nav-tab {
-    padding: 10px 15px;
-    text-decoration: none;
-    background-color: #f0f0f0; /* Matches var(--background-color-thead) */
-    border: 1px solid var(--border-color-standard, #ccc);
-    border-bottom: none; /* Bottom border handled by active tab or wrapper */
-    margin-right: 5px;
-    margin-bottom: -1px; /* Key for overlapping border with content area */
-    border-radius: 4px 4px 0 0;
-    color: #555; /* Matches var(--text-color-medium) */
-    font-weight: 600;
-    display: inline-block;
+    padding: 10px 15px !important;
+    text-decoration: none !important;
+    background-color: var(--background-color-thead, #f0f0f0) !important;
+    border: 1px solid var(--border-color-standard, #ccc) !important;
+    border-bottom: none !important; /* Bottom border handled by active tab or wrapper */
+    margin-right: 5px !important;
+    margin-bottom: -1px !important; /* Key for overlapping border with content area */
+    border-radius: 4px 4px 0 0 !important;
+    color: var(--text-color-medium, #555) !important;
+    font-weight: 600 !important;
+    display: inline-block !important;
     line-height: normal;
     transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
 }
 
 .cachilupi-client-requests-panel .nav-tab.nav-tab-active {
-    background-color: var(--background-color-light, #fff);
-    border-color: var(--border-color-standard, #ccc);
-    border-bottom: 1px solid var(--background-color-light, #fff);
-    color: #000;
+    background-color: var(--background-color-light, #fff) !important;
+    border-color: var(--border-color-standard, #ccc) !important;
+    border-bottom: 1px solid var(--background-color-light, #fff) !important;
+    color: var(--text-color-dark, #000) !important; /* Using #000 directly as per current effective style, or var could be #333 */
     position: relative;
-    margin-bottom: -1px;
-    font-weight: bold;
+    /* margin-bottom is already -1px from the general .nav-tab rule */
+    font-weight: bold !important;
 }
 
 .cachilupi-client-requests-panel .nav-tab:hover:not(.nav-tab-active) {
@@ -666,12 +666,12 @@ input.flatpickr-input.form-control { /* Flatpickr might add its own class to the
 
 /* Tab Content for Client Panel */
 .cachilupi-client-requests-panel .tab-content {
-    padding: var(--padding-xlarge, 20px);
-    border: 1px solid var(--border-color-standard, #ccc);
-    border-top: none;
-    background-color: var(--background-color-light, #fff);
-    border-radius: 0 0 var(--border-radius-standard, 4px) var(--border-radius-standard, 4px);
-    margin-bottom: var(--margin-large, 20px);
+    padding: var(--padding-xlarge, 20px) !important;
+    border: 1px solid var(--border-color-standard, #ccc) !important;
+    border-top: none !important;
+    background-color: var(--background-color-light, #fff) !important;
+    border-radius: 0 0 var(--border-radius-standard, 4px) var(--border-radius-standard, 4px) !important;
+    margin-bottom: var(--margin-large, 20px); /* This margin is for spacing below the panel, usually not overridden by themes */
 }
 
 .cachilupi-client-requests-panel .tab-content h3 {
