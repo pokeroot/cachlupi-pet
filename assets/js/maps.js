@@ -473,32 +473,32 @@
                     formGroup.find('label').removeClass('label-error');
                 };
 
-                const showCachilupiToast = (message, type = 'success', duration = 4000) => {
-                    // Remove any existing toasts
-                    $('.cachilupi-toast-notification').remove();
-
-                    const toast = $('<div></div>')
-                        .addClass('cachilupi-toast-notification')
-                        .addClass(type) // 'success' or 'error' or 'info'
-                        .text(message);
-
-                    $('body').append(toast);
-
-                    // Trigger the animation
-                    setTimeout(() => {
-                        toast.addClass('show');
-                    }, 100); // Small delay to allow CSS transition
-
-                    // Auto-dismiss
-                    if (duration > 0) {
-                        setTimeout(() => {
-                            toast.removeClass('show');
-                            setTimeout(() => {
-                                toast.remove();
-                            }, 300); // Wait for fade out animation
-                        }, duration);
-                    }
-                }
+                // const showCachilupiToast = (message, type = 'success', duration = 4000) => { // This is the duplicate
+                //     // Remove any existing toasts
+                //     $('.cachilupi-toast-notification').remove();
+                //
+                //     const toast = $('<div></div>')
+                //         .addClass('cachilupi-toast-notification')
+                //         .addClass(type) // 'success' or 'error' or 'info'
+                //         .text(message);
+                //
+                //     $('body').append(toast);
+                //
+                //     // Trigger the animation
+                //     setTimeout(() => {
+                //         toast.addClass('show');
+                //     }, 100); // Small delay to allow CSS transition
+                //
+                //     // Auto-dismiss
+                //     if (duration > 0) {
+                //         setTimeout(() => {
+                //             toast.removeClass('show');
+                //             setTimeout(() => {
+                //                 toast.remove();
+                //             }, 300); // Wait for fade out animation
+                //         }, duration);
+                //     }
+                // }
 
 
                 const validateForm = (isMapContext = true) => {
