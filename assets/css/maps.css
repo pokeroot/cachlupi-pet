@@ -846,11 +846,11 @@ input.flatpickr-input.form-control { /* Flatpickr might add its own class to the
 /* Estilos responsivos para la tabla de solicitudes del cliente */
 @media (max-width: 768px) {
     .cachilupi-client-requests-panel table.widefat thead {
-        display: none;
+        display: none !important;
     }
 
     .cachilupi-client-requests-panel table.widefat tr {
-        display: block;
+        display: block !important;
         margin-bottom: var(--margin-medium, 15px);
         border: 1px solid var(--border-color-light, #ddd);
         padding: var(--padding-standard, 10px);
@@ -859,13 +859,16 @@ input.flatpickr-input.form-control { /* Flatpickr might add its own class to the
     }
 
     .cachilupi-client-requests-panel table.widefat td {
-        display: block;
+        display: block !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
         text-align: right;
-        padding-left: 50%;
+        padding-left: 50%; /* This will be adjusted by specific needs based on td::before */
         position: relative;
         border-bottom: 1px solid var(--border-color-light, #eee);
         padding-top: var(--padding-standard, 10px);
         padding-bottom: var(--padding-standard, 10px);
+        overflow-wrap: break-word; /* Help prevent overflow from long text */
     }
     .cachilupi-client-requests-panel table.widefat td:last-child {
         border-bottom: none;
