@@ -636,12 +636,13 @@ input.flatpickr-input.form-control { /* Flatpickr might add its own class to the
 .cachilupi-client-requests-panel .nav-tab {
     padding: 10px 15px;
     text-decoration: none;
-    background-color: #f0f0f0;
+    background-color: #f0f0f0; /* Matches var(--background-color-thead) */
     border: 1px solid var(--border-color-standard, #ccc);
-    border-bottom: none;
+    border-bottom: none; /* Bottom border handled by active tab or wrapper */
     margin-right: 5px;
+    margin-bottom: -1px; /* Key for overlapping border with content area */
     border-radius: 4px 4px 0 0;
-    color: #555;
+    color: #555; /* Matches var(--text-color-medium) */
     font-weight: 600;
     display: inline-block;
     line-height: normal;
