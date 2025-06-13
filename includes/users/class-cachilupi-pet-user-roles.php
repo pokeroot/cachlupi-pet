@@ -26,13 +26,17 @@ class Cachilupi_Pet_User_Roles {
 		if ( null === get_role( 'driver' ) ) {
 			add_role(
 				'driver',
-				__( 'Driver', 'cachilupi-pet' ), // Updated text domain
+				__( 'Driver', 'cachilupi-pet' ),
 				array(
-					'read'         => true, // Can read posts/pages
-					'edit_posts'   => false, // Cannot edit others' posts
-					'delete_posts' => false
-					// Puedes añadir capacidades específicas para ver solicitudes, aceptar, rechazar, etc.
-					// Por ejemplo: 'view_requests' => true, 'manage_requests' => true
+					'read'                    => true,
+					'edit_posts'              => false,
+					'delete_posts'            => false,
+					'manage_trip_status'      => true,
+					'update_trip_location'    => true,
+					'view_pending_requests'   => true,
+					'access_driver_panel'     => true,
+					'access_booking_form'     => true, // Assuming drivers can also create requests
+					'submit_pet_request'      => true, // Assuming drivers can also create requests
 				)
 			);
 		}
@@ -41,11 +45,14 @@ class Cachilupi_Pet_User_Roles {
 		if ( null === get_role( 'client' ) ) {
 			add_role(
 				'client',
-				__( 'Cliente', 'cachilupi-pet' ), // Updated text domain
+				__( 'Cliente', 'cachilupi-pet' ),
 				array(
-					'read' => true, // Basic read access for clients
-					// Puedes añadir capacidades específicas para enviar solicitudes, ver historial, etc.
-					// Por ejemplo: 'submit_request' => true, 'view_history' => true
+					'read'                      => true,
+					'view_own_trip_location'    => true,
+					'submit_pet_request'        => true,
+					'view_own_request_status'   => true,
+					'access_booking_form'       => true,
+					'view_own_requests'         => true,
 				)
 			);
 		}
