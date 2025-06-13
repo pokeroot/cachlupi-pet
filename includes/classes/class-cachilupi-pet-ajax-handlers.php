@@ -6,6 +6,15 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+// Ensure Utils class is available
+if ( ! class_exists( '\CachilupiPet\Utils\Cachilupi_Pet_Utils' ) ) {
+	// Assuming the utils directory is at includes/utils relative to this file's location (includes/classes)
+	$utils_file = dirname( __FILE__ ) . '/../utils/class-cachilupi-pet-utils.php';
+	if ( file_exists( $utils_file ) ) {
+		require_once $utils_file;
+	}
+}
+
 class Cachilupi_Pet_Ajax_Handlers {
 
 	/**
@@ -141,7 +150,7 @@ class Cachilupi_Pet_Ajax_Handlers {
 			wp_die();
 		} elseif ( $result !== false ) {
 			$request_details    = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$table_name} WHERE id = %d", $request_id ) );
-			$new_status_display = cachilupi_pet_translate_status( $new_status_slug ); // Assuming global function for now
+			$new_status_display = \CachilupiPet\Utils\Cachilupi_Pet_Utils::translate_status( $new_status_slug );
 			// Notification logic would go here... (omitted for brevity as it's complex and not the core of this refactor)
 			wp_send_json_success( array(
 				'message'            => 'Solicitud actualizada correctamente.',
@@ -449,7 +458,7 @@ class Cachilupi_Pet_Ajax_Handlers {
 		$statuses_data = array();
 		if ( $client_requests ) {
 			foreach ( $client_requests as $request ) {
-				$status_display  = cachilupi_pet_translate_status( $request->status ); // Assuming global function
+				$status_display  = \CachilupiPet\Utils\Cachilupi_Pet_Utils::translate_status( $request->status );
 				$statuses_data[] = array(
 					'request_id'     => $request->id,
 					'status_slug'    => $request->status,

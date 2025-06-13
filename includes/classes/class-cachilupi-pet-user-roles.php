@@ -83,4 +83,23 @@ class Cachilupi_Pet_User_Roles {
 		// If user object is invalid or there's an error, return default redirect
 		return $redirect_to;
 	}
+
+	/**
+	 * Modifies the default WordPress login error messages to be more generic.
+	 * This helps to prevent user enumeration.
+	 *
+	 * @param string $errors The default WordPress error message.
+	 * @return string The modified error message.
+	 */
+	public function filter_generic_login_error( $errors ) {
+		// Check if there is any login error
+		if ( ! empty( $errors ) ) {
+			// Replace any login error message with a generic one.
+			// This covers incorrect username/email and incorrect password errors.
+			$error_title   = esc_html__( 'Error', 'cachilupi-pet' );
+			$error_message = esc_html__( 'Nombre de usuario o contraseña incorrectos.', 'cachilupi-pet' );
+			$errors        = sprintf( '<p class="login-error-message"><strong>%s:</strong> %s</p>', $error_title, $error_message );
+		}
+		return $errors;
+	}
 }

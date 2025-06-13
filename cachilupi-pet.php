@@ -46,31 +46,9 @@ cachilupi_pet_run_plugin();
 
 
 // =============================================================================
-// Modificar Mensajes de Error de Login por Defecto
+// Modificar Mensajes de Error de Login por Defecto - MOVED
 // =============================================================================
-
-/**
- * Modifica los mensajes de error de inicio de sesión por defecto de WordPress para ser más genéricos.
- * Esto ayuda a prevenir la enumeración de usuarios.
- *
- * @param string $errors El mensaje de error por defecto de WordPress.
- * @return string El mensaje de error modificado.
- */
-function cachilupi_pet_generic_login_error( $errors ) {
-    // Comprueba si hay algún error de login
-    if ( ! empty( $errors ) ) {
-        // Reemplaza cualquier mensaje de error de login por un mensaje genérico.
-        // Esto cubre errores de usuario/email incorrecto y contraseña incorrecta.
-        $error_title = esc_html__( 'Error', 'cachilupi-pet' );
-        $error_message = esc_html__( 'Nombre de usuario o contraseña incorrectos.', 'cachilupi-pet' );
-        $errors = sprintf( '<p class="login-error-message"><strong>%s:</strong> %s</p>', $error_title, $error_message );
-    }
-    return $errors;
-}
-
-// Engancha la función al filtro 'login_errors'
-add_filter( 'login_errors', 'cachilupi_pet_generic_login_error' );
-
+// This functionality is now handled by CachilupiPet\Users\Cachilupi_Pet_User_Roles class.
 
 // =============================================================================
 // Fin Modificar Mensajes de Error de Login por Defecto
@@ -78,36 +56,9 @@ add_filter( 'login_errors', 'cachilupi_pet_generic_login_error' );
 
 
 // =============================================================================
-// Función para traducir los estados de las solicitudes
+// Función para traducir los estados de las solicitudes - MOVED
 // =============================================================================
-/**
- * Traduce los slugs de estado de las solicitudes a un formato legible en español.
- *
- * @param string $status_slug El slug del estado (ej. 'pending', 'accepted').
- * @return string La cadena traducida del estado.
- */
-function cachilupi_pet_translate_status( $status_slug ) {
-    // Asegurarse de que el slug es un string
-    if ( ! is_string( $status_slug ) ) {
-        // Si no es un string, intenta convertirlo o devuelve un valor por defecto
-        return is_scalar( $status_slug ) ? ucfirst( esc_html( (string) $status_slug ) ) : __( 'Desconocido', 'cachilupi-pet' );
-    }
-
-    $translations = array(
-        'pending'   => __( 'Pendiente', 'cachilupi-pet' ),
-        'accepted'  => __( 'Aceptado', 'cachilupi-pet' ),
-        'rejected'  => __( 'Rechazado', 'cachilupi-pet' ),
-        'on_the_way' => __( 'En Camino', 'cachilupi-pet' ),
-        'arrived'   => __( 'En Origen', 'cachilupi-pet' ), // O 'Ha llegado al origen'
-        'picked_up' => __( 'Mascota Recogida', 'cachilupi-pet' ),
-        'completed' => __( 'Completado', 'cachilupi-pet' ), // Para futuras implementaciones
-        // Puedes añadir más estados y sus traducciones aquí
-    );
-
-    $status_slug_lower = strtolower( $status_slug );
-
-    return isset( $translations[ $status_slug_lower ] ) ? $translations[ $status_slug_lower ] : ucfirst( esc_html( $status_slug ) );
-}
+// This function has been moved to CachilupiPet\Utils\Cachilupi_Pet_Utils::translate_status()
 
 // Shortcode rendering is now handled by CachilupiPet\PublicArea\Cachilupi_Pet_Shortcodes
 
