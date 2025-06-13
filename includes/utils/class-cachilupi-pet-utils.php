@@ -6,6 +6,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+/**
+ * Utility class for common helper functions.
+ *
+ * Provides static methods for various utility tasks like string translation, etc.
+ *
+ * @package CachilupiPet\Utils
+ */
 class Cachilupi_Pet_Utils {
 
 	/**

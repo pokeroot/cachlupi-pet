@@ -8,6 +8,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 // Autoloader should handle Utils class: \CachilupiPet\Utils\Cachilupi_Pet_Utils
 
+/**
+ * Handles the registration and rendering of plugin shortcodes.
+ *
+ * @package CachilupiPet\PublicArea
+ */
 class Cachilupi_Pet_Shortcodes {
 
 	/**
@@ -55,17 +60,17 @@ class Cachilupi_Pet_Shortcodes {
 		$active_statuses = ['pending', 'accepted', 'on_the_way', 'arrived', 'picked_up'];
 		$historical_statuses = ['completed', 'rejected'];
 
-		if ($all_requests) {
-			foreach ($all_requests as $request) {
-				if (in_array($request->status, $active_statuses, true)) {
+		if ( $all_requests ) {
+			foreach ( $all_requests as $request ) {
+				if ( in_array( $request->status, $active_statuses, true ) ) {
 					// Include unassigned pending requests for all drivers to see
-					if ($request->status === 'pending' && is_null($request->driver_id)) {
+					if ( $request->status === 'pending' && is_null( $request->driver_id ) ) {
 						$active_requests[] = $request;
-					} elseif (!is_null($request->driver_id) && $request->driver_id == $current_driver_id) {
+					} elseif ( ! is_null( $request->driver_id ) && $request->driver_id == $current_driver_id ) { // Using == for DB value comparison is common in WP
 						// Include requests assigned to the current driver
 						$active_requests[] = $request;
 					}
-				} elseif (in_array($request->status, $historical_statuses, true) && !is_null($request->driver_id) && $request->driver_id == $current_driver_id) {
+				} elseif ( in_array( $request->status, $historical_statuses, true ) && ! is_null( $request->driver_id ) && $request->driver_id == $current_driver_id ) { // Using == for DB value comparison
 					$historical_requests[] = $request;
 				}
 			}
@@ -81,7 +86,7 @@ class Cachilupi_Pet_Shortcodes {
 			</h2>
 
 			<div id="active-requests" class="tab-content">
-				<?php if ( !empty($active_requests) ) : ?>
+				<?php if ( ! empty( $active_requests ) ) : ?>
 					<table class="widefat fixed striped" cellspacing="0">
 						<thead>
 							<tr>
@@ -160,7 +165,7 @@ class Cachilupi_Pet_Shortcodes {
 			</div>
 
 			<div id="historical-requests" class="tab-content" style="display:none;">
-				<?php if ( !empty($historical_requests) ) : ?>
+				<?php if ( ! empty( $historical_requests ) ) : ?>
 					<table class="widefat fixed striped" cellspacing="0">
 						<thead>
 							<tr>
@@ -197,19 +202,19 @@ class Cachilupi_Pet_Shortcodes {
 			</div>
 		</div>
 		<script type="text/javascript">
-			jQuery(document).ready(function($) {
+			jQuery( document ).ready( function( $ ) {
 				// Tab switching
-				$('.nav-tab-wrapper .nav-tab').click(function(e) {
+				$( '.nav-tab-wrapper .nav-tab' ).click( function( e ) {
 					e.preventDefault();
-					var tab_id = $(this).attr('href');
+					var tab_id = $( this ).attr( 'href' );
 
-					$('.nav-tab-wrapper .nav-tab').removeClass('nav-tab-active');
-					$('.tab-content').hide();
+					$( '.nav-tab-wrapper .nav-tab' ).removeClass( 'nav-tab-active' );
+					$( '.tab-content' ).hide();
 
-					$(this).addClass('nav-tab-active');
-					$(tab_id).show();
-				});
-			});
+					$( this ).addClass( 'nav-tab-active' );
+					$( tab_id ).show();
+				} );
+			} );
 		</script>
 		<?php
 		return ob_get_clean(); // Return the buffered content
@@ -311,9 +316,9 @@ class Cachilupi_Pet_Shortcodes {
 			$client_active_statuses = ['pending', 'accepted', 'on_the_way', 'arrived', 'picked_up'];
 			$client_historical_statuses = ['completed', 'rejected'];
 
-			if ($all_client_requests) {
-				foreach ($all_client_requests as $request_item) {
-					if (in_array(strtolower($request_item->status), $client_historical_statuses, true)) {
+			if ( $all_client_requests ) {
+				foreach ( $all_client_requests as $request_item ) {
+					if ( in_array( strtolower( $request_item->status ), $client_historical_statuses, true ) ) {
 						$historical_client_requests[] = $request_item;
 					} else {
 						$active_client_requests[] = $request_item;
@@ -322,18 +327,18 @@ class Cachilupi_Pet_Shortcodes {
 			}
 
 			echo '<div class="cachilupi-client-requests-panel">';
-			echo '<h2>' . esc_html__('Mis Solicitudes de Servicio', 'cachilupi-pet') . '</h2>';
+			echo '<h2>' . esc_html__( 'Mis Solicitudes de Servicio', 'cachilupi-pet' ) . '</h2>';
 
 			echo '<h2 class="nav-tab-wrapper">';
-			echo '<a href="#client-active-requests" class="nav-tab nav-tab-active">' . esc_html__('Solicitudes Activas', 'cachilupi-pet') . '</a>';
-			echo '<a href="#client-historical-requests" class="nav-tab">' . esc_html__('Historial de Solicitudes', 'cachilupi-pet') . '</a>';
+			echo '<a href="#client-active-requests" class="nav-tab nav-tab-active">' . esc_html__( 'Solicitudes Activas', 'cachilupi-pet' ) . '</a>';
+			echo '<a href="#client-historical-requests" class="nav-tab">' . esc_html__( 'Historial de Solicitudes', 'cachilupi-pet' ) . '</a>';
 			echo '</h2>';
 
 			echo '<div id="client-active-requests" class="tab-content active">';
-			if ( !empty($active_client_requests) ) {
+			if ( ! empty( $active_client_requests ) ) {
 				echo '<table class="widefat fixed striped" cellspacing="0">';
 				echo '<thead><tr>';
-				echo '<th class="manage-column column-columnname" scope="col">' . esc_html__('ID', 'cachilupi-pet') . '</th>';
+				echo '<th class="manage-column column-columnname" scope="col">' . esc_html__( 'ID', 'cachilupi-pet' ) . '</th>';
 				echo '<th class="manage-column column-columnname" scope="col">' . esc_html__('Fecha Programada', 'cachilupi-pet') . '</th>';
 				echo '<th class="manage-column column-columnname" scope="col">' . esc_html__('Origen', 'cachilupi-pet') . '</th>';
 				echo '<th class="manage-column column-columnname" scope="col">' . esc_html__('Destino', 'cachilupi-pet') . '</th>';
@@ -387,15 +392,15 @@ class Cachilupi_Pet_Shortcodes {
 				}
 				echo '</tbody></table>';
 			} else {
-				echo '<p>' . esc_html__('No tienes solicitudes activas en este momento.', 'cachilupi-pet') . '</p>';
+				echo '<p>' . esc_html__( 'No tienes solicitudes activas en este momento.', 'cachilupi-pet' ) . '</p>';
 			}
 			echo '</div>';
 
 			echo '<div id="client-historical-requests" class="tab-content" style="display:none;">';
-			if ( !empty($historical_client_requests) ) {
+			if ( ! empty( $historical_client_requests ) ) {
 				echo '<table class="widefat fixed striped" cellspacing="0">';
 				echo '<thead><tr>';
-				echo '<th class="manage-column column-columnname" scope="col">' . esc_html__('ID', 'cachilupi-pet') . '</th>';
+				echo '<th class="manage-column column-columnname" scope="col">' . esc_html__( 'ID', 'cachilupi-pet' ) . '</th>';
 				echo '<th class="manage-column column-columnname" scope="col">' . esc_html__('Fecha Programada', 'cachilupi-pet') . '</th>';
 				echo '<th class="manage-column column-columnname" scope="col">' . esc_html__('Origen', 'cachilupi-pet') . '</th>';
 				echo '<th class="manage-column column-columnname" scope="col">' . esc_html__('Destino', 'cachilupi-pet') . '</th>';
@@ -432,12 +437,12 @@ class Cachilupi_Pet_Shortcodes {
 				}
 				echo '</tbody></table>';
 			} else {
-				echo '<p>' . esc_html__('No tienes solicitudes en el historial.', 'cachilupi-pet') . '</p>';
+				echo '<p>' . esc_html__( 'No tienes solicitudes en el historial.', 'cachilupi-pet' ) . '</p>';
 			}
 			echo '</div>';
 			echo '</div>';
 
-			echo '<div id="cachilupi-follow-modal" style="display:none; position:fixed; top:0;left:0;width:100%;height:100%;background-color:rgba(0,0,0,0.5);z-index:10000;"><div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:80%;max-width:700px;height:70%;background-color:white;padding:20px;border-radius:8px;"><h3 id="cachilupi-follow-modal-title">' . esc_html__('Siguiendo Viaje', 'cachilupi-pet') . '</h3><div id="cachilupi-client-follow-map" style="width:100%;height:80%;"></div><button id="cachilupi-close-follow-modal" style="margin-top:10px;">' . esc_html__('Cerrar', 'cachilupi-pet') . '</button></div></div>';
+			echo '<div id="cachilupi-follow-modal" style="display:none; position:fixed; top:0;left:0;width:100%;height:100%;background-color:rgba(0,0,0,0.5);z-index:10000;"><div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:80%;max-width:700px;height:70%;background-color:white;padding:20px;border-radius:8px;"><h3 id="cachilupi-follow-modal-title">' . esc_html__( 'Siguiendo Viaje', 'cachilupi-pet' ) . '</h3><div id="cachilupi-client-follow-map" style="width:100%;height:80%;"></div><button id="cachilupi-close-follow-modal" style="margin-top:10px;">' . esc_html__( 'Cerrar', 'cachilupi-pet' ) . '</button></div></div>';
 		}
 		return ob_get_clean();
 	}

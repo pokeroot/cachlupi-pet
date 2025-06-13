@@ -1,9 +1,18 @@
 <?php
 
+namespace CachilupiPet;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+/**
+ * Main plugin class for Cachilupi Pet.
+ *
+ * Handles initialization of plugin components, hooks, and activation.
+ *
+ * @package CachilupiPet
+ */
 class Cachilupi_Pet_Plugin {
 
 	/**
@@ -24,9 +33,10 @@ class Cachilupi_Pet_Plugin {
 	 * Initialize the plugin.
 	 *
 	 * Loads the plugin text domain and registers hooks.
+	 * @return void
 	 */
 	public function init() {
-		add_action( 'plugins_loaded', array( $this, 'load_textdomain' ) );
+		add_action( 'plugins_loaded', array( $this, 'load_text_domain' ) );
 
 		// Autoloader will handle these class loads.
 		// No need for: if ( ! class_exists(...) ) require_once ...;
@@ -50,29 +60,29 @@ class Cachilupi_Pet_Plugin {
 		// Initialize Shortcodes.
 		// Autoloader handles \CachilupiPet\PublicArea\Cachilupi_Pet_Shortcodes
 		if ( class_exists( '\CachilupiPet\PublicArea\Cachilupi_Pet_Shortcodes' ) ) {
-			$shortcode_manager = new \CachilupiPet\PublicArea\Cachilupi_Pet_Shortcodes();
-			add_shortcode( 'cachilupi_driver_panel', array( $shortcode_manager, 'render_driver_panel_shortcode' ) );
-			add_shortcode( 'cachilupi_maps', array( $shortcode_manager, 'render_client_booking_form_shortcode' ) );
+			$shortcode_manager_instance = new \CachilupiPet\PublicArea\Cachilupi_Pet_Shortcodes();
+			add_shortcode( 'cachilupi_driver_panel', array( $shortcode_manager_instance, 'render_driver_panel_shortcode' ) );
+			add_shortcode( 'cachilupi_maps', array( $shortcode_manager_instance, 'render_client_booking_form_shortcode' ) );
 		}
 
 		// Initialize AJAX Handlers.
 		// Autoloader handles \CachilupiPet\Ajax\Cachilupi_Pet_Ajax_Handlers
 		if ( class_exists( '\CachilupiPet\Ajax\Cachilupi_Pet_Ajax_Handlers' ) ) {
-			$ajax_manager = new \CachilupiPet\Ajax\Cachilupi_Pet_Ajax_Handlers();
-			add_action( 'wp_ajax_cachilupi_pet_driver_action', array( $ajax_manager, 'handle_driver_action' ) );
-			add_action( 'wp_ajax_cachilupi_update_driver_location', array( $ajax_manager, 'update_driver_location' ) );
-			add_action( 'wp_ajax_cachilupi_get_driver_location', array( $ajax_manager, 'get_driver_location' ) );
-			add_action( 'wp_ajax_cachilupi_pet_submit_request', array( $ajax_manager, 'submit_service_request' ) );
-			add_action( 'wp_ajax_cachilupi_check_new_requests', array( $ajax_manager, 'check_new_requests' ) );
-			add_action( 'wp_ajax_cachilupi_get_client_requests_status', array( $ajax_manager, 'get_client_requests_status' ) );
+			$ajax_manager_instance = new \CachilupiPet\Ajax\Cachilupi_Pet_Ajax_Handlers();
+			add_action( 'wp_ajax_cachilupi_pet_driver_action', array( $ajax_manager_instance, 'handle_driver_action' ) );
+			add_action( 'wp_ajax_cachilupi_update_driver_location', array( $ajax_manager_instance, 'update_driver_location' ) );
+			add_action( 'wp_ajax_cachilupi_get_driver_location', array( $ajax_manager_instance, 'get_driver_location' ) );
+			add_action( 'wp_ajax_cachilupi_pet_submit_request', array( $ajax_manager_instance, 'submit_service_request' ) );
+			add_action( 'wp_ajax_cachilupi_check_new_requests', array( $ajax_manager_instance, 'check_new_requests' ) );
+			add_action( 'wp_ajax_cachilupi_get_client_requests_status', array( $ajax_manager_instance, 'get_client_requests_status' ) );
 		}
 
 		// Initialize Assets Manager.
 		// Autoloader handles \CachilupiPet\Core\Cachilupi_Pet_Assets_Manager
 		if ( class_exists( '\CachilupiPet\Core\Cachilupi_Pet_Assets_Manager' ) ) {
-			$plugin_main_file = CACHILUPI_PET_DIR . 'cachilupi-pet.php'; // Assumes CACHILUPI_PET_DIR is defined
-			$assets_manager = new \CachilupiPet\Core\Cachilupi_Pet_Assets_Manager( plugin_dir_url( $plugin_main_file ), CACHILUPI_PET_DIR );
-			add_action( 'wp', array( $assets_manager, 'enqueue_assets' ) );
+			$plugin_main_file_path = CACHILUPI_PET_DIR . 'cachilupi-pet.php'; // Assumes CACHILUPI_PET_DIR is defined
+			$assets_manager_instance = new \CachilupiPet\Core\Cachilupi_Pet_Assets_Manager( plugin_dir_url( $plugin_main_file_path ), CACHILUPI_PET_DIR );
+			add_action( 'wp_enqueue_scripts', array( $assets_manager_instance, 'enqueue_assets' ) );
 		}
 		// Other hooks will be registered here.
 	}
@@ -81,6 +91,7 @@ class Cachilupi_Pet_Plugin {
 	 * Plugin activation hook.
 	 *
 	 * Creates database tables and sets default options.
+	 * @return void
 	 */
 	public static function activate() {
 		// Autoloader will handle these class loads.
@@ -100,9 +111,11 @@ class Cachilupi_Pet_Plugin {
 
 	/**
 	 * Load plugin textdomain.
+	 *
+	 * @return void
 	 */
-	public function load_textdomain() {
-		load_plugin_textdomain( 'cachilupi-pet', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
+	public function load_text_domain() { // Changed method name
+		load_plugin_textdomain( 'cachilupi-pet', false, dirname( plugin_basename( CACHILUPI_PET_DIR . 'cachilupi-pet.php' ) ) . '/languages/' ); // Ensure plugin_basename is used correctly
 	}
 
 }
