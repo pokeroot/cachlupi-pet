@@ -230,7 +230,9 @@ class Cachilupi_Pet_Shortcodes {
 	 */
 	public function render_client_booking_form_shortcode() {
 		$user = wp_get_current_user();
-		if ( ! is_user_logged_in() || ! array_intersect( array( 'client', 'administrator', 'driver' ), (array) $user->roles, true ) ) {
+		// Corrected condition:
+		// Deny access if user is not logged in, OR if they are logged in but don't have any of the allowed roles.
+		if ( ! is_user_logged_in() || empty( array_intersect( array( 'client', 'administrator', 'driver' ), (array) $user->roles ) ) ) {
 			return '<p>' . esc_html__( 'Debes iniciar sesión como cliente o conductor para solicitar un servicio.', 'cachilupi-pet' ) . '</p>';
 		}
 
