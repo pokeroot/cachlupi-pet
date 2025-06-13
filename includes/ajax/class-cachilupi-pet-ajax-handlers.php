@@ -8,6 +8,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 // Autoloader should handle Utils class: \CachilupiPet\Utils\Cachilupi_Pet_Utils
 
+/**
+ * Handles AJAX requests for the Cachilupi Pet plugin.
+ *
+ * All methods are hooked to WordPress AJAX actions and typically end with wp_die().
+ *
+ * @package CachilupiPet\Ajax
+ */
 class Cachilupi_Pet_Ajax_Handlers {
 
 	/**
@@ -134,7 +141,7 @@ class Cachilupi_Pet_Ajax_Handlers {
 		if ( $result === 0 ) {
 			$current_db_status = $wpdb->get_var( $wpdb->prepare( "SELECT status FROM {$table_name} WHERE id = %d", $request_id ) );
 			if ( $current_db_status && $current_db_status !== $request_being_actioned->status ) {
-				 wp_send_json_error( array( 'message' => 'La solicitud fue actualizada por otro proceso. Por favor, refresca la página.', 'error_code' => 'status_changed' ) );
+				wp_send_json_error( array( 'message' => 'La solicitud fue actualizada por otro proceso. Por favor, refresca la página.', 'error_code' => 'status_changed' ) );
 			} elseif ( $current_db_status && $action === 'accept' && $request_being_actioned->driver_id !== null && $request_being_actioned->driver_id != $current_driver_id ) {
 				wp_send_json_error( array( 'message' => 'La solicitud ya fue aceptada por otro conductor. Por favor, refresca la página.', 'error_code' => 'already_accepted' ) );
 			} else {
@@ -179,8 +186,8 @@ class Cachilupi_Pet_Ajax_Handlers {
 			wp_die();
 		}
 
-		$latitude_float  = floatval( $latitude );
-		$longitude_float = floatval( $longitude );
+		$latitude_val  = floatval( $latitude ); // Renamed from $latitude_float
+		$longitude_val = floatval( $longitude ); // Renamed from $longitude_float
 
 		global $wpdb;
 		$table_name        = $wpdb->prefix . 'cachilupi_requests';
@@ -189,8 +196,8 @@ class Cachilupi_Pet_Ajax_Handlers {
 		$result = $wpdb->update(
 			$table_name,
 			array(
-				'driver_current_lat'           => $latitude_float,
-				'driver_current_lon'           => $longitude_float,
+				'driver_current_lat'           => $latitude_val, // Using renamed variable
+				'driver_current_lon'           => $longitude_val, // Using renamed variable
 				'driver_location_updated_at' => current_time( 'mysql' )
 			),
 			array(
@@ -273,7 +280,7 @@ class Cachilupi_Pet_Ajax_Handlers {
 		$dropoff_address     = isset( $_POST['dropoff_address'] ) ? sanitize_text_field( $_POST['dropoff_address'] ) : '';
 		$pet_type            = isset( $_POST['pet_type'] ) ? sanitize_text_field( $_POST['pet_type'] ) : '';
 		$notes               = isset( $_POST['notes'] ) ? sanitize_textarea_field( $_POST['notes'] ) : '';
-		$scheduled_date_time = isset( $_POST['scheduled_date_time'] ) ? sanitize_text_field( $_POST['scheduled_date_time'] ) : '';
+		$scheduled_date_time_str = isset( $_POST['scheduled_date_time'] ) ? sanitize_text_field( $_POST['scheduled_date_time'] ) : ''; // Renamed from $scheduled_date_time
 		$pickup_lat_str      = isset( $_POST['pickup_lat'] ) ? $_POST['pickup_lat'] : null;
 		$pickup_lon_str      = isset( $_POST['pickup_lon'] ) ? $_POST['pickup_lon'] : null;
 		$dropoff_lat_str     = isset( $_POST['dropoff_lat'] ) ? $_POST['dropoff_lat'] : null;
@@ -282,7 +289,7 @@ class Cachilupi_Pet_Ajax_Handlers {
 
 		if ( empty( $pickup_address ) || is_null( $pickup_lat_str ) || is_null( $pickup_lon_str ) ||
 			 empty( $dropoff_address ) || is_null( $dropoff_lat_str ) || is_null( $dropoff_lon_str ) ||
-			 empty( $pet_type ) || empty( $scheduled_date_time ) ) {
+			 empty( $pet_type ) || empty( $scheduled_date_time_str ) ) { // Using renamed variable
 			wp_send_json_error( array( 'message' => 'Por favor, completa todos los campos requeridos.' ) );
 			wp_die();
 		}
@@ -304,54 +311,54 @@ class Cachilupi_Pet_Ajax_Handlers {
 			wp_die();
 		}
 
-		$scheduledDateTime = \DateTime::createFromFormat( 'Y-m-d H:i:s', $scheduled_date_time );
-		if ( $scheduledDateTime === false ) {
-			$scheduledDateTime = \DateTime::createFromFormat( 'Y-m-d H:i', $scheduled_date_time );
-			if ( $scheduledDateTime === false ) {
-				$scheduledDateTime = \DateTime::createFromFormat( 'Y-m-d', $scheduled_date_time );
-				if ( $scheduledDateTime ) {
-					$scheduledDateTime->setTime( 0, 0, 0 );
+		$scheduled_date_time_obj = \DateTime::createFromFormat( 'Y-m-d H:i:s', $scheduled_date_time_str ); // Renamed variable
+		if ( $scheduled_date_time_obj === false ) {
+			$scheduled_date_time_obj = \DateTime::createFromFormat( 'Y-m-d H:i', $scheduled_date_time_str ); // Renamed variable
+			if ( $scheduled_date_time_obj === false ) {
+				$scheduled_date_time_obj = \DateTime::createFromFormat( 'Y-m-d', $scheduled_date_time_str ); // Renamed variable
+				if ( $scheduled_date_time_obj ) {
+					$scheduled_date_time_obj->setTime( 0, 0, 0 );
 				} else {
 					wp_send_json_error( array(
 						'message'            => 'Formato de fecha y hora incorrecto. Asegúrese de que la fecha y la hora estén seleccionadas.',
-						'debug_sent_value' => $scheduled_date_time
+						'debug_sent_value' => $scheduled_date_time_str // Using renamed variable
 					) );
 					wp_die();
 				}
 			}
 		}
 
-		if ( $scheduled_date_time && strpos( $scheduled_date_time, ' ' ) === false && $scheduledDateTime && $scheduledDateTime->format( 'H:i:s' ) === '00:00:00' ) {
+		if ( $scheduled_date_time_str && strpos( $scheduled_date_time_str, ' ' ) === false && $scheduled_date_time_obj && $scheduled_date_time_obj->format( 'H:i:s' ) === '00:00:00' ) { // Using renamed variables
 			wp_send_json_error( array(
 				'message'         => 'Por favor, selecciona tanto la fecha como la hora para el servicio.',
-				'debug_parsed_dt' => $scheduledDateTime ? $scheduledDateTime->format( 'Y-m-d H:i:s' ) : 'null'
+				'debug_parsed_dt' => $scheduled_date_time_obj ? $scheduled_date_time_obj->format( 'Y-m-d H:i:s' ) : 'null' // Using renamed variable
 			) );
 			wp_die();
 		}
 
 		$now = new \DateTime();
-		$minScheduledTime = ( clone $now )->modify( '+89 minutes' );
+		$min_scheduled_time = ( clone $now )->modify( '+89 minutes' ); // Renamed variable
 
-		if ( $scheduledDateTime < $minScheduledTime ) {
+		if ( $scheduled_date_time_obj < $min_scheduled_time ) { // Using renamed variables
 			wp_send_json_error( array(
 				'message'              => 'El servicio debe ser agendado con al menos 90 minutos de anticipación desde la hora actual.',
 				'debug_current_time'   => $now->format( 'Y-m-d H:i:s' ),
-				'debug_scheduled_time' => $scheduledDateTime->format( 'Y-m-d H:i:s' ),
-				'debug_min_allowed'    => $minScheduledTime->format( 'Y-m-d H:i:s' )
+				'debug_scheduled_time' => $scheduled_date_time_obj->format( 'Y-m-d H:i:s' ), // Using renamed variable
+				'debug_min_allowed'    => $min_scheduled_time->format( 'Y-m-d H:i:s' ) // Using renamed variable
 			) );
 			wp_die();
 		}
 
-		$scheduledHour   = (int) $scheduledDateTime->format( 'H' );
-		$scheduledMinute = (int) $scheduledDateTime->format( 'i' );
+		$scheduled_hour   = (int) $scheduled_date_time_obj->format( 'H' ); // Renamed variable
+		$scheduled_minute = (int) $scheduled_date_time_obj->format( 'i' ); // Renamed variable
 
-		if ( $scheduledHour < 8 || ( $scheduledHour === 21 && $scheduledMinute > 0 ) || $scheduledHour > 21 ) {
+		if ( $scheduled_hour < 8 || ( $scheduled_hour === 21 && $scheduled_minute > 0 ) || $scheduled_hour > 21 ) {
 			wp_send_json_error( array( 'message' => 'El servicio debe ser agendado entre las 8:00 y las 21:00.' ) );
 			wp_die();
 		}
 
 		$data = array(
-			'time'             => $scheduledDateTime->format( 'Y-m-d H:i:s' ),
+			'time'             => $scheduled_date_time_obj->format( 'Y-m-d H:i:s' ), // Using renamed variable
 			'pickup_address'   => $pickup_address,
 			'pickup_lat'       => $pickup_lat,
 			'pickup_lon'       => $pickup_lon,

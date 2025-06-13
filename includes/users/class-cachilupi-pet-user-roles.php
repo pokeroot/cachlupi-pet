@@ -6,10 +6,19 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+/**
+ * Manages user roles and capabilities for the Cachilupi Pet plugin.
+ *
+ * Handles creation of custom roles and role-specific behaviors like login redirection.
+ *
+ * @package CachilupiPet\Users
+ */
 class Cachilupi_Pet_User_Roles {
 
 	/**
 	 * Adds custom user roles ('driver' and 'client').
+	 *
+	 * @return void
 	 */
 	public static function add_roles() {
 		// Add 'driver' role on plugin activation

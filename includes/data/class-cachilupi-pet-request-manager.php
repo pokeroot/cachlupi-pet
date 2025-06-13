@@ -6,10 +6,19 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+/**
+ * Manages database operations for Cachilupi Pet requests.
+ *
+ * Handles table creation and provides methods for CRUD operations on requests.
+ *
+ * @package CachilupiPet\Data
+ */
 class Cachilupi_Pet_Request_Manager {
 
 	/**
 	 * Creates the database table for requests.
+	 *
+	 * @return void
 	 */
 	public static function create_table() {
 		global $wpdb;
@@ -41,7 +50,7 @@ class Cachilupi_Pet_Request_Manager {
 			KEY driver_id (driver_id),
 			KEY client_user_id (client_user_id)
 		) $charset_collate;";
-		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 		dbDelta( $sql );
 	}
 
