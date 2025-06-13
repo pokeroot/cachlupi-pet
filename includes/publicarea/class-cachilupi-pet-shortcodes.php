@@ -6,15 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-// Ensure Utils class is available
-if ( ! class_exists( '\CachilupiPet\Utils\Cachilupi_Pet_Utils' ) ) {
-	// Assuming the utils directory is at includes/utils relative to the plugin's root directory
-	// and this file is in public/. So we go up one level from public to plugin root, then to includes/utils.
-	$utils_file = dirname( __DIR__ ) . '/includes/utils/class-cachilupi-pet-utils.php';
-	if ( file_exists( $utils_file ) ) {
-		require_once $utils_file;
-	}
-}
+// Autoloader should handle Utils class: \CachilupiPet\Utils\Cachilupi_Pet_Utils
 
 class Cachilupi_Pet_Shortcodes {
 

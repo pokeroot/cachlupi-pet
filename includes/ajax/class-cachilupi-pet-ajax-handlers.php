@@ -6,14 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-// Ensure Utils class is available
-if ( ! class_exists( '\CachilupiPet\Utils\Cachilupi_Pet_Utils' ) ) {
-	// Assuming the utils directory is at includes/utils relative to this file's location (includes/classes)
-	$utils_file = dirname( __FILE__ ) . '/../utils/class-cachilupi-pet-utils.php';
-	if ( file_exists( $utils_file ) ) {
-		require_once $utils_file;
-	}
-}
+// Autoloader should handle Utils class: \CachilupiPet\Utils\Cachilupi_Pet_Utils
 
 class Cachilupi_Pet_Ajax_Handlers {
 
