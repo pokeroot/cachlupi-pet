@@ -6,6 +6,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+// Ensure Utils class is available
+if ( ! class_exists( '\CachilupiPet\Utils\Cachilupi_Pet_Utils' ) ) {
+	// Assuming the utils directory is at includes/utils relative to the plugin's root directory
+	// and this file is in public/. So we go up one level from public to plugin root, then to includes/utils.
+	$utils_file = dirname( __DIR__ ) . '/includes/utils/class-cachilupi-pet-utils.php';
+	if ( file_exists( $utils_file ) ) {
+		require_once $utils_file;
+	}
+}
+
 class Cachilupi_Pet_Shortcodes {
 
 	/**
@@ -111,7 +121,7 @@ class Cachilupi_Pet_Shortcodes {
 										<br>
 										<a href="https://www.google.com/maps/dir/?api=1&destination=<?php echo urlencode($request->dropoff_address); ?>" target="_blank" class="map-link"><?php esc_html_e('Ver en Google Maps', 'cachilupi-pet'); ?></a>
 									</td>
-									<td class="column-columnname request-status" data-label="<?php esc_attr_e('Estado:', 'cachilupi-pet'); ?>"><?php echo esc_html( cachilupi_pet_translate_status( $request->status ) ); ?></td>
+									<td class="column-columnname request-status" data-label="<?php esc_attr_e('Estado:', 'cachilupi-pet'); ?>"><?php echo esc_html( \CachilupiPet\Utils\Cachilupi_Pet_Utils::translate_status( $request->status ) ); ?></td>
 									<td class="column-columnname" data-label="<?php esc_attr_e('Mascota:', 'cachilupi-pet'); ?>"><?php echo esc_html( $request->pet_type ); ?></td>
 									<td class="column-columnname" data-label="<?php esc_attr_e('Instrucciones Mascota:', 'cachilupi-pet'); ?>"><?php echo esc_html( $request->pet_instructions ? $request->pet_instructions : '--' ); ?></td>
 									<td class="column-columnname" data-label="<?php esc_attr_e('Notas:', 'cachilupi-pet'); ?>"><?php echo esc_html( $request->notes ? $request->notes : '--'); ?></td>
@@ -184,7 +194,7 @@ class Cachilupi_Pet_Shortcodes {
 									<td class="column-columnname" data-label="<?php esc_attr_e('Mascota:', 'cachilupi-pet'); ?>"><?php echo esc_html( $request->pet_type ); ?></td>
 									<td class="column-columnname" data-label="<?php esc_attr_e('Instrucciones Mascota:', 'cachilupi-pet'); ?>"><?php echo esc_html( $request->pet_instructions ? $request->pet_instructions : '--' ); ?></td>
 									<td class="column-columnname" data-label="<?php esc_attr_e('Notas:', 'cachilupi-pet'); ?>"><?php echo esc_html( $request->notes ? $request->notes : '--'); ?></td>
-									<td class="column-columnname request-status" data-label="<?php esc_attr_e('Estado Final:', 'cachilupi-pet'); ?>"><?php echo esc_html( cachilupi_pet_translate_status( $request->status ) ); ?></td>
+									<td class="column-columnname request-status" data-label="<?php esc_attr_e('Estado Final:', 'cachilupi-pet'); ?>"><?php echo esc_html( \CachilupiPet\Utils\Cachilupi_Pet_Utils::translate_status( $request->status ) ); ?></td>
 								</tr>
 							<?php endforeach; ?>
 						</tbody>
@@ -347,7 +357,7 @@ class Cachilupi_Pet_Shortcodes {
 					echo '<td class="column-columnname" data-label="' . esc_attr__('Destino:', 'cachilupi-pet') . '">' . esc_html( $request_item->dropoff_address ) . '</td>';
 					echo '<td class="column-columnname" data-label="' . esc_attr__('Mascota:', 'cachilupi-pet') . '">' . esc_html( $request_item->pet_type ) . '</td>';
 					$status_slug_class = 'request-status-' . esc_attr( strtolower( $request_item->status ) );
-					echo '<td class="column-columnname request-status ' . $status_slug_class . '" data-label="' . esc_attr__('Estado:', 'cachilupi-pet') . '"><span>' . esc_html( cachilupi_pet_translate_status( $request_item->status ) ) . '</span></td>';
+					echo '<td class="column-columnname request-status ' . $status_slug_class . '" data-label="' . esc_attr__('Estado:', 'cachilupi-pet') . '"><span>' . esc_html( \CachilupiPet\Utils\Cachilupi_Pet_Utils::translate_status( $request_item->status ) ) . '</span></td>';
 					echo '<td class="column-columnname" data-label="' . esc_attr__('Conductor:', 'cachilupi-pet') . '">' . esc_html( $request_item->driver_name ? $request_item->driver_name : __('No asignado aún', 'cachilupi-pet') ) . '</td>';
 					echo '<td class="column-columnname" data-label="' . esc_attr__('Seguimiento:', 'cachilupi-pet') . '">';
 					switch ( strtolower($request_item->status) ) {
@@ -375,7 +385,7 @@ class Cachilupi_Pet_Shortcodes {
 							}
 							break;
 						default:
-							echo esc_html( cachilupi_pet_translate_status( $request_item->status ) );
+							echo esc_html( \CachilupiPet\Utils\Cachilupi_Pet_Utils::translate_status( $request_item->status ) );
 							break;
 					}
 					echo '</td>';
@@ -409,7 +419,7 @@ class Cachilupi_Pet_Shortcodes {
 					echo '<td class="column-columnname" data-label="' . esc_attr__('Destino:', 'cachilupi-pet') . '">' . esc_html( $request_item->dropoff_address ) . '</td>';
 					echo '<td class="column-columnname" data-label="' . esc_attr__('Mascota:', 'cachilupi-pet') . '">' . esc_html( $request_item->pet_type ) . '</td>';
 					$status_slug_class = 'request-status-' . esc_attr( strtolower( $request_item->status ) );
-					echo '<td class="column-columnname request-status ' . $status_slug_class . '" data-label="' . esc_attr__('Estado Final:', 'cachilupi-pet') . '"><span>' . esc_html( cachilupi_pet_translate_status( $request_item->status ) ) . '</span></td>';
+					echo '<td class="column-columnname request-status ' . $status_slug_class . '" data-label="' . esc_attr__('Estado Final:', 'cachilupi-pet') . '"><span>' . esc_html( \CachilupiPet\Utils\Cachilupi_Pet_Utils::translate_status( $request_item->status ) ) . '</span></td>';
 					echo '<td class="column-columnname" data-label="' . esc_attr__('Conductor:', 'cachilupi-pet') . '">' . esc_html( $request_item->driver_name ? $request_item->driver_name : __('N/A', 'cachilupi-pet') ) . '</td>';
 					echo '<td class="column-columnname" data-label="' . esc_attr__('Detalles del Viaje:', 'cachilupi-pet') . '">';
 					switch ( strtolower($request_item->status) ) {
@@ -420,7 +430,7 @@ class Cachilupi_Pet_Shortcodes {
 							echo esc_html__('Solicitud rechazada.', 'cachilupi-pet');
 							break;
 						default:
-							echo esc_html( cachilupi_pet_translate_status( $request_item->status ) );
+							echo esc_html( \CachilupiPet\Utils\Cachilupi_Pet_Utils::translate_status( $request_item->status ) );
 							break;
 					}
 					echo '</td>';

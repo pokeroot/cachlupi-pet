@@ -7,6 +7,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Cachilupi_Pet_Plugin {
 
 	/**
+	 * Manages user roles and login redirection.
+	 *
+	 * @var \CachilupiPet\Users\Cachilupi_Pet_User_Roles
+	 */
+	private $user_roles_manager;
+
+	/**
 	 * Constructor.
 	 */
 	public function __construct() {
@@ -31,6 +38,7 @@ class Cachilupi_Pet_Plugin {
 		if ( ! isset( $this->user_roles_manager ) ) { // Check if already instantiated to avoid re-doing it if init is called multiple times.
 			$this->user_roles_manager = new \CachilupiPet\Users\Cachilupi_Pet_User_Roles();
 			add_filter( 'login_redirect', array( $this->user_roles_manager, 'custom_login_redirect_handler' ), 10, 3 );
+			add_filter( 'login_errors', array( $this->user_roles_manager, 'filter_generic_login_error' ) );
 		}
 
 		// Initialize Admin Settings page if in admin area.
@@ -72,6 +80,24 @@ class Cachilupi_Pet_Plugin {
 			// add_action( 'wp_ajax_nopriv_cachilupi_pet_submit_request', array( $ajax_manager, 'submit_service_request' ) );
 			add_action( 'wp_ajax_cachilupi_check_new_requests', array( $ajax_manager, 'check_new_requests' ) );
 			add_action( 'wp_ajax_cachilupi_get_client_requests_status', array( $ajax_manager, 'get_client_requests_status' ) );
+		}
+
+		// Initialize Assets Manager.
+		// CACHILUPI_PET_DIR is defined in the main plugin file: cachilupi-pet.php
+		// plugin_dir_path( __FILE__ ) here is 'wp-content/plugins/cachilupi-pet/includes/'
+		// CACHILUPI_PET_DIR should be 'wp-content/plugins/cachilupi-pet/'
+		// So, CACHILUPI_PET_DIR . 'cachilupi-pet.php' is the path to the main plugin file.
+		$assets_manager_file = plugin_dir_path( __FILE__ ) . 'class-cachilupi-pet-assets-manager.php';
+		if ( file_exists( $assets_manager_file ) && ! class_exists( '\CachilupiPet\Core\Cachilupi_Pet_Assets_Manager' ) ) {
+			require_once $assets_manager_file;
+		}
+		if ( class_exists( '\CachilupiPet\Core\Cachilupi_Pet_Assets_Manager' ) ) {
+			// Ensure CACHILUPI_PET_DIR is available or find a robust way to get plugin root url/path
+			// For now, we assume CACHILUPI_PET_DIR is defined and accessible.
+			// The main plugin file is assumed to be 'cachilupi-pet.php' in the CACHILUPI_PET_DIR.
+			$plugin_main_file = CACHILUPI_PET_DIR . 'cachilupi-pet.php';
+			$assets_manager = new \CachilupiPet\Core\Cachilupi_Pet_Assets_Manager( plugin_dir_url( $plugin_main_file ), CACHILUPI_PET_DIR );
+			add_action( 'wp', array( $assets_manager, 'enqueue_assets' ) );
 		}
 		// Other hooks will be registered here.
 	}
