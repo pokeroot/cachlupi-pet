@@ -29,11 +29,10 @@ class Cachilupi_Pet_Shortcodes {
 	 * @return string HTML output for the driver panel.
 	 */
 	public function render_driver_panel_shortcode() {
-		// Check if user is logged in and has the 'driver' role
-		$user = wp_get_current_user();
-		if ( ! is_user_logged_in() || ! in_array( 'driver', (array) $user->roles, true ) ) {
-			return '<p>' . esc_html__( 'Debes iniciar sesión como conductor para acceder a este panel.', 'cachilupi-pet' ) . '</p>';
+		if ( ! current_user_can( 'access_driver_panel' ) ) {
+			return '<p>' . esc_html__( 'No tienes permiso para acceder a este panel.', 'cachilupi-pet' ) . '</p>';
 		}
+		$user = wp_get_current_user(); // Still needed for current_driver_id
 
 		ob_start(); // Start output buffering
 		global $wpdb;
@@ -226,12 +225,10 @@ class Cachilupi_Pet_Shortcodes {
 	 * @return string HTML output for the client booking form.
 	 */
 	public function render_client_booking_form_shortcode() {
-		$user = wp_get_current_user();
-		// Corrected condition:
-		// Deny access if user is not logged in, OR if they are logged in but don't have any of the allowed roles.
-		if ( ! is_user_logged_in() || empty( array_intersect( array( 'client', 'administrator', 'driver' ), (array) $user->roles ) ) ) {
-			return '<p>' . esc_html__( 'Debes iniciar sesión como cliente o conductor para solicitar un servicio.', 'cachilupi-pet' ) . '</p>';
+		if ( ! current_user_can( 'access_booking_form' ) ) {
+			return '<p>' . esc_html__( 'No tienes permiso para acceder a este formulario de reserva.', 'cachilupi-pet' ) . '</p>';
 		}
+		$user = wp_get_current_user(); // Still needed for user ID if they view their requests
 
 		ob_start();
 		?>
@@ -296,10 +293,13 @@ class Cachilupi_Pet_Shortcodes {
 		</div>
 		<?php
 
-		if ( is_user_logged_in() && ( in_array( 'client', (array) $user->roles, true ) || current_user_can( 'manage_options' ) ) ) {
+		// Section to display user's own requests
+		if ( current_user_can( 'view_own_requests' ) || current_user_can( 'manage_options' ) ) {
+			// Ensure $user is available if not already defined earlier in the broader scope (it is in this case)
+			// $user = wp_get_current_user(); // This line would be redundant if $user is already from the top of the method
 			global $wpdb;
 			$requests_table_name = $wpdb->prefix . 'cachilupi_requests';
-			$client_id = $user->ID;
+			$client_id = $user->ID; // This will show requests for the current user (client or admin acting as client)
 
 			$all_client_requests = $wpdb->get_results(
 				$wpdb->prepare(

@@ -28,14 +28,13 @@ class Cachilupi_Pet_Ajax_Handlers {
 	 * Handles driver actions like accept, reject, on_the_way, etc.
 	 */
 	public function handle_driver_action() {
-		// Check if user is logged in and has the 'driver' role
-		$user = wp_get_current_user();
-		if ( ! is_user_logged_in() || ! in_array( 'driver', (array) $user->roles, true ) ) {
+		if ( ! current_user_can( 'manage_trip_status' ) ) {
 			wp_send_json_error( array(
-				'message' => 'No tienes permisos para realizar esta acción.'
+				'message' => __( 'You do not have permission to manage trip status.', 'cachilupi-pet' )
 			) );
 			wp_die();
 		}
+		// $user = wp_get_current_user(); // No longer needed for direct role check here
 		check_ajax_referer( 'cachilupi_pet_driver_action', 'security' );
 
 		$request_id = isset( $_POST['request_id'] ) ? intval( $_POST['request_id'] ) : 0;
@@ -167,27 +166,29 @@ class Cachilupi_Pet_Ajax_Handlers {
 	 * Handles driver location updates.
 	 */
 	public function update_driver_location() {
-		$user = wp_get_current_user();
-		if ( ! is_user_logged_in() || ! in_array( 'driver', (array) $user->roles, true ) ) {
-			wp_send_json_error( array( 'message' => 'Acceso no autorizado.' ) );
+		if ( ! current_user_can( 'update_trip_location' ) ) {
+			wp_send_json_error( array( 'message' => __( 'You do not have permission to update trip location.', 'cachilupi-pet' ) ) );
 			wp_die();
 		}
+		// $user = wp_get_current_user(); // No longer needed for direct role check here
 		check_ajax_referer( 'cachilupi_pet_update_location_nonce', 'security' );
 
 		$request_id = isset( $_POST['request_id'] ) ? intval( $_POST['request_id'] ) : 0;
-		$latitude   = isset( $_POST['latitude'] ) ? $_POST['latitude'] : null;
-		$longitude  = isset( $_POST['longitude'] ) ? $_POST['longitude'] : null;
+		// Sanitize latitude and longitude before numeric checks
+		$latitude_str   = isset( $_POST['latitude'] ) ? sanitize_text_field( $_POST['latitude'] ) : null;
+		$longitude_str  = isset( $_POST['longitude'] ) ? sanitize_text_field( $_POST['longitude'] ) : null;
 
 		if ( $request_id <= 0 ||
-			! is_numeric( $latitude ) || ! is_numeric( $longitude ) ||
-			floatval( $latitude ) < -90.0 || floatval( $latitude ) > 90.0 ||
-			floatval( $longitude ) < -180.0 || floatval( $longitude ) > 180.0 ) {
+			is_null( $latitude_str ) || ! is_numeric( $latitude_str ) ||
+			is_null( $longitude_str ) || ! is_numeric( $longitude_str ) ||
+			floatval( $latitude_str ) < -90.0 || floatval( $latitude_str ) > 90.0 ||
+			floatval( $longitude_str ) < -180.0 || floatval( $longitude_str ) > 180.0 ) {
 			wp_send_json_error( array( 'message' => 'Datos de ubicación inválidos o fuera de rango.' ) );
 			wp_die();
 		}
 
-		$latitude_val  = floatval( $latitude ); // Renamed from $latitude_float
-		$longitude_val = floatval( $longitude ); // Renamed from $longitude_float
+		$latitude_val  = floatval( $latitude_str );
+		$longitude_val = floatval( $longitude_str );
 
 		global $wpdb;
 		$table_name        = $wpdb->prefix . 'cachilupi_requests';
@@ -228,11 +229,13 @@ class Cachilupi_Pet_Ajax_Handlers {
 	 * Handles fetching driver location for clients.
 	 */
 	public function get_driver_location() {
-		$user = wp_get_current_user();
-		if ( ! is_user_logged_in() || ! array_intersect( array( 'client', 'administrator' ), (array) $user->roles ) ) {
-			wp_send_json_error( array( 'message' => 'Acceso no autorizado.' ) );
+		// Administrator check can be done via 'manage_options' or a specific 'view_any_trip_location' capability.
+		// Clients should only see their own trip. The SQL query already filters by client_user_id.
+		if ( ! ( current_user_can( 'view_own_trip_location' ) || current_user_can( 'manage_options' ) ) ) { // Simplified for admin, or use 'view_any_trip_location'
+			wp_send_json_error( array( 'message' => __( 'You do not have permission to view this trip location.', 'cachilupi-pet' ) ) );
 			wp_die();
 		}
+		// $user = wp_get_current_user(); // No longer needed for direct role check here
 		check_ajax_referer( 'cachilupi_pet_get_location_nonce', 'security' );
 
 		$request_id = isset( $_GET['request_id'] ) ? intval( $_GET['request_id'] ) : 0;
@@ -269,11 +272,12 @@ class Cachilupi_Pet_Ajax_Handlers {
 	 * Handles submission of service requests from the client form.
 	 */
 	public function submit_service_request() {
-		$user = wp_get_current_user();
-		if ( ! is_user_logged_in() || ! array_intersect( array( 'client', 'administrator' ), (array) $user->roles, true ) ) {
-			wp_send_json_error( array( 'message' => 'No tienes permisos para enviar solicitudes.' ) );
+		// Allow users who can submit requests for themselves or admins who can submit on behalf of others.
+		if ( ! ( current_user_can( 'submit_pet_request' ) || current_user_can( 'manage_options' ) ) ) { // Simplified for admin, or use 'submit_pet_request_on_behalf'
+			wp_send_json_error( array( 'message' => __( 'You do not have permission to submit this service request.', 'cachilupi-pet' ) ) );
 			wp_die();
 		}
+		// $user = wp_get_current_user(); // No longer needed for direct role check here
 		check_ajax_referer( 'cachilupi_pet_submit_request', 'security' );
 
 		$pickup_address      = isset( $_POST['pickup_address'] ) ? sanitize_text_field( $_POST['pickup_address'] ) : '';
@@ -281,22 +285,23 @@ class Cachilupi_Pet_Ajax_Handlers {
 		$pet_type            = isset( $_POST['pet_type'] ) ? sanitize_text_field( $_POST['pet_type'] ) : '';
 		$notes               = isset( $_POST['notes'] ) ? sanitize_textarea_field( $_POST['notes'] ) : '';
 		$scheduled_date_time_str = isset( $_POST['scheduled_date_time'] ) ? sanitize_text_field( $_POST['scheduled_date_time'] ) : ''; // Renamed from $scheduled_date_time
-		$pickup_lat_str      = isset( $_POST['pickup_lat'] ) ? $_POST['pickup_lat'] : null;
-		$pickup_lon_str      = isset( $_POST['pickup_lon'] ) ? $_POST['pickup_lon'] : null;
-		$dropoff_lat_str     = isset( $_POST['dropoff_lat'] ) ? $_POST['dropoff_lat'] : null;
-		$dropoff_lon_str     = isset( $_POST['dropoff_lon'] ) ? $_POST['dropoff_lon'] : null;
+		$pickup_lat_str      = isset( $_POST['pickup_lat'] ) ? sanitize_text_field( $_POST['pickup_lat'] ) : null;
+		$pickup_lon_str      = isset( $_POST['pickup_lon'] ) ? sanitize_text_field( $_POST['pickup_lon'] ) : null;
+		$dropoff_lat_str     = isset( $_POST['dropoff_lat'] ) ? sanitize_text_field( $_POST['dropoff_lat'] ) : null;
+		$dropoff_lon_str     = isset( $_POST['dropoff_lon'] ) ? sanitize_text_field( $_POST['dropoff_lon'] ) : null;
 		$pet_instructions    = isset( $_POST['pet_instructions'] ) ? sanitize_textarea_field( $_POST['pet_instructions'] ) : '';
 
-		if ( empty( $pickup_address ) || is_null( $pickup_lat_str ) || is_null( $pickup_lon_str ) ||
-			 empty( $dropoff_address ) || is_null( $dropoff_lat_str ) || is_null( $dropoff_lon_str ) ||
-			 empty( $pet_type ) || empty( $scheduled_date_time_str ) ) { // Using renamed variable
-			wp_send_json_error( array( 'message' => 'Por favor, completa todos los campos requeridos.' ) );
+		// Validate required fields (coordinates are validated after sanitization and numeric check)
+		if ( empty( $pickup_address ) || empty( $dropoff_address ) || empty( $pet_type ) || empty( $scheduled_date_time_str ) ) {
+			wp_send_json_error( array( 'message' => 'Por favor, completa todos los campos de dirección, tipo de mascota y fecha/hora.' ) );
 			wp_die();
 		}
 
-		if ( ! is_numeric( $pickup_lat_str ) || ! is_numeric( $pickup_lon_str ) ||
-			 ! is_numeric( $dropoff_lat_str ) || ! is_numeric( $dropoff_lon_str ) ) {
-			wp_send_json_error( array( 'message' => 'Las coordenadas deben ser numéricas.' ) );
+		// Sanitize and validate coordinates
+		if ( is_null( $pickup_lat_str ) || is_null( $pickup_lon_str ) || is_null( $dropoff_lat_str ) || is_null( $dropoff_lon_str ) ||
+			! is_numeric( $pickup_lat_str ) || ! is_numeric( $pickup_lon_str ) ||
+			! is_numeric( $dropoff_lat_str ) || ! is_numeric( $dropoff_lon_str ) ) {
+			wp_send_json_error( array( 'message' => 'Las coordenadas deben ser proporcionadas y deben ser numéricas.' ) );
 			wp_die();
 		}
 
@@ -394,14 +399,14 @@ class Cachilupi_Pet_Ajax_Handlers {
 	 * Handles checking for new requests for the driver panel.
 	 */
 	public function check_new_requests() {
-		$user = wp_get_current_user();
-		if ( ! is_user_logged_in() || ! in_array( 'driver', (array) $user->roles, true ) ) {
+		if ( ! current_user_can( 'view_pending_requests' ) ) {
 			wp_send_json_error( array(
-				'message'            => 'No tienes permisos para realizar esta acción.',
+				'message'            => __( 'You do not have permission to check for new requests.', 'cachilupi-pet' ),
 				'new_requests_count' => 0
 			) );
 			wp_die();
 		}
+		// $user = wp_get_current_user(); // No longer needed for direct role check here
 		check_ajax_referer( 'cachilupi_check_new_requests_nonce', 'security' );
 
 		global $wpdb;
@@ -432,11 +437,12 @@ class Cachilupi_Pet_Ajax_Handlers {
 	 * Handles fetching client requests status for client panel polling.
 	 */
 	public function get_client_requests_status() {
-		$user = wp_get_current_user();
-		if ( ! is_user_logged_in() || ! array_intersect( array( 'client', 'administrator' ), (array) $user->roles ) ) {
-			wp_send_json_error( array( 'message' => __( 'Acceso no autorizado.', 'cachilupi-pet' ) ) );
+		// Allow clients to see their own, admins to see any (or based on a specific cap)
+		if ( ! ( current_user_can( 'view_own_request_status' ) || current_user_can( 'manage_options' ) ) ) { // Simplified for admin, or use 'view_any_request_status'
+			wp_send_json_error( array( 'message' => __( 'You do not have permission to view these request statuses.', 'cachilupi-pet' ) ) );
 			wp_die();
 		}
+		// $user = wp_get_current_user(); // No longer needed for direct role check here
 		check_ajax_referer( 'cachilupi_pet_get_requests_status_nonce', 'security' );
 
 		global $wpdb;
