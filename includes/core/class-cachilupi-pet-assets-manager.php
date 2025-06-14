@@ -112,9 +112,9 @@ class Cachilupi_Pet_Assets_Manager {
 
 			wp_enqueue_script(
 				'cachilupi-maps',
-				$this->plugin_url . 'assets/js/maps.js',
-				array( 'mapbox-gl', 'jquery', 'flatpickr-js', 'flatpickr-l10n-es' ),
-				'1.5',
+				$this->plugin_url . 'assets/dist/js/cachilupi-maps-entry.js', // Updated path
+				array( 'mapbox-gl', 'jquery', 'flatpickr-js', 'flatpickr-l10n-es' ), // Dependencies remain
+				'1.5', // Version can be updated or managed by Parcel build if integrated
 				true
 			);
 
@@ -144,9 +144,9 @@ class Cachilupi_Pet_Assets_Manager {
 			);
 			wp_enqueue_script(
 				'cachilupi-driver-panel',
-				$this->plugin_url . 'assets/js/driver-panel.js',
-				array( 'jquery' ),
-				'1.0',
+				$this->plugin_url . 'assets/dist/js/cachilupi-driver-panel-entry.js', // Updated path
+				array( 'jquery' ), // Dependencies remain
+				'1.0', // Version can be updated or managed by Parcel build if integrated
 				true
 			);
 
