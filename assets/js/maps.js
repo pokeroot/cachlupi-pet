@@ -18,9 +18,9 @@
             $(document).on('click', '.cachilupi-client-requests-panel .nav-tab-wrapper a.nav-tab', function(e) {
                 e.preventDefault();
 
-                var $thisClickedTab = $(this);
-                var $tabWrapper = $thisClickedTab.closest('.nav-tab-wrapper');
-                var $panel = $thisClickedTab.closest('.cachilupi-client-requests-panel');
+                const $thisClickedTab = $(this); // `this` refers to the clicked DOM element
+                const $tabWrapper = $thisClickedTab.closest('.nav-tab-wrapper');
+                const $panel = $thisClickedTab.closest('.cachilupi-client-requests-panel');
 
                 // Remove active class from sibling tabs and hide all tab content within this panel
                 $tabWrapper.find('a.nav-tab').removeClass('nav-tab-active');
@@ -28,12 +28,12 @@
 
                 // Add active class to the clicked tab and show its corresponding content
                 $thisClickedTab.addClass('nav-tab-active');
-                var activeContentID = $thisClickedTab.attr('href');
+                const activeContentID = $thisClickedTab.attr('href');
 
                 if ($(activeContentID).length) {
                     $(activeContentID).show();
                 } else {
-                    console.error("Client panel tab content not found for ID: " + activeContentID);
+                    console.error(`Client panel tab content not found for ID: ${activeContentID}`);
                 }
             });
         }
@@ -41,28 +41,28 @@
         const mapElement = document.getElementById('cachilupi-pet-map');
 
         // --- Declare variables ---
-        let map = null;
-        let pickupGeocoderContainer = document.getElementById('pickup-geocoder-container');
-        let dropoffGeocoderContainer = document.getElementById('dropoff-geocoder-container');
-        let serviceDateInput = document.getElementById('service-date');
-        let serviceTimeInput = document.getElementById('service-time');
-        let submitButton = document.getElementById('submit-service-request');
-        let petTypeSelect = document.getElementById('cachilupi-pet-pet-type');
-        let notesTextArea = document.getElementById('cachilupi-pet-notes');
-        let petInstructionsTextArea = document.getElementById('cachilupi-pet-instructions');
-        let distanceElement = document.getElementById('cachilupi-pet-distance');
+        let map = null; // Reassigned
+        const pickupGeocoderContainer = document.getElementById('pickup-geocoder-container'); // Assigned once
+        const dropoffGeocoderContainer = document.getElementById('dropoff-geocoder-container'); // Assigned once
+        const serviceDateInput = document.getElementById('service-date'); // Assigned once
+        const serviceTimeInput = document.getElementById('service-time'); // Assigned once
+        const submitButton = document.getElementById('submit-service-request'); // Assigned once
+        const petTypeSelect = document.getElementById('cachilupi-pet-pet-type'); // Assigned once
+        const notesTextArea = document.getElementById('cachilupi-pet-notes'); // Assigned once
+        const petInstructionsTextArea = document.getElementById('cachilupi-pet-instructions'); // Assigned once
+        const distanceElement = document.getElementById('cachilupi-pet-distance'); // Assigned once
 
-        let pickupGeocoder = null;
-        let dropoffGeocoder = null;
-        let pickupGeocoderInput = null;
-        let dropoffGeocoderInput = null;
+        let pickupGeocoder = null; // Reassigned
+        let dropoffGeocoder = null; // Reassigned
+        let pickupGeocoderInput = null; // Reassigned
+        let dropoffGeocoderInput = null; // Reassigned
 
-        let pickupCoords = null;
-        let dropoffCoords = null;
-        let pickupMarker = null;
-        let dropoffMarker = null;
+        let pickupCoords = null; // Reassigned
+        let dropoffCoords = null; // Reassigned
+        let pickupMarker = null; // Reassigned
+        let dropoffMarker = null; // Reassigned
 
-        let clientRequestsStatusInterval = null;
+        let clientRequestsStatusInterval = null; // Reassigned
         // --- End variable declarations ---
 
         // Initialize Flatpickr for Date Input
@@ -73,7 +73,7 @@
                 altFormat: "F j, Y", // Example: August 10, 2024
                 minDate: "today",
                 locale: 'es', // Assuming Spanish locale is enqueued
-                onChange: function(selectedDates, dateStr, instance) {
+                onChange: (selectedDates, dateStr, instance) => {
                     validateForm(mapElement && mapboxgl && mapboxgl.accessToken); // Re-validate on change
                 }
             });
@@ -92,7 +92,7 @@
                 locale: 'es', // Assuming Spanish locale is enqueued
                 // minTime: "08:00", // Optional: if service hours are fixed
                 // maxTime: "21:45",
-                onChange: function(selectedDates, dateStr, instance) {
+                onChange: (selectedDates, dateStr, instance) => {
                     validateForm(mapElement && mapboxgl && mapboxgl.accessToken); // Re-validate on change
                 }
             });
@@ -116,7 +116,8 @@
                     navigator.geolocation.getCurrentPosition(
                         (position) => {
                             if (map) { // Check if map is initialized
-                                map.setCenter([position.coords.longitude, position.coords.latitude]);
+                                const { longitude, latitude } = position.coords;
+                                map.setCenter([longitude, latitude]);
                                 map.setZoom(12); // Zoom in a bit more if location is found
                             }
                         },
@@ -136,14 +137,14 @@
                 });
 
                 const decodePolyline = (encoded) => {
-                    let len = encoded.length,
-                        index = 0,
-                        array = [],
-                        lat = 0,
-                        lng = 0;
+                    const len = encoded.length;
+                    let index = 0;
+                    const array = [];
+                    let lat = 0;
+                    let lng = 0;
 
                     while (index < len) {
-                        let b, shift = 0, result = 0;
+                        let b, shift = 0, result = 0; // b, shift, result are reset each outer loop pass
                         do {
                             b = encoded.charCodeAt(index++) - 63;
                             result |= (b & 0x1f) << shift;
@@ -152,8 +153,8 @@
                         const dlat = ((result & 1) ? ~(result >> 1) : (result >> 1));
                         lat += dlat;
 
-                        shift = 0;
-                        result = 0;
+                        shift = 0; // Reset for longitude decoding
+                        result = 0; // Reset for longitude decoding
                         do {
                             b = encoded.charCodeAt(index++) - 63;
                             result |= (b & 0x1f) << shift;
@@ -183,8 +184,8 @@
                             const data = await response.json();
 
                             if (data && data.routes && data.routes.length > 0) {
-                                const route = data.routes[0].geometry; // Ensure 'geometries=polyline' is in request
-                                const decodedRoute = decodePolyline(route);
+                                const routeGeometry = data.routes[0].geometry; // Renamed 'route' to 'routeGeometry' to avoid conflict
+                                const decodedRoute = decodePolyline(routeGeometry);
                                 const distanceMeters = data.routes[0].distance;
                                 const distanceKm = (distanceMeters / 1000).toFixed(1);
 
@@ -287,8 +288,8 @@
                         }
 
                         pickupGeocoder.on('result', (event) => {
-                            const lngLat = event.result.geometry.coordinates;
-                            pickupCoords = { lng: lngLat[0], lat: lngLat[1] };
+                            const [lng, lat] = event.result.geometry.coordinates;
+                            pickupCoords = { lng, lat };
                             if (pickupMarker) pickupMarker.remove();
 
                             const pickupIconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="30" height="30" fill="#0073aa"><path d="M12 2L2 7v13h20V7L12 2zm0 2.09L19.22 7H4.78L12 4.09zM4 9h16v10H4V9zm2 1v2h2v-2H6zm4 0v2h2v-2h-2zm4 0v2h2v-2h-2z"/></svg>`;
@@ -298,7 +299,7 @@
                             elPickup.style.height = '30px';
                             elPickup.style.cursor = 'pointer';
 
-                            pickupMarker = new mapboxgl.Marker(elPickup).setLngLat(lngLat).addTo(map);
+                            pickupMarker = new mapboxgl.Marker(elPickup).setLngLat([lng, lat]).addTo(map);
                             getRouteAndDistance();
                             validateForm(true);
                         });
@@ -338,8 +339,8 @@
                         }
 
                         dropoffGeocoder.on('result', (event) => {
-                            const lngLat = event.result.geometry.coordinates;
-                            dropoffCoords = { lng: lngLat[0], lat: lngLat[1] };
+                            const [lng, lat] = event.result.geometry.coordinates;
+                            dropoffCoords = { lng, lat };
                             if (dropoffMarker) dropoffMarker.remove();
 
                             const dropoffIconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="30" height="30" fill="#d32f2f"><path d="M14.4 6L14 4H5v17h2v-7h5.6l.4 2h7V6h-5.6z"/></svg>`;
@@ -349,7 +350,7 @@
                             elDropoff.style.height = '30px';
                             elDropoff.style.cursor = 'pointer';
 
-                            dropoffMarker = new mapboxgl.Marker(elDropoff).setLngLat(lngLat).addTo(map);
+                            dropoffMarker = new mapboxgl.Marker(elDropoff).setLngLat([lng, lat]).addTo(map);
                             getRouteAndDistance();
                             validateForm(true);
                         });
@@ -383,12 +384,12 @@
                         messageElement.attr('aria-live', 'polite');
                     }
 
-                    const $bookingForm = $('.cachilupi-booking-form'); 
+                    const $bookingForm = $('.cachilupi-booking-form');
 
                     if (submitButton && $(submitButton).length) {
                         $(submitButton).after(messageElement);
                     } else if ($bookingForm.length) {
-                        $bookingForm.prepend(messageElement); 
+                        $bookingForm.prepend(messageElement);
                     } else {
                         $('body').prepend(messageElement);
                         console.warn('Submit button or booking form not found for feedback message. Appended to body.');
@@ -396,7 +397,7 @@
 
                     setTimeout(() => {
                         messageElement.fadeOut('slow', () => messageElement.remove());
-                    }, 5000); 
+                    }, 5000);
                 };
 
                 // This is the new Toast function
@@ -412,7 +413,7 @@
                     $('body').append(toast);
 
                     // Forzar reflow para asegurar que la animación de entrada se ejecute
-                    // toast.width(); // This can sometimes be problematic, setTimeout is more reliable
+                    // toast.width();
 
                     // Añadir clase 'show' para activar la animación de entrada
                     setTimeout(() => { // Added a slight delay for CSS transition
@@ -547,10 +548,10 @@
                 }
                 if (serviceTimeInput) {
                     serviceTimeInput.addEventListener('input', () => validateForm(true));
-                    serviceTimeInput.addEventListener('blur', function() { 
+                    serviceTimeInput.addEventListener('blur', function() { // Keep `this` for input value, or use event.target if arrow fn
                         const timeValue = this.value;
                         if (timeValue) {
-                            let [hours, minutes] = timeValue.split(':');
+                            let [hours, minutes] = timeValue.split(':'); // Can use const if not reassigned, but let is fine for split parts
                             minutes = parseInt(minutes, 10);
                             let roundedMinutes = Math.round(minutes / 5) * 5;
                             if (roundedMinutes === 60) {
@@ -559,12 +560,12 @@
                             }
                             this.value = `${String(hours).padStart(2, '0')}:${String(roundedMinutes).padStart(2, '0')}`;
                         }
-                        validateForm(true);
+                        validateForm(true); // `this` here refers to serviceTimeInput
                     });
                 }
                 if (petTypeSelect) petTypeSelect.addEventListener('change', () => validateForm(true));
                 if (notesTextArea) notesTextArea.addEventListener('input', () => validateForm(true));
-                if (petInstructionsTextArea) petInstructionsTextArea.addEventListener('input', () => validateForm(true)); 
+                if (petInstructionsTextArea) petInstructionsTextArea.addEventListener('input', () => validateForm(true));
 
                 if (submitButton) {
                     submitButton.addEventListener('click', async (event) => { 
@@ -730,17 +731,20 @@
                 dropoffGeocoderInput.addEventListener('input', validateFormNoMap);
                 dropoffGeocoderInput.addEventListener('blur', validateFormNoMap);
             }
-            if (serviceDateInput) {
-                serviceDateInput.addEventListener('input', validateFormNoMap);
-                const today = new Date();
-                const dd = String(today.getDate()).padStart(2, '0');
-                const mm = String(today.getMonth() + 1).padStart(2, '0');
-                const year = today.getFullYear();
-                serviceDateInput.setAttribute('min', `${year}-${mm}-${dd}`);
+            if (localServiceDateInput) { // Use local scoped variable
+                localServiceDateInput.addEventListener('input', validateFormNoMap);
+                // Apply min date for non-Flatpickr date input
+                if (!localServiceDateInput._flatpickr) { // Check if it's not a flatpickr instance
+                     const today = new Date();
+                     const dd = String(today.getDate()).padStart(2, '0');
+                     const mm = String(today.getMonth() + 1).padStart(2, '0');
+                     const year = today.getFullYear();
+                     localServiceDateInput.setAttribute('min', `${year}-${mm}-${dd}`);
+                }
             }
-            if (serviceTimeInput) {
-                serviceTimeInput.addEventListener('input', validateFormNoMap);
-                serviceTimeInput.addEventListener('blur', function() { 
+            if (localServiceTimeInput) { // Use local scoped variable
+                localServiceTimeInput.addEventListener('input', validateFormNoMap);
+                localServiceTimeInput.addEventListener('blur', function() { // Keep `this` for input value
                     const timeValue = this.value;
                     if (timeValue) {
                         let [hours, minutes] = timeValue.split(':');
@@ -755,9 +759,9 @@
                     validateFormNoMap();
                 });
             }
-            if (petTypeSelect) petTypeSelect.addEventListener('change', validateFormNoMap);
-            if (notesTextArea) notesTextArea.addEventListener('input', validateFormNoMap);
-            if (petInstructionsTextArea) petInstructionsTextArea.addEventListener('input', validateFormNoMap); 
+            if (localPetTypeSelect) localPetTypeSelect.addEventListener('change', validateFormNoMap); // Use local
+            if (localNotesTextArea) localNotesTextArea.addEventListener('input', validateFormNoMap); // Use local
+            if (localPetInstructionsTextArea) localPetInstructionsTextArea.addEventListener('input', validateFormNoMap); // Use local
 
 
             if (submitButton) {
@@ -941,15 +945,16 @@
                     try {
                         const errorData = await response.json();
                         errorMsg = errorData.data && errorData.data.message ? errorData.data.message : errorMsg;
-                    } catch (e) {  }
+                    } catch (e) { /* Ignore */ }
                     throw new Error(errorMsg);
                 }
 
                 const responseData = await response.json();
 
                 if (responseData.success && responseData.data.latitude && responseData.data.longitude) {
-                    const driverPosition = [parseFloat(responseData.data.longitude), parseFloat(responseData.data.latitude)];
-                    if (clientFollowMap && typeof clientFollowMap.getStyle === 'function') { 
+                    const { longitude, latitude } = responseData.data; // Destructuring
+                    const driverPosition = [parseFloat(longitude), parseFloat(latitude)];
+                    if (clientFollowMap && typeof clientFollowMap.getStyle === 'function') {
                         if (!driverMarker) {
                             driverMarker = new mapboxgl.Marker().setLngLat(driverPosition).addTo(clientFollowMap);
                         } else {
@@ -974,96 +979,91 @@
         const showGlobalToast = (message, type = 'info', duration = 4000) => {
             $('.cachilupi-toast-notification').remove();
             const toast = $('<div>').addClass('cachilupi-toast-notification').addClass(type).text(message).appendTo('body');
-            toast.width();
-            toast.addClass('show');
-            setTimeout(() => { 
+            // toast.width(); // Force reflow - can be problematic
+            setTimeout(() => toast.addClass('show'), 10); // Ensure transition by adding class after element is in DOM
+            setTimeout(() => {
                 toast.removeClass('show');
-                setTimeout(() => toast.remove(), 500); 
+                setTimeout(() => toast.remove(), 500);
             }, duration);
         };
 
         const updateClientRequestsTable = (statuses) => {
             if (!statuses || !Array.isArray(statuses)) {
-                console.warn('updateClientRequestsTable: `statuses` is undefined or not an array. Called with:', statuses); 
+                console.warn('updateClientRequestsTable: `statuses` is undefined or not an array. Called with:', statuses);
                 return;
             }
             
-            const followButtonText = (typeof cachilupi_pet_vars !== 'undefined' && cachilupi_pet_vars.text_follow_driver) 
-                                   ? cachilupi_pet_vars.text_follow_driver 
-                                   : 'Seguir Viaje';
+            const followButtonText = (typeof cachilupi_pet_vars !== 'undefined' && cachilupi_pet_vars.text_follow_driver)
+                               ? cachilupi_pet_vars.text_follow_driver
+                               : 'Seguir Viaje';
 
-            $('.cachilupi-client-requests-panel table.widefat tbody tr').each(function() {
+            $('.cachilupi-client-requests-panel table.widefat tbody tr').each(function() { // Keep `this` for jQuery context
                 const $row = $(this);
                 const requestId = $row.data('request-id');
                 if (typeof requestId === 'undefined') {
                     console.warn('updateClientRequestsTable: Row found with undefined request-id.');
-                    return; 
+                    return;
                 }
 
                 const currentStatusCell = $row.find('td.request-status');
-                const currentFollowButtonCell = $row.find('td[data-label="Seguimiento:"]'); 
+                const currentFollowButtonCell = $row.find('td[data-label="Seguimiento:"]');
 
                 const requestUpdate = statuses.find(req => String(req.request_id) === String(requestId));
 
                 if (requestUpdate) {
                     
-                    const oldStatusDisplay = currentStatusCell.find('span').text(); 
-                    const newStatusSlugFromServer = requestUpdate.status_slug; 
-                    const newStatusDisplay = requestUpdate.status_display;
+                    const oldStatusDisplay = currentStatusCell.find('span').text();
+                    const { status_slug: newStatusSlugFromServer, status_display: newStatusDisplay, driver_id: driverIdForButton } = requestUpdate; // Destructuring
 
                     if (oldStatusDisplay !== newStatusDisplay) {
-                        currentStatusCell.find('span').text(newStatusDisplay); 
+                        currentStatusCell.find('span').text(newStatusDisplay);
                         currentStatusCell.removeClass (function (index, className) {
                             return (className.match (/(^|\s)request-status-\S+/g) || []).join(' ');
-                        }).addClass('request-status-' + newStatusSlugFromServer);
+                        }).addClass(`request-status-${newStatusSlugFromServer}`);
 
                         if (oldStatusDisplay && oldStatusDisplay !== '--' && oldStatusDisplay !== newStatusDisplay) {
                             showGlobalToast(`Tu solicitud #${requestId} ahora está: ${newStatusDisplay}`, 'info');
                         }
                     }
                     
-                    let followCellHTML = '--'; 
-                    const statusSlugForSwitch = newStatusSlugFromServer; 
+                    let followCellHTML = '--';
+                    const statusSlugForSwitch = newStatusSlugFromServer;
 
                     switch (statusSlugForSwitch) {
                         case 'on_the_way':
-                            if (requestUpdate.driver_id) {
-                                followCellHTML = `<button class="button cachilupi-follow-driver-btn" data-request-id="${requestId}">${followButtonText}</button>`;
+                        case 'picked_up': // Combined case as button is similar
+                            if (driverIdForButton) {
+                                const buttonText = statusSlugForSwitch === 'picked_up' ? `${followButtonText} (Mascota a Bordo)` : followButtonText;
+                                followCellHTML = `<button class="button cachilupi-follow-driver-btn" data-request-id="${requestId}">${buttonText}</button>`;
                             } else {
-                                followCellHTML = 'Información no disponible'; 
+                                followCellHTML = 'Información no disponible';
                             }
                             break;
                         case 'pending':
-                            followCellHTML = 'Disponible cuando se acepte el viaje'; 
+                            followCellHTML = 'Disponible cuando se acepte el viaje';
                             break;
                         case 'accepted':
-                            followCellHTML = 'Disponible cuando el viaje inicie'; 
+                            followCellHTML = 'Disponible cuando el viaje inicie';
                             break;
                         case 'arrived':
-                            followCellHTML = 'Conductor en origen, esperando recogida'; 
-                            break;
-                        case 'picked_up':
-                            followCellHTML = 'Mascota recogida, viaje en curso'; 
+                            followCellHTML = 'Conductor en origen, esperando recogida';
                             break;
                         case 'completed':
-                            followCellHTML = 'Viaje finalizado'; 
+                            followCellHTML = 'Viaje finalizado';
                             break;
                         case 'rejected':
-                            followCellHTML = 'Viaje rechazado'; 
+                            followCellHTML = 'Viaje rechazado';
                             break;
                         default:
-                            followCellHTML = '--'; 
+                            followCellHTML = '--';
                             break;
                     }
-
                     currentFollowButtonCell.html(followCellHTML);
-
-                } else {
                 }
             });
         };
 
-        const fetchClientRequestsStatus = async () => { 
+        const fetchClientRequestsStatus = async () => {
             if ($('.cachilupi-client-requests-panel').length === 0) {
                 if (clientRequestsStatusInterval) {
                     clearInterval(clientRequestsStatusInterval);
@@ -1074,23 +1074,21 @@
             const url = new URL(cachilupi_pet_vars.ajaxurl);
             url.searchParams.append('action', 'cachilupi_get_client_requests_status');
             url.searchParams.append('security', cachilupi_pet_vars.get_requests_status_nonce);
-            let response; 
 
             try {
-                response = await fetch(url); 
+                const response = await fetch(url);
                 if (!response.ok) {
                     let errorMsg = `Error HTTP: ${response.status}`;
                     try {
-                        const errorText = await response.text(); 
-                        console.error('fetchClientRequestsStatus: Non-OK HTTP response text:', errorText); // Keep this error log
+                        const errorText = await response.text();
+                        console.error('fetchClientRequestsStatus: Non-OK HTTP response text:', errorText);
                         try {
                             const errorData = JSON.parse(errorText);
                             errorMsg = errorData.data && errorData.data.message ? errorData.data.message : errorMsg;
                         } catch (e_json) {
                              errorMsg = `Server error (${response.status}). Check console for raw response.`;
                         }
-                    } catch (e_text) { 
-                    }
+                    } catch (e_text) { /* Ignore */ }
                     throw new Error(errorMsg);
                 }
                 const responseData = await response.json();
@@ -1098,17 +1096,16 @@
                 if (responseData.success && responseData.data) {
                     updateClientRequestsTable(responseData.data);
                 } else {
-                    console.warn('fetchClientRequestsStatus: Response not successful or data missing. Full responseData:', responseData); // Keep this warn
+                    console.warn('fetchClientRequestsStatus: Response not successful or data missing. Full responseData:', responseData);
                 }
             } catch (error) {
-                console.error('fetchClientRequestsStatus: Error during fetch:', error); // Keep this error log
+                console.error('fetchClientRequestsStatus: Error during fetch:', error);
             }
         };
 
         if ($('.cachilupi-client-requests-panel').length > 0) {
-            fetchClientRequestsStatus(); 
-            clientRequestsStatusInterval = setInterval(fetchClientRequestsStatus, 20000); 
-        } else {
+            fetchClientRequestsStatus();
+            clientRequestsStatusInterval = setInterval(fetchClientRequestsStatus, 20000);
         }
     });
 })(jQuery);

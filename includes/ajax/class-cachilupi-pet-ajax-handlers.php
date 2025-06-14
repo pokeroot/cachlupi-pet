@@ -148,7 +148,7 @@ class Cachilupi_Pet_Ajax_Handlers {
 			}
 			wp_die();
 		} elseif ( $result !== false ) {
-			$request_details    = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$table_name} WHERE id = %d", $request_id ) );
+			// $request_details    = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$table_name} WHERE id = %d", $request_id ) ); // Removed as it's not used
 			$new_status_display = \CachilupiPet\Utils\Cachilupi_Pet_Utils::translate_status( $new_status_slug );
 			// Notification logic would go here... (omitted for brevity as it's complex and not the core of this refactor)
 			wp_send_json_success( array(

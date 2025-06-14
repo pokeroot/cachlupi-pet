@@ -15,7 +15,7 @@
             $(document).on('click', '.nav-tab-wrapper a.nav-tab', function(e) {
                 e.preventDefault();
 
-                var $thisTab = $(this); // Cache the clicked tab
+                const $thisTab = $(this); // Cache the clicked tab
 
                 // Remove active class from all tabs and hide all content
                 $('.nav-tab-wrapper a.nav-tab').removeClass('nav-tab-active');
@@ -23,13 +23,13 @@
 
                 // Add active class to the clicked tab and show its content
                 $thisTab.addClass('nav-tab-active');
-                var activeTabContentID = $thisTab.attr('href'); // Get the href value (e.g., "#active-requests")
+                const activeTabContentID = $thisTab.attr('href'); // Get the href value (e.g., "#active-requests")
 
                 // Ensure the target element exists before trying to show it
                 if ($(activeTabContentID).length) {
                     $(activeTabContentID).show(); // Show the target tab content
                 } else {
-                    console.error("Tab content not found for ID: " + activeTabContentID);
+                    console.error(`Tab content not found for ID: ${activeTabContentID}`);
                 }
             });
         }
@@ -207,8 +207,7 @@
 
                 locationWatchId = navigator.geolocation.watchPosition(
                     (position) => {
-                        const lat = position.coords.latitude;
-                        const lon = position.coords.longitude;
+                        const { latitude: lat, longitude: lon } = position.coords;
                         console.log(`Ubicación obtenida: ${lat}, ${lon} para Request ID: ${currentTrackingRequestId}`);
                         sendLocationUpdate(currentTrackingRequestId, lat, lon);
                     },
