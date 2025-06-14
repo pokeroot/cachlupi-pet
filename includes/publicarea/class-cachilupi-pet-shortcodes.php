@@ -43,7 +43,7 @@ class Cachilupi_Pet_Shortcodes {
 		// Sorted by time DESC, then created_at DESC.
 		$all_requests = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT r.*, u.display_name as client_name
+				"SELECT r.id, r.time, r.pickup_address, r.dropoff_address, r.status, r.pet_type, r.pet_instructions, r.notes, r.driver_id, r.client_user_id, u.display_name as client_name
 				 FROM {$table_name} r
 				 LEFT JOIN {$wpdb->users} u ON r.client_user_id = u.ID
 				 WHERE (r.driver_id = %d OR (r.status = %s AND r.driver_id IS NULL))
@@ -303,7 +303,7 @@ class Cachilupi_Pet_Shortcodes {
 
 			$all_client_requests = $wpdb->get_results(
 				$wpdb->prepare(
-					"SELECT r.*, u.display_name as driver_name
+					"SELECT r.id, r.time, r.pickup_address, r.dropoff_address, r.pet_type, r.status, r.driver_id, u.display_name as driver_name
 					 FROM {$requests_table_name} r
 					 LEFT JOIN {$wpdb->users} u ON r.driver_id = u.ID
 					 WHERE r.client_user_id = %d ORDER BY r.time DESC, r.created_at DESC",

@@ -48,7 +48,10 @@ class Cachilupi_Pet_Request_Manager {
 			pet_instructions TEXT NULL,
 			PRIMARY KEY  (id),
 			KEY driver_id (driver_id),
-			KEY client_user_id (client_user_id)
+			KEY client_user_id (client_user_id),
+			KEY client_time_created_sort (client_user_id, time, created_at),
+			KEY status_driver_id (status, driver_id),
+			KEY client_created_at_sort (client_user_id, created_at)
 		) $charset_collate;";
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 		dbDelta( $sql );
