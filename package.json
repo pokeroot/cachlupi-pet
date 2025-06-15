@@ -2,7 +2,6 @@
   "name": "cachilupi-pet",
   "version": "1.0.0",
   "description": "Plugin para gestionar servicios de transporte de mascotas con seguimiento.",
-  "main": "cachilupi-pet.php",
   "scripts": {
     "dev:maps": "parcel watch assets/js/src/cachilupi-maps-entry.js --dist-dir assets/dist/js --public-url ./",
     "build:maps": "parcel build assets/js/src/cachilupi-maps-entry.js --dist-dir assets/dist/js --public-url ./ --no-source-maps",
