@@ -40,13 +40,30 @@ class Cachilupi_Pet_User_Roles {
 				)
 			);
 		}
+		// Explicitly add capabilities to the driver role
+		$driver_role = get_role('driver');
+		if ($driver_role) {
+			$driver_capabilities = [
+				'read'                    => true,
+				'manage_trip_status'      => true,
+				'update_trip_location'    => true,
+				'view_pending_requests'   => true,
+				'access_driver_panel'     => true,
+				'access_booking_form'     => true,
+				'submit_pet_request'      => true,
+			];
+			foreach ($driver_capabilities as $cap => $grant) {
+				$driver_role->add_cap($cap, $grant);
+			}
+		}
+
 		// Add 'client' role on plugin activation
 		// Ensure the role is added if it doesn't exist
 		if ( null === get_role( 'client' ) ) {
 			add_role(
 				'client',
 				__( 'Cliente', 'cachilupi-pet' ),
-				array(
+				array( // These are defaults if role is new
 					'read'                      => true,
 					'view_own_trip_location'    => true,
 					'submit_pet_request'        => true,
@@ -55,6 +72,21 @@ class Cachilupi_Pet_User_Roles {
 					'view_own_requests'         => true,
 				)
 			);
+		}
+		// Explicitly add capabilities to the client role
+		$client_role = get_role('client');
+		if ($client_role) {
+			$client_capabilities = [
+				'read'                      => true,
+				'view_own_trip_location'    => true,
+				'submit_pet_request'        => true,
+				'view_own_request_status'   => true,
+				'access_booking_form'       => true,
+				'view_own_requests'         => true,
+			];
+			foreach ($client_capabilities as $cap => $grant) {
+				$client_role->add_cap($cap, $grant);
+			}
 		}
 
 		// Código de depuración TEMPORAL - INICIO
