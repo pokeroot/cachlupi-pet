@@ -1,7 +1,7 @@
-import { initMap } from './modules/mapService.js';
-import { initBookingForm } from './modules/bookingForm.js';
-import { initClientRequestsDisplay } from './modules/clientRequestsDisplay.js';
-import { initDriverTrackingModal } from './modules/driverTrackingModal.js';
+import { initMap } from './maps/modules/mapService.js';
+import { initBookingForm } from './maps/modules/bookingForm.js';
+import { initClientRequestsDisplay } from './maps/modules/clientRequestsDisplay.js';
+import { initDriverTrackingModal } from './maps/modules/driverTrackingModal.js';
 // uiUtils are typically used by other modules, so direct init might not be needed here
 // unless there are standalone UI elements to initialize from the entry point.
 
