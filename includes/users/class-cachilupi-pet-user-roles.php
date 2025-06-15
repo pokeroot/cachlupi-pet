@@ -56,6 +56,22 @@ class Cachilupi_Pet_User_Roles {
 				)
 			);
 		}
+
+		// Código de depuración TEMPORAL - INICIO
+		$driver_role_debug = get_role('driver');
+		if ($driver_role_debug) {
+			error_log('Cachilupi Pet Debug - Driver Role Capabilities on add_roles: ' . print_r($driver_role_debug->capabilities, true));
+		} else {
+			error_log('Cachilupi Pet Debug - Driver Role NOT FOUND on add_roles.');
+		}
+
+		$client_role_debug = get_role('client');
+		if ($client_role_debug) {
+			error_log('Cachilupi Pet Debug - Client Role Capabilities on add_roles: ' . print_r($client_role_debug->capabilities, true));
+		} else {
+			error_log('Cachilupi Pet Debug - Client Role NOT FOUND on add_roles.');
+		}
+		// Código de depuración TEMPORAL - FIN
 	}
 
 	/**
