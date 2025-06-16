@@ -45,7 +45,7 @@ const checkNewRequests = async () => {
 
 export const initNewRequestPoller = () => {
     // Start polling if the driver panel main table is visible
-    if (jQuery('table.widefat').length > 0) { // Simple check, assumes table is always there on this panel
+    if (document.querySelector('table.widefat') !== null) { // Simple check, assumes table is always there on this panel
         if (requestPollingIntervalId) {
             clearInterval(requestPollingIntervalId); // Clear any existing interval
         }

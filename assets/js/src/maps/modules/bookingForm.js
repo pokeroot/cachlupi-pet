@@ -3,7 +3,7 @@ import {
     getPickupGeocoderValue, getDropoffGeocoderValue,
     clearMapFeatures, setValidateFormCallback as setMapServiceValidateCallback
 } from './mapService.js';
-import { showCachilupiToast, showError, hideError, showFeedbackMessage } from './uiUtils.js';
+import { showToast, showError, hideError } from './uiUtils.js'; // showFeedbackMessage removed as showToast is preferred
 
 // DOM Elements
 let serviceDateInput, serviceTimeInput, submitButton, petTypeSelect, notesTextArea, petInstructionsTextArea;
@@ -61,7 +61,7 @@ const validateForm = (isMapContext = true) => {
 
 
 export const initBookingForm = (mapAvailable) => {
-    // Initialize DOM elements (ensure they are queried after DOM is ready)
+    // Initialize DOM elements
     pickupGeocoderContainer = document.getElementById('pickup-geocoder-container');
     dropoffGeocoderContainer = document.getElementById('dropoff-geocoder-container');
     serviceDateInput = document.getElementById('service-date');
@@ -71,13 +71,12 @@ export const initBookingForm = (mapAvailable) => {
     notesTextArea = document.getElementById('cachilupi-pet-notes');
     petInstructionsTextArea = document.getElementById('cachilupi-pet-instructions');
 
-    // Pass validateForm to mapService
     if (mapAvailable) {
         setMapServiceValidateCallback(validateForm);
     }
 
     if (serviceDateInput) {
-        flatpickrDateInstance = flatpickr(serviceDateInput, { // Use element directly
+        flatpickrDateInstance = flatpickr(serviceDateInput, {
             dateFormat: "Y-m-d",
             altInput: true,
             altFormat: "F j, Y",
@@ -85,19 +84,17 @@ export const initBookingForm = (mapAvailable) => {
             locale: 'es',
             onChange: () => validateForm(mapAvailable)
         });
-        // Apply min attribute for non-Flatpickr browsers or if it fails
         const today = new Date();
         const dd = String(today.getDate()).padStart(2, '0');
-        const mm = String(today.getMonth() + 1).padStart(2, '0'); // January is 0!
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
         const yyyy = today.getFullYear();
         serviceDateInput.setAttribute('min', `${yyyy}-${mm}-${dd}`);
         serviceDateInput.addEventListener('input', () => validateForm(mapAvailable));
         serviceDateInput.addEventListener('blur', () => validateForm(mapAvailable));
-
     }
 
     if (serviceTimeInput) {
-        flatpickrTimeInstance = flatpickr(serviceTimeInput, { // Use element directly
+        flatpickrTimeInstance = flatpickr(serviceTimeInput, {
             enableTime: true,
             noCalendar: true,
             dateFormat: "H:i",
@@ -109,13 +106,13 @@ export const initBookingForm = (mapAvailable) => {
             onChange: () => validateForm(mapAvailable)
         });
         serviceTimeInput.addEventListener('input', () => validateForm(mapAvailable));
-        serviceTimeInput.addEventListener('blur', function() { // Keep `this` or use event.target
+        serviceTimeInput.addEventListener('blur', function() {
             const timeValue = this.value;
             if (timeValue) {
                 let [hours, minutes] = timeValue.split(':');
                 minutes = parseInt(minutes, 10);
-                if (!isNaN(minutes)) { // Make sure minutes is a number
-                    let roundedMinutes = Math.round(minutes / 15) * 15; // Round to nearest 15
+                if (!isNaN(minutes)) {
+                    let roundedMinutes = Math.round(minutes / 15) * 15;
                     if (roundedMinutes === 60) {
                         hours = (parseInt(hours, 10) + 1) % 24;
                         roundedMinutes = 0;
@@ -128,26 +125,26 @@ export const initBookingForm = (mapAvailable) => {
     }
 
     if (petTypeSelect) petTypeSelect.addEventListener('change', () => validateForm(mapAvailable));
-    // Notes and instructions don't strictly need validation for submit button enabling, but good to have listeners if other logic depends on them
     if (notesTextArea) notesTextArea.addEventListener('input', () => validateForm(mapAvailable));
     if (petInstructionsTextArea) petInstructionsTextArea.addEventListener('input', () => validateForm(mapAvailable));
-
 
     if (submitButton) {
         submitButton.addEventListener('click', async (event) => {
             event.preventDefault();
             if (!validateForm(mapAvailable)) {
-                showCachilupiToast('Por favor, corrige los errores en el formulario.', 'error');
+                showToast('Por favor, corrige los errores en el formulario.', 'error');
                 return;
             }
 
-            const $button = jQuery(submitButton); // For jQuery specific methods if needed, or use vanilla
-            const originalButtonText = $button.text();
-            $button.prop('disabled', true).text('Enviando Solicitud...').addClass('loading');
-            jQuery('.cachilupi-feedback').remove(); // Clear old feedback
+            const originalButtonText = submitButton.textContent;
+            submitButton.disabled = true;
+            submitButton.textContent = 'Enviando Solicitud...';
+            submitButton.classList.add('loading');
 
-            const pickupAddress = getPickupGeocoderValue(); // From mapService or direct input if no map
-            const dropoffAddress = getDropoffGeocoderValue(); // From mapService or direct input if no map
+            document.querySelectorAll('.cachilupi-feedback').forEach(el => el.remove()); // Clear old feedback
+
+            const pickupAddress = getPickupGeocoderValue();
+            const dropoffAddress = getDropoffGeocoderValue();
             const pCoords = getPickupCoords();
             const dCoords = getDropoffCoords();
 
@@ -192,14 +189,14 @@ export const initBookingForm = (mapAvailable) => {
                 }
 
                 if (responseData.success) {
-                    showCachilupiToast(responseData.data.message || 'Solicitud enviada con éxito.', 'success');
-                    // Reset form fields
+                    showToast(responseData.data.message || 'Solicitud enviada con éxito.', 'success');
                     if (mapAvailable) {
-                        clearMapFeatures(); // Clears map and geocoders via mapService
+                        clearMapFeatures();
                     } else {
-                        // Manual reset for non-map inputs
-                        if(document.getElementById('pickup-location-input')) document.getElementById('pickup-location-input').value = '';
-                        if(document.getElementById('dropoff-location-input')) document.getElementById('dropoff-location-input').value = '';
+                        const pickupInput = document.getElementById('pickup-location-input');
+                        if (pickupInput) pickupInput.value = '';
+                        const dropoffInput = document.getElementById('dropoff-location-input');
+                        if (dropoffInput) dropoffInput.value = '';
                     }
                     if (flatpickrDateInstance) flatpickrDateInstance.clear(); else if(serviceDateInput) serviceDateInput.value = '';
                     if (flatpickrTimeInstance) flatpickrTimeInstance.clear(); else if(serviceTimeInput) serviceTimeInput.value = '';
@@ -207,20 +204,21 @@ export const initBookingForm = (mapAvailable) => {
                     if (notesTextArea) notesTextArea.value = '';
                     if (petInstructionsTextArea) petInstructionsTextArea.value = '';
 
-                    validateForm(mapAvailable); // Re-validate to update button state
+                    validateForm(mapAvailable);
                 } else {
                     const errorMessage = responseData.data && responseData.data.message ? responseData.data.message : 'Ocurrió un error al guardar la solicitud.';
-                    showCachilupiToast(errorMessage, 'error');
+                    showToast(errorMessage, 'error');
                 }
             } catch (error) {
                 console.error('Fetch Error:', error);
-                showCachilupiToast(`Error de comunicación: ${error.message}`, 'error');
+                showToast(`Error de comunicación: ${error.message}`, 'error');
             } finally {
-                $button.removeClass('loading').text(originalButtonText).prop('disabled', false);
-                validateForm(mapAvailable); // Ensure button state is correct
+                submitButton.classList.remove('loading');
+                submitButton.textContent = originalButtonText;
+                submitButton.disabled = false; // Explicitly re-enable before validation
+                validateForm(mapAvailable); // Ensure button state is correct based on form validity
             }
         });
     }
-    // Initial validation call
     validateForm(mapAvailable);
 };

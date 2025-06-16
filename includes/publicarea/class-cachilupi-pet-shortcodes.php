@@ -33,25 +33,12 @@ class Cachilupi_Pet_Shortcodes {
 			return '<p>' . esc_html__( 'No tienes permiso para acceder a este panel.', 'cachilupi-pet' ) . '</p>';
 		}
 		$user = wp_get_current_user(); // Still needed for current_driver_id
-
-		ob_start(); // Start output buffering
-		global $wpdb;
-		$table_name = $wpdb->prefix . 'cachilupi_requests';
 		$current_driver_id = $user->ID;
 
-		// Fetch all requests for the current driver (any status) AND all 'pending' unassigned requests.
-		// Sorted by time DESC, then created_at DESC.
-		$all_requests = $wpdb->get_results(
-			$wpdb->prepare(
-				"SELECT r.id, r.time, r.pickup_address, r.dropoff_address, r.status, r.pet_type, r.pet_instructions, r.notes, r.driver_id, r.client_user_id, u.display_name as client_name
-				 FROM {$table_name} r
-				 LEFT JOIN {$wpdb->users} u ON r.client_user_id = u.ID
-				 WHERE (r.driver_id = %d OR (r.status = %s AND r.driver_id IS NULL))
-				 ORDER BY r.time DESC, r.created_at DESC",
-				$current_driver_id,
-				'pending'
-			)
-		);
+		ob_start(); // Start output buffering
+
+		// Fetch requests using the Request Manager
+		$all_requests = \CachilupiPet\Data\Cachilupi_Pet_Request_Manager::get_requests_for_driver_panel( $current_driver_id, 'pending' );
 
 		$active_requests = [];
 		$historical_requests = [];
@@ -296,20 +283,10 @@ class Cachilupi_Pet_Shortcodes {
 		// Section to display user's own requests
 		if ( current_user_can( 'view_own_requests' ) || current_user_can( 'manage_options' ) ) {
 			// Ensure $user is available if not already defined earlier in the broader scope (it is in this case)
-			// $user = wp_get_current_user(); // This line would be redundant if $user is already from the top of the method
-			global $wpdb;
-			$requests_table_name = $wpdb->prefix . 'cachilupi_requests';
 			$client_id = $user->ID; // This will show requests for the current user (client or admin acting as client)
 
-			$all_client_requests = $wpdb->get_results(
-				$wpdb->prepare(
-					"SELECT r.id, r.time, r.pickup_address, r.dropoff_address, r.pet_type, r.status, r.driver_id, u.display_name as driver_name
-					 FROM {$requests_table_name} r
-					 LEFT JOIN {$wpdb->users} u ON r.driver_id = u.ID
-					 WHERE r.client_user_id = %d ORDER BY r.time DESC, r.created_at DESC",
-					$client_id
-				)
-			);
+			// Fetch client requests using the Request Manager
+			$all_client_requests = \CachilupiPet\Data\Cachilupi_Pet_Request_Manager::get_client_requests_with_details( $client_id );
 
 			$active_client_requests = [];
 			$historical_client_requests = [];
