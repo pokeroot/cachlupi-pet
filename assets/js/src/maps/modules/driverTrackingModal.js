@@ -1,10 +1,15 @@
 // Assumes mapboxgl is available globally
-// Assumes jQuery for modal show/hide and event binding for now
 
 let clientFollowMap = null;
 let followInterval = null;
 let currentFollowingRequestId = null;
 let driverMarker = null;
+
+const modalElement = document.getElementById('cachilupi-follow-modal');
+const modalTitleElement = document.getElementById('cachilupi-follow-modal-title');
+const closeButtonElement = document.getElementById('cachilupi-close-follow-modal');
+const mapContainerId = 'cachilupi-client-follow-map';
+
 
 const fetchDriverLocationForClient = async (requestId) => {
     if (!requestId) {
@@ -13,7 +18,7 @@ const fetchDriverLocationForClient = async (requestId) => {
     }
     if (typeof cachilupi_pet_vars === 'undefined' || !cachilupi_pet_vars.ajaxurl || !cachilupi_pet_vars.get_location_nonce) {
         console.error('Driver tracking: Missing required JS variables (ajaxurl or nonce).');
-        jQuery('#cachilupi-follow-modal-title').text('Error de configuración.'); // User feedback
+        if (modalTitleElement) modalTitleElement.textContent = 'Error de configuración.';
         return;
     }
 
@@ -46,32 +51,40 @@ const fetchDriverLocationForClient = async (requestId) => {
                     driverMarker.setLngLat(driverPosition);
                 }
                 clientFollowMap.flyTo({ center: driverPosition, zoom: 15 });
-                jQuery('#cachilupi-follow-modal-title').text(`${cachilupi_pet_vars.text_follow_driver || 'Siguiendo Viaje'} ID: ${requestId}`);
+                if (modalTitleElement) modalTitleElement.textContent = `${cachilupi_pet_vars.text_follow_driver || 'Siguiendo Viaje'} ID: ${requestId}`;
             } else {
                 console.warn('Mapa de seguimiento no disponible o no cargado para actualizar marcador.');
             }
         } else {
             console.warn('Ubicación del conductor no disponible:', responseData.data ? responseData.data.message : 'Respuesta del servidor no exitosa.');
-            jQuery('#cachilupi-follow-modal-title').text(`${cachilupi_pet_vars.text_driver_location_not_available || 'Ubicación no disponible'} (ID: ${requestId})`);
+            if (modalTitleElement) modalTitleElement.textContent = `${cachilupi_pet_vars.text_driver_location_not_available || 'Ubicación no disponible'} (ID: ${requestId})`;
             if (driverMarker) { driverMarker.remove(); driverMarker = null; }
         }
     } catch (error) {
         console.error('Error al obtener ubicación del conductor:', error.message);
-        jQuery('#cachilupi-follow-modal-title').text('Error al obtener ubicación');
+        if (modalTitleElement) modalTitleElement.textContent = 'Error al obtener ubicación';
     }
 };
 
 export const initDriverTrackingModal = () => {
-    jQuery(document).on('click', '.cachilupi-follow-driver-btn', function() {
-        const $button = jQuery(this);
-        currentFollowingRequestId = $button.data('request-id');
+    if (!modalElement || !closeButtonElement) {
+        console.error('Modal elements not found. Driver tracking cannot be initialized.');
+        return;
+    }
+
+    document.addEventListener('click', (event) => {
+        const followButton = event.target.closest('.cachilupi-follow-driver-btn');
+        if (!followButton) return;
+
+        currentFollowingRequestId = followButton.dataset.requestId;
 
         if (!currentFollowingRequestId) {
             console.error('Error: No se pudo obtener el ID de la solicitud para seguir.');
             alert(cachilupi_pet_vars.text_driver_location_not_available || 'No se pudo obtener el ID de la solicitud.');
             return;
         }
-        jQuery('#cachilupi-follow-modal').show();
+
+        modalElement.style.display = 'block';
 
         if (typeof mapboxgl === 'undefined' || !mapboxgl.accessToken) {
             if (typeof cachilupi_pet_vars !== 'undefined' && cachilupi_pet_vars.mapbox_access_token) {
@@ -79,28 +92,22 @@ export const initDriverTrackingModal = () => {
             } else {
                 console.error("Mapbox GL JS no está cargado o falta el token de acceso.");
                 alert("Error al cargar el mapa: Mapbox no está disponible.");
-                jQuery('#cachilupi-follow-modal').hide();
+                modalElement.style.display = 'none';
                 return;
             }
         }
 
-        const mapContainerId = 'cachilupi-client-follow-map';
         let mapContainerElement = document.getElementById(mapContainerId);
+        const modalWasHidden = getComputedStyle(modalElement).display === 'none'; // Check again in case it was hidden by other means
 
-        // Ensure map container is visible and has dimensions before initializing map
-        // This is a common issue if the modal is hidden with display:none
-        const modalWasHidden = jQuery('#cachilupi-follow-modal').css('display') === 'none';
-        if (modalWasHidden) {
-             jQuery('#cachilupi-follow-modal').show(); // Temporarily show if it was hidden
+        if (modalWasHidden) { // Should not happen if we just set it to block, but as a safeguard
+            modalElement.style.display = 'block';
         }
-
 
         if (!clientFollowMap || clientFollowMap.getContainer().id !== mapContainerId || !mapContainerElement) {
             if (clientFollowMap) { clientFollowMap.remove(); clientFollowMap = null; }
 
-            if (!mapContainerElement) { // If it was null, try to get it again after modal is shown
-                 mapContainerElement = document.getElementById(mapContainerId);
-            }
+            mapContainerElement = document.getElementById(mapContainerId); // Re-fetch after ensuring modal is displayed
 
             if (mapContainerElement) {
                 try {
@@ -112,26 +119,25 @@ export const initDriverTrackingModal = () => {
                     });
                     clientFollowMap.addControl(new mapboxgl.NavigationControl());
                     clientFollowMap.on('load', () => {
-                        clientFollowMap.resize(); // Ensure map resizes correctly after modal is shown
-                        fetchDriverLocationForClient(currentFollowingRequestId); // Initial fetch after map loads
+                        clientFollowMap.resize();
+                        fetchDriverLocationForClient(currentFollowingRequestId);
                     });
                 } catch (e) {
                     console.error("Error inicializando el mapa de seguimiento del cliente:", e);
                     alert("Error al cargar el mapa de seguimiento.");
-                    jQuery('#cachilupi-follow-modal').hide();
+                    modalElement.style.display = 'none';
                     return;
                 }
             } else {
                  console.error("Contenedor del mapa de seguimiento no encontrado:", mapContainerId);
                  alert("Error: No se pudo encontrar el contenedor del mapa.");
-                 if(modalWasHidden) jQuery('#cachilupi-follow-modal').hide(); // Hide modal back if we temp showed it
+                 if (modalWasHidden) modalElement.style.display = 'none';
                  return;
             }
         }
 
-        // If map already exists, ensure it resizes and fetches
-        if (clientFollowMap) {
-             clientFollowMap.resize();
+        if (clientFollowMap) { // If map already exists
+             clientFollowMap.resize(); // Call resize to handle cases where modal was hidden/reshown
              fetchDriverLocationForClient(currentFollowingRequestId);
         }
 
@@ -139,12 +145,11 @@ export const initDriverTrackingModal = () => {
         followInterval = setInterval(() => fetchDriverLocationForClient(currentFollowingRequestId), 15000);
     });
 
-    jQuery('#cachilupi-close-follow-modal').on('click', () => {
-        jQuery('#cachilupi-follow-modal').hide();
+    closeButtonElement.addEventListener('click', () => {
+        modalElement.style.display = 'none';
         if (followInterval) { clearInterval(followInterval); followInterval = null; }
         currentFollowingRequestId = null;
         if (driverMarker) { driverMarker.remove(); driverMarker = null; }
-        // Optionally, if map was initialized specifically for this modal instance and not reused:
-        // if (clientFollowMap) { clientFollowMap.remove(); clientFollowMap = null; }
+        // if (clientFollowMap) { clientFollowMap.remove(); clientFollowMap = null; } // Optional: destroy map
     });
 };

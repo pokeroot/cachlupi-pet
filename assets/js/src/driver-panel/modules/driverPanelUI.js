@@ -1,83 +1,119 @@
-// Assumes jQuery is available globally
-
 export const initTabs = () => {
-    if (jQuery('.nav-tab-wrapper').length > 0) {
-        jQuery(document).on('click', '.nav-tab-wrapper a.nav-tab', function(e) {
-            e.preventDefault();
-            const $thisTab = jQuery(this);
-            const $tabWrapper = $thisTab.closest('.nav-tab-wrapper');
-            const $panel = $thisTab.closest('.cachilupi-driver-panel'); // Assuming this is the overall container
+    const tabWrapper = document.querySelector('.nav-tab-wrapper');
+    if (tabWrapper) {
+        document.addEventListener('click', (event) => {
+            const clickedTab = event.target.closest('.nav-tab-wrapper a.nav-tab');
+            if (!clickedTab) return;
 
-            $tabWrapper.find('a.nav-tab').removeClass('nav-tab-active');
-            if ($panel.length) {
-                 $panel.find('.tab-content').hide(); // More specific to the panel
+            event.preventDefault();
+
+            const panel = clickedTab.closest('.cachilupi-driver-panel'); // Assuming this is the overall container
+
+            // Remove active class from all tabs within this specific tab wrapper
+            const allTabsInWrapper = tabWrapper.querySelectorAll('a.nav-tab');
+            allTabsInWrapper.forEach(tab => tab.classList.remove('nav-tab-active'));
+
+            // Hide all tab content within this specific panel or globally if panel not found
+            let tabContents;
+            if (panel) {
+                tabContents = panel.querySelectorAll('.tab-content');
             } else {
-                 jQuery('.tab-content').hide(); // Fallback if panel structure isn't there
+                tabContents = document.querySelectorAll('.tab-content'); // Fallback
             }
+            tabContents.forEach(content => content.style.display = 'none');
 
-            $thisTab.addClass('nav-tab-active');
-            const activeTabContentID = $thisTab.attr('href');
+            // Add active class to the clicked tab
+            clickedTab.classList.add('nav-tab-active');
 
-            if (jQuery(activeTabContentID).length) {
-                jQuery(activeTabContentID).show();
+            // Show the corresponding tab content
+            const activeTabContentID = clickedTab.getAttribute('href');
+            if (activeTabContentID && activeTabContentID.startsWith('#')) {
+                const activeContentElement = document.getElementById(activeTabContentID.substring(1));
+                if (activeContentElement) {
+                    activeContentElement.style.display = 'block';
+                } else {
+                    console.error(`Tab content not found for ID: ${activeTabContentID}`);
+                }
             } else {
-                console.error(`Tab content not found for ID: ${activeTabContentID}`);
+                 console.error(`Invalid href attribute for tab: ${activeTabContentID}`);
             }
         });
     }
 };
 
 export const showDriverPanelFeedback = (message, type = 'success') => {
-    let $feedbackContainer = jQuery('#driver-panel-feedback');
-    if (!$feedbackContainer.length) {
-        const $mainTitle = jQuery('.wrap h1').first();
-        if ($mainTitle.length) {
-            $feedbackContainer = jQuery('<div>').attr('id', 'driver-panel-feedback').css('margin-bottom', '15px'); // Added style from original context
-            $mainTitle.after($feedbackContainer);
+    let feedbackContainer = document.getElementById('driver-panel-feedback');
+    if (!feedbackContainer) {
+        const mainTitle = document.querySelector('.wrap h1');
+        if (mainTitle) {
+            feedbackContainer = document.createElement('div');
+            feedbackContainer.id = 'driver-panel-feedback';
+            feedbackContainer.style.marginBottom = '15px';
+            mainTitle.after(feedbackContainer);
         } else {
             console.error("Feedback container #driver-panel-feedback not found and couldn't be created.");
             return;
         }
     }
 
-    $feedbackContainer.empty();
-    const feedbackClass = `cachilupi-feedback cachilupi-feedback--${type}`; // Match class from maps.js if desired
-    const messageElement = jQuery('<div>')
-        .addClass(feedbackClass)
-        .text(message);
+    feedbackContainer.innerHTML = ''; // Clear previous messages
+
+    const feedbackClass = `cachilupi-feedback cachilupi-feedback--${type}`;
+    const messageElement = document.createElement('div');
+    messageElement.classList.add(...feedbackClass.split(' ')); // Add multiple classes if space-separated
+    messageElement.textContent = message;
 
     if (type === 'error') {
-        messageElement.attr('role', 'alert').attr('aria-live', 'assertive');
+        messageElement.setAttribute('role', 'alert');
+        messageElement.setAttribute('aria-live', 'assertive');
     } else {
-        messageElement.attr('role', 'status').attr('aria-live', 'polite');
+        messageElement.setAttribute('role', 'status');
+        messageElement.setAttribute('aria-live', 'polite');
     }
 
-    messageElement.appendTo($feedbackContainer);
+    feedbackContainer.appendChild(messageElement);
 
+    // FadeOut and remove simulation
+    messageElement.style.transition = 'opacity 0.5s ease-out';
     setTimeout(() => {
-        messageElement.fadeOut('slow', () => {
+        messageElement.style.opacity = '0';
+        setTimeout(() => {
             messageElement.remove();
-        });
-    }, 5000);
+        }, 500); // Time for fade out transition
+    }, 5000); // Time message is visible
 };
 
 export const showNewRequestNotification = (count) => {
-    let $notificationArea = jQuery('#driver-new-requests-notification');
-    if (!$notificationArea.length) {
-        // Attempt to prepend to '.wrap' which is a common WordPress admin page container
-        const $wrap = jQuery('.wrap').first();
-        if ($wrap.length) {
-            $notificationArea = jQuery('<div id="driver-new-requests-notification"></div>').prependTo($wrap);
+    let notificationArea = document.getElementById('driver-new-requests-notification');
+    if (!notificationArea) {
+        const wrap = document.querySelector('.wrap');
+        notificationArea = document.createElement('div');
+        notificationArea.id = 'driver-new-requests-notification';
+        if (wrap) {
+            wrap.prepend(notificationArea);
         } else {
-            // Fallback to body, though less ideal
-            $notificationArea = jQuery('<div id="driver-new-requests-notification"></div>').prependTo('body');
+            document.body.prepend(notificationArea); // Fallback
             console.warn("'.wrap' container not found for new request notification, prepended to body.");
         }
     }
+
     const messageText = count > 1
         ? `Hay ${count} nuevas solicitudes pendientes.`
         : `Hay ${count} nueva solicitud pendiente.`;
 
-    $notificationArea.html(`${messageText} <a href="#" onclick="location.reload(); return false;">Actualizar página</a>`)
-                     .slideDown();
+    notificationArea.innerHTML = `${messageText} <a href="#" onclick="location.reload(); return false;">Actualizar página</a>`;
+
+    // SlideDown simulation (basic visibility, can be enhanced with CSS transitions)
+    notificationArea.style.display = 'none'; // Start hidden
+    requestAnimationFrame(() => { // Ensure display:none is applied before transition starts
+        notificationArea.style.transition = 'opacity 0.3s ease-in-out, max-height 0.3s ease-in-out';
+        notificationArea.style.opacity = '0';
+        notificationArea.style.maxHeight = '0px';
+        notificationArea.style.display = 'block'; // Make it part of the layout flow
+
+        requestAnimationFrame(() => { // Next frame to apply visible styles
+            notificationArea.style.opacity = '1';
+            notificationArea.style.maxHeight = '50px'; // Adjust as needed for content
+        });
+    });
 };

@@ -107,13 +107,7 @@ class Cachilupi_Pet_Settings {
 	 * @return void
 	 */
 	public function mapbox_token_field_cb() {
-		$cached_option = get_transient( 'cachilupi_pet_mapbox_token_cached' );
-		if ( false === $cached_option ) {
-			$option = get_option( 'cachilupi_pet_mapbox_token' );
-			set_transient( 'cachilupi_pet_mapbox_token_cached', $option, HOUR_IN_SECONDS );
-		} else {
-			$option = $cached_option;
-		}
+		$option = get_option( 'cachilupi_pet_mapbox_token' );
 		echo '<input type="text" id="cachilupi_pet_mapbox_token" name="cachilupi_pet_mapbox_token" value="' . esc_attr( $option ) . '" class="regular-text" />';
 		echo '<p class="description">' . esc_html__( 'Ingresa tu token de acceso de Mapbox.', 'cachilupi-pet' ) . '</p>';
 	}
@@ -124,13 +118,7 @@ class Cachilupi_Pet_Settings {
 	 * @return void
 	 */
 	public function client_redirect_slug_field_cb() {
-		$cached_option = get_transient( 'cachilupi_pet_client_redirect_slug_cached' );
-		if ( false === $cached_option ) {
-			$option = get_option( 'cachilupi_pet_client_redirect_slug', 'reserva' );
-			set_transient( 'cachilupi_pet_client_redirect_slug_cached', $option, HOUR_IN_SECONDS );
-		} else {
-			$option = $cached_option;
-		}
+		$option = get_option( 'cachilupi_pet_client_redirect_slug', 'reserva' );
 		echo '<input type="text" id="cachilupi_pet_client_redirect_slug" name="cachilupi_pet_client_redirect_slug" value="' . esc_attr( $option ) . '" class="regular-text" />';
 		echo '<p class="description">' . wp_kses_post( sprintf( __( 'Slug de la página donde los clientes realizan reservas (ej: %s para %s).', 'cachilupi-pet' ), '<code>reserva</code>', '<code>' . home_url( '/reserva/' ) . '</code>' ) ) . '</p>';
 	}
@@ -141,13 +129,7 @@ class Cachilupi_Pet_Settings {
 	 * @return void
 	 */
 	public function driver_redirect_slug_field_cb() {
-		$cached_option = get_transient( 'cachilupi_pet_driver_redirect_slug_cached' );
-		if ( false === $cached_option ) {
-			$option = get_option( 'cachilupi_pet_driver_redirect_slug', 'driver' );
-			set_transient( 'cachilupi_pet_driver_redirect_slug_cached', $option, HOUR_IN_SECONDS );
-		} else {
-			$option = $cached_option;
-		}
+		$option = get_option( 'cachilupi_pet_driver_redirect_slug', 'driver' );
 		echo '<input type="text" id="cachilupi_pet_driver_redirect_slug" name="cachilupi_pet_driver_redirect_slug" value="' . esc_attr( $option ) . '" class="regular-text" />';
 		echo '<p class="description">' . wp_kses_post( sprintf( __( 'Slug de la página del panel de conductores (ej: %s para %s).', 'cachilupi-pet' ), '<code>driver</code>', '<code>' . home_url( '/driver/' ) . '</code>' ) ) . '</p>';
 	}
