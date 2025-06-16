@@ -150,6 +150,34 @@ export const initClientRequestsDisplay = () => {
                  console.error(`Invalid href for tab: ${activeContentID}`);
             }
         });
+
+        // Show default active tab content on page load
+        const defaultActiveTab = tabWrapper.querySelector('a.nav-tab.nav-tab-active');
+        if (defaultActiveTab) {
+            const defaultActiveContentID = defaultActiveTab.getAttribute('href');
+            if (defaultActiveContentID && defaultActiveContentID.startsWith('#')) {
+                const defaultActiveContentElement = panel.querySelector(defaultActiveContentID);
+                if (defaultActiveContentElement) {
+                    // Ensure other tab contents are hidden first, then show the active one.
+                    // The HTML structure might already hide non-active tabs with inline styles or classes.
+                    // This explicitly ensures the active one is visible.
+                    panel.querySelectorAll('.tab-content').forEach(content => {
+                        if (`#${content.id}` !== defaultActiveContentID) {
+                            content.style.display = 'none'; // Ensure non-active are hidden
+                        }
+                    });
+                    defaultActiveContentElement.style.display = 'block';
+                } else {
+                    console.error(`Default active tab content not found for ID: ${defaultActiveContentID}`);
+                }
+            }  else {
+                console.error(`Invalid href for default active tab: ${defaultActiveContentID}`);
+            }
+        } else {
+            // If no tab is explicitly active, maybe activate the first one by default?
+            // For now, just logs if no active tab is found.
+            console.warn('No default active tab found in client requests panel.');
+        }
     }
 
     // Polling for request status
